@@ -76,8 +76,35 @@ ifeq ($(TARGET_ARCH), $(findstring $(TARGET_ARCH), "hifi5"))
     $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_elm_add_quant8.c \
     $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_elm_add_f32.c \
     $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_elm_sub_quant8.c \
+    $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_elm_quantize.c \
+    $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_elm_logical_bool.c \
+    $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_elm_add_f32.c \
+    $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_elm_add_quant8.c \
+    $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_elm_sine_f32.c \
+    $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_elm_cosine_f32.c \
+    $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_elm_logn_f32.c \
+    $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_elm_abs_f32.c \
+    $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_elm_ceil_f32.c \
+    $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_elm_round_f32.c \
+    $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_elm_neg_f32.c \
+    $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_elm_square_f32.c \
+    $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_elm_sqrt_f32.c \
+    $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_elm_rsqrt_f32.c \
     $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_memset_f32.c \
-    $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_memmove.c
+    $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_memmove.c \
+    $(NNLIB_PATH)/algo/ndsp/hifi5/src/expf_tbl.c \
+    $(NNLIB_PATH)/algo/ndsp/hifi5/src/pow2f_tbl.c \
+    $(NNLIB_PATH)/algo/ndsp/hifi5/src/inff_tbl.c \
+    $(NNLIB_PATH)/algo/ndsp/hifi5/src/tanhf_tbl.c \
+    $(NNLIB_PATH)/algo/ndsp/hifi5/src/nanf_tbl.c \
+    $(NNLIB_PATH)/algo/ndsp/hifi5/src/vec_sinef_hifi5.c \
+    $(NNLIB_PATH)/algo/ndsp/hifi5/src/vec_cosinef_hifi5.c \
+    $(NNLIB_PATH)/algo/ndsp/hifi5/src/vec_lognf_hifi5.c \
+    $(NNLIB_PATH)/algo/ndsp/hifi5/src/inv2pif_tbl.c \
+    $(NNLIB_PATH)/algo/ndsp/hifi5/src/sinf_tbl.c \
+    $(NNLIB_PATH)/algo/ndsp/hifi5/src/lognf_tbl.c \
+    $(NNLIB_PATH)/algo/ndsp/hifi5/src/sqrt2f_tbl.c
+
   INCLUDES += \
     -I$(NNLIB_PATH)/ \
     -I$(NNLIB_PATH)/algo/kernels/ \
