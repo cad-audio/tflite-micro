@@ -44,8 +44,7 @@ inline TfLiteStatus EvalLogicalNot(TfLiteContext* context, TfLiteNode* node) {
     err = xa_nn_elm_logicalnot_bool_bool(output_data_ptr,
         input_data_ptr,
         num_elements);
-    TF_LITE_ENSURE(context, err == 0);
-
+    TF_LITE_ENSURE(context, err==0);
     return kTfLiteOk;
   }
 #endif // defined(HIFI5)
@@ -95,44 +94,172 @@ inline TfLiteStatus EvalImpl(TfLiteContext* context, TfLiteNode* node,
   return kTfLiteOk;
 }
 
+#if !defined(HIFI5)
 inline TfLiteStatus EvalNumeric(TfLiteContext* context, TfLiteNode* node,
                                 float float_func(float)) {
   return EvalImpl<float>(context, node, float_func, kTfLiteFloat32);
 }
+#endif // !defined(HIFI5)
 
 #if !defined(HIFI5)
 inline TfLiteStatus EvalLogical(TfLiteContext* context, TfLiteNode* node,
                                 bool bool_func(bool)) {
   return EvalImpl<bool>(context, node, bool_func, kTfLiteBool);
 }
-#endif
+#endif // !defined(HIFI5)
 
 TfLiteStatus AbsEval(TfLiteContext* context, TfLiteNode* node) {
+#if HIFI_VFPU && defined(HIFI5)
+  const TfLiteEvalTensor* input = tflite::micro::GetEvalInput(context, node, 0);
+  TfLiteEvalTensor* output = tflite::micro::GetEvalOutput(context, node, 0);
+  TF_LITE_ENSURE_TYPES_EQ(context, input->type, kTfLiteFloat32);
+  const size_t num_elements = ElementCount(*input->dims);
+
+  const float* in_data = tflite::micro::GetTensorData<float>(input);
+  float* out_data = tflite::micro::GetTensorData<float>(output);
+
+  int err;
+  err = xa_nn_elm_abs_f32_f32(out_data,
+                              in_data,
+                              num_elements
+                              );
+  TF_LITE_ENSURE(context, (err==0) );
+  return kTfLiteOk;
+#else
   return EvalNumeric(context, node, std::abs);
+#endif // HIFI_VFPU && defined(HIFI5)
 }
 
 TfLiteStatus SinEval(TfLiteContext* context, TfLiteNode* node) {
+#if HIFI_VFPU && defined(HIFI5)
+  const TfLiteEvalTensor* input = tflite::micro::GetEvalInput(context, node, 0);
+  TfLiteEvalTensor* output = tflite::micro::GetEvalOutput(context, node, 0);
+  TF_LITE_ENSURE_TYPES_EQ(context, input->type, kTfLiteFloat32);
+  const size_t num_elements = ElementCount(*input->dims);
+
+  const float* in_data = tflite::micro::GetTensorData<float>(input);
+  float* out_data = tflite::micro::GetTensorData<float>(output);
+
+  int err;
+  err = xa_nn_elm_sine_f32_f32(out_data,
+                               in_data,
+                               num_elements
+                              );
+  TF_LITE_ENSURE(context, (err==0) );
+  return kTfLiteOk;
+#else
   return EvalNumeric(context, node, std::sin);
+#endif // HIFI_VFPU && defined(HIFI5)
 }
 
 TfLiteStatus CosEval(TfLiteContext* context, TfLiteNode* node) {
+#if HIFI_VFPU && defined(HIFI5)
+  const TfLiteEvalTensor* input = tflite::micro::GetEvalInput(context, node, 0);
+  TfLiteEvalTensor* output = tflite::micro::GetEvalOutput(context, node, 0);
+  TF_LITE_ENSURE_TYPES_EQ(context, input->type, kTfLiteFloat32);
+  const size_t num_elements = ElementCount(*input->dims);
+
+  const float* in_data = tflite::micro::GetTensorData<float>(input);
+  float* out_data = tflite::micro::GetTensorData<float>(output);
+
+  int err;
+  err = xa_nn_elm_cosine_f32_f32(out_data,
+                                 in_data,
+                                 num_elements
+                                );
+  TF_LITE_ENSURE(context, (err==0) );
+  return kTfLiteOk;
+#else
   return EvalNumeric(context, node, std::cos);
+#endif // HIFI_VFPU && defined(HIFI5)
 }
 
 TfLiteStatus LogEval(TfLiteContext* context, TfLiteNode* node) {
+#if HIFI_VFPU && defined(HIFI5)
+  const TfLiteEvalTensor* input = tflite::micro::GetEvalInput(context, node, 0);
+  TfLiteEvalTensor* output = tflite::micro::GetEvalOutput(context, node, 0);
+  TF_LITE_ENSURE_TYPES_EQ(context, input->type, kTfLiteFloat32);
+  const size_t num_elements = ElementCount(*input->dims);
+
+  const float* in_data = tflite::micro::GetTensorData<float>(input);
+  float* out_data = tflite::micro::GetTensorData<float>(output);
+
+  int err;
+  err = xa_nn_elm_logn_f32_f32(out_data,
+                               in_data,
+                               num_elements
+                              );
+  TF_LITE_ENSURE(context, (err==0) );
+  return kTfLiteOk;
+#else
   return EvalNumeric(context, node, std::log);
+#endif // HIFI_VFPU && defined(HIFI5)
 }
 
 TfLiteStatus SqrtEval(TfLiteContext* context, TfLiteNode* node) {
+#if HIFI_VFPU && defined(HIFI5)
+  const TfLiteEvalTensor* input = tflite::micro::GetEvalInput(context, node, 0);
+  TfLiteEvalTensor* output = tflite::micro::GetEvalOutput(context, node, 0);
+  TF_LITE_ENSURE_TYPES_EQ(context, input->type, kTfLiteFloat32);
+  const size_t num_elements = ElementCount(*input->dims);
+
+  const float* in_data = tflite::micro::GetTensorData<float>(input);
+  float* out_data = tflite::micro::GetTensorData<float>(output);
+
+  int err;
+  err = xa_nn_elm_sqrt_f32_f32(out_data,
+                               in_data,
+                               num_elements
+                              );
+  TF_LITE_ENSURE(context, (err==0) );
+  return kTfLiteOk;
+#else
   return EvalNumeric(context, node, std::sqrt);
+#endif // HIFI_VFPU && defined(HIFI5)
 }
 
 TfLiteStatus RsqrtEval(TfLiteContext* context, TfLiteNode* node) {
+#if HIFI_VFPU && defined(HIFI5)
+  const TfLiteEvalTensor* input = tflite::micro::GetEvalInput(context, node, 0);
+  TfLiteEvalTensor* output = tflite::micro::GetEvalOutput(context, node, 0);
+  TF_LITE_ENSURE_TYPES_EQ(context, input->type, kTfLiteFloat32);
+  const size_t num_elements = ElementCount(*input->dims);
+
+  const float* in_data = tflite::micro::GetTensorData<float>(input);
+  float* out_data = tflite::micro::GetTensorData<float>(output);
+
+  int err;
+  err = xa_nn_elm_rsqrt_f32_f32(out_data,
+                                in_data,
+                                num_elements
+                               );
+  TF_LITE_ENSURE(context, (err==0) );
+  return kTfLiteOk;
+#else
   return EvalNumeric(context, node, [](float f) { return 1.f / std::sqrt(f); });
+#endif // HIFI_VFPU && defined(HIFI5)
 }
 
 TfLiteStatus SquareEval(TfLiteContext* context, TfLiteNode* node) {
+#if HIFI_VFPU && defined(HIFI5)
+  const TfLiteEvalTensor* input = tflite::micro::GetEvalInput(context, node, 0);
+  TfLiteEvalTensor* output = tflite::micro::GetEvalOutput(context, node, 0);
+  TF_LITE_ENSURE_TYPES_EQ(context, input->type, kTfLiteFloat32);
+  const size_t num_elements = ElementCount(*input->dims);
+
+  const float* in_data = tflite::micro::GetTensorData<float>(input);
+  float* out_data = tflite::micro::GetTensorData<float>(output);
+
+  int err;
+  err = xa_nn_elm_square_f32_f32(out_data,
+                                 in_data,
+                                 num_elements
+                                );
+  TF_LITE_ENSURE(context, (err==0) );
+  return kTfLiteOk;
+#else
   return EvalNumeric(context, node, [](float f) { return f * f; });
+#endif // HIFI_VFPU && defined(HIFI5)
 }
 
 TfLiteStatus LogicalNotEval(TfLiteContext* context, TfLiteNode* node) {
