@@ -82,6 +82,7 @@ ifeq ($(TARGET_ARCH), $(findstring $(TARGET_ARCH), "hifi5"))
     $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_memset_f32.c \
     $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_memmove.c \
     $(NNLIB_PATH)/algo/kernels/reorg/hifi5/xa_nn_pad_8.c \
+    $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_broadcast_8_8.c \
     $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_elm_sine_f32.c \
     $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_elm_cosine_f32.c \
     $(NNLIB_PATH)/algo/kernels/basic/hifi5/xa_nn_elm_logn_f32.c \
