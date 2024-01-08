@@ -125,8 +125,8 @@ TfLiteStatus MaxEval(TfLiteContext* context, TfLiteNode* node) {
       MaxEvalQuantizedInt16Hifi(context, node, params, op_data, input, output);
 #else
       MaxPoolingEvalQuantized<int16_t>(context, node, params, reference_op_data,
-#endif                                       
                                        input, output);
+#endif                                       
       break;
     }
     default: {
