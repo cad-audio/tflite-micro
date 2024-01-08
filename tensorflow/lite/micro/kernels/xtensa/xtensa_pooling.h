@@ -67,11 +67,18 @@ TfLiteStatus AverageEvalQuantizedInt16Hifi(TfLiteContext* context,
                                       TfLiteEvalTensor* output);
 
 TfLiteStatus MaxPrepareHifi(TfLiteContext* context, TfLiteNode* node);
-TfLiteStatus MaxEvalQuantizedHifi(TfLiteContext* context, TfLiteNode* node,
+TfLiteStatus MaxEvalQuantizedInt8Hifi(TfLiteContext* context, TfLiteNode* node,
                                   TfLitePoolParams* params,
                                   const XtensaOpDataPooling* data,
                                   const TfLiteEvalTensor* input,
                                   TfLiteEvalTensor* output);
+
+TfLiteStatus MaxEvalQuantizedInt16Hifi(TfLiteContext* context,
+                                      const TfLiteNode* node,
+                                      const TfLitePoolParams* params,
+                                      const XtensaOpDataPooling* data,
+                                      const TfLiteEvalTensor* input,
+                                      TfLiteEvalTensor* output);                                  
 
 #endif  // defined(HIFI5)
 
