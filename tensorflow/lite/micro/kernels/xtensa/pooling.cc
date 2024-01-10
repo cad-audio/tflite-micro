@@ -109,7 +109,7 @@ TfLiteStatus MaxEval(TfLiteContext* context, TfLiteNode* node) {
     }
     case kTfLiteInt8: {
 #if defined(HIFI5) || defined(HIFI4)
-      MaxEvalQuantizedHifi(context, node, params, op_data, input, output);
+      MaxEvalQuantizedInt8Hifi(context, node, params, op_data, input, output);
 #elif defined(VISION_P6)
       const auto& op_data =
           *(reinterpret_cast<XtensaOpDataPooling*>(node->user_data));
@@ -121,8 +121,12 @@ TfLiteStatus MaxEval(TfLiteContext* context, TfLiteNode* node) {
       break;
     }
     case kTfLiteInt16: {
+#if defined(HIFI5) || defined(HIFI4)
+      MaxEvalQuantizedInt16Hifi(context, node, params, op_data, input, output);
+#else
       MaxPoolingEvalQuantized<int16_t>(context, node, params, reference_op_data,
                                        input, output);
+#endif                                       
       break;
     }
     default: {

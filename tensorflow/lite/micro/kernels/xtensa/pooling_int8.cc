@@ -79,7 +79,7 @@ TfLiteStatus MaxEvalInt8(TfLiteContext* context, TfLiteNode* node) {
     case kTfLiteInt8: {
 #if defined(HIFI5) || defined(HIFI4)
       auto* op_data = static_cast<const XtensaOpDataPooling*>(node->user_data);
-      MaxEvalQuantizedHifi(context, node, params, op_data, input, output);
+      MaxEvalQuantizedInt8Hifi(context, node, params, op_data, input, output);
 #elif defined(VISION_P6)
       const auto& op_data =
           *(reinterpret_cast<XtensaOpDataPooling*>(node->user_data));
@@ -216,7 +216,7 @@ TfLiteStatus MaxPrepareHifi(TfLiteContext* context, TfLiteNode* node) {
   TfLiteTensor* input =
       micro_context->AllocateTempInputTensor(node, kPoolingInputTensor);
 
-  if (input->type == kTfLiteInt8) {
+  if (input->type == kTfLiteInt8 || input->type == kTfLiteInt16) {
     auto* params = reinterpret_cast<TfLitePoolParams*>(node->builtin_data);
     auto* data = static_cast<XtensaOpDataPooling*>(node->user_data);
 
@@ -231,15 +231,27 @@ TfLiteStatus MaxPrepareHifi(TfLiteContext* context, TfLiteNode* node) {
     const int input_width = input_shape.Dims(2);
     const int output_height = output_shape.Dims(1);
     const int output_width = output_shape.Dims(2);
-
-    int required_scratch = xa_nn_maxpool_getsize(
-        depth, PREC_8, PREC_8, input_height, input_width, params->filter_height,
-        params->filter_width,
-        params->stride_width,                    // x_stride,
-        params->stride_height,                   // y_stride,
-        data->reference_op_data.padding.width,   // x_padding,
-        data->reference_op_data.padding.height,  // y_padding,
-        output_height, output_width, 0 /* NHWC inpput */, 0 /* NHWC output */);
+    int required_scratch = 0;
+    if (input->type == kTfLiteInt8){
+      required_scratch = xa_nn_maxpool_getsize(
+          depth, PREC_8, PREC_8, input_height, input_width, params->filter_height,
+          params->filter_width,
+          params->stride_width,                    // x_stride,
+          params->stride_height,                   // y_stride,
+          data->reference_op_data.padding.width,   // x_padding,
+          data->reference_op_data.padding.height,  // y_padding,
+          output_height, output_width, 0 /* NHWC inpput */, 0 /* NHWC output */);
+    }
+    if(input->type == kTfLiteInt16){
+      required_scratch = xa_nn_maxpool_getsize(
+          depth, PREC_16, PREC_16, input_height, input_width, params->filter_height,
+          params->filter_width,
+          params->stride_width,                    // x_stride,
+          params->stride_height,                   // y_stride,
+          data->reference_op_data.padding.width,   // x_padding,
+          data->reference_op_data.padding.height,  // y_padding,
+          output_height, output_width, 0 /* NHWC inpput */, 0 /* NHWC output */);      
+    }
 
     if (required_scratch <= 0) {
       MicroPrintf("Maxpool: xa_nn_maxpool_getsize failed");
@@ -254,7 +266,7 @@ TfLiteStatus MaxPrepareHifi(TfLiteContext* context, TfLiteNode* node) {
   return kTfLiteOk;
 }
 
-TfLiteStatus MaxEvalQuantizedHifi(TfLiteContext* context, TfLiteNode* node,
+TfLiteStatus MaxEvalQuantizedInt8Hifi(TfLiteContext* context, TfLiteNode* node,
                                   TfLitePoolParams* params,
                                   const XtensaOpDataPooling* data,
                                   const TfLiteEvalTensor* input,
