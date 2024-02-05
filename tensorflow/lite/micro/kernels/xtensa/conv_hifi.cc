@@ -98,46 +98,28 @@ TfLiteStatus ConvPrepareHifi(TfLiteContext* context, TfLiteNode* node) {
   else if ((params->dilation_width_factor == 1) &&
       (params->dilation_height_factor == 1)) {
     if (input->type == kTfLiteInt8) {
-      if (input_height == 1 && filter_height == 1 && output_height == 1)
-      {
-        int inp_h, filt_h, filt_w, str_h, pad_h, out_h;
-        inp_h = input_width;
-        filt_h = filter_width;
-        filt_w = filter_height;
-        str_h = stride_width;
-        pad_h = pad_width;
-        out_h = output_width;
+      if(input_depth == filter_depth){
         required_scratch = xa_nn_conv2d_std_getsize(
-            inp_h, input_depth, filt_h, filt_w, str_h,
-            pad_h, out_h, output_channels, PREC_ASYM8S);
+            input_height, input_width, input_depth, filter_height, filter_width, filter_depth, stride_height,
+            pad_height, stride_width, pad_width, output_height, output_width, output_channels, PREC_ASYM8S, PREC_SYM8S, params->dilation_height_factor, params->dilation_width_factor, 0/*Out data format*/);
       }
-      else
-      {
-        required_scratch = xa_nn_conv2d_std_getsize(
-            input_height, filter_depth, filter_height, filter_width, stride_height,
-            pad_height, output_height, output_channels, PREC_ASYM8S);
+      else{
+        required_scratch = xa_nn_conv2d_getsize(
+            input_height, input_width, input_depth, filter_height, filter_width, filter_depth, params->dilation_height_factor, params->dilation_width_factor, stride_height,
+            pad_height, stride_width, pad_width, output_height, output_width, output_channels, PREC_ASYM8S, PREC_SYM8S, 0/*Out data format*/);        
       }
       TF_LITE_ENSURE(context, required_scratch > 0);
     }
     if (input->type == kTfLiteInt16) {
-      if (input_height == 1 && filter_height == 1 && output_height == 1)
-      {
-        int inp_h, filt_h, filt_w, str_h, pad_h, out_h;
-        inp_h = input_width;
-        filt_h = filter_width;
-        filt_w = filter_height;
-        str_h = stride_width;
-        pad_h = pad_width;
-        out_h = output_width;
+      if(input_depth == filter_depth){
         required_scratch = xa_nn_conv2d_std_getsize(
-            inp_h, input_depth, filt_h, filt_w, str_h,
-            pad_h, out_h, output_channels, PREC_SYM16S);
+            input_height, input_width, input_depth, filter_height, filter_width, filter_depth, stride_height,
+            pad_height, stride_width, pad_width, output_height, output_width, output_channels, PREC_SYM16S, PREC_SYM8S, params->dilation_height_factor, params->dilation_width_factor, 0/*Out data format*/);
       }
-      else
-      {
-        required_scratch = xa_nn_conv2d_std_getsize(
-            input_height, filter_depth, filter_height, filter_width, stride_height,
-            pad_height, output_height, output_channels, PREC_SYM16S);
+      else{
+        required_scratch = xa_nn_conv2d_getsize(
+            input_height, input_width, input_depth, filter_height, filter_width, filter_depth, params->dilation_height_factor, params->dilation_width_factor, stride_height,
+            pad_height, stride_width, pad_width, output_height, output_width, output_channels, PREC_SYM16S, PREC_SYM8S, 0/*Out data format*/);               
       }
       TF_LITE_ENSURE(context, required_scratch > 0);
     }
@@ -251,9 +233,8 @@ TfLiteStatus ConvEvalHifiInt16(TfLiteContext* context, TfLiteNode* node,
 
   int output_data_format = 0;
   int out_length = output_height * output_width * output_depth;
-  if(params.dilation_height_factor == 1 && params.dilation_width_factor == 1
-     && input_depth == filter_depth) {
-    if (filter_height == 1 && filter_width == 1) {
+  if(params.dilation_height_factor == 1 && params.dilation_width_factor == 1) {
+    if ((filter_height == 1 && filter_width == 1) && (filter_depth == input_depth)) {
       for (int batch = 0; batch < batches; ++batch) {
         int16_t* p_out_temp;
         p_out_temp = &output_data[batch * out_length];
@@ -286,6 +267,7 @@ TfLiteStatus ConvEvalHifiInt16(TfLiteContext* context, TfLiteNode* node,
         p_out_temp = &output_data[batch * out_length];
 
         {
+          if(filter_depth == input_depth){
           TF_LITE_ENSURE_EQ(
               context,
               xa_nn_conv2d_std_per_chan_sym8sxsym16s(
@@ -300,6 +282,24 @@ TfLiteStatus ConvEvalHifiInt16(TfLiteContext* context, TfLiteNode* node,
                   data.reference_op_data.per_channel_output_shift, 0,
                   output_data_format, static_cast<void*>(p_scratch)),
               0);
+          }
+          else{
+          TF_LITE_ENSURE_EQ(
+              context,
+                xa_nn_conv2d_per_chan_sym8sxsym16s(
+                    p_out_temp,
+                    &input_data[batch * input_height * input_width * input_depth],
+                    const_cast<int8_t*>(filter_data),  // filter_data,
+                    bias_data, input_height, input_width, input_depth,
+                    filter_height, filter_width, filter_depth, params.dilation_height_factor, params.dilation_width_factor, output_depth, stride_width,
+                    stride_height, pad_width, pad_height, output_height,
+                    output_width, 0,
+                    data.reference_op_data.per_channel_output_multiplier,
+                    data.reference_op_data.per_channel_output_shift,
+                    0, output_data_format,
+                    static_cast<void*>(p_scratch)),
+              0);                 
+          }
         }
         TF_LITE_ENSURE_EQ(context,
                           xa_nn_vec_activation_min_max_16_16(
@@ -456,12 +456,12 @@ TfLiteStatus ConvEvalHifiInt8(TfLiteContext* context, TfLiteNode* node,
         else{
           TF_LITE_ENSURE_EQ(
             context,
-              xa_nn_conv2d_group_sym8sxasym8s(
+              xa_nn_conv2d_per_chan_sym8sxasym8s(
                   p_out_temp,
                   &input_data[batch * input_height * input_width * input_depth],
                   const_cast<int8_t*>(filter_data),  // filter_data,
                   bias_data, input_height, input_width, input_depth,
-                  filter_height, filter_width, filter_depth, output_depth, stride_width,
+                  filter_height, filter_width, filter_depth, params.dilation_height_factor, params.dilation_width_factor, output_depth, stride_width,
                   stride_height, pad_width, pad_height, output_height,
                   output_width, input_offset,
                   data.reference_op_data.per_channel_output_multiplier,
