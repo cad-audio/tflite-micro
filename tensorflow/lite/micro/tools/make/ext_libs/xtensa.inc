@@ -25,6 +25,7 @@ MICROLITE_CC_KERNEL_SRCS += \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/pad_vision.cc \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/pooling_int8.cc \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/pooling_int16.cc \
+  $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/pooling_float32.cc \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/pooling_vision.cc \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/reduce_hifi.cc \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/reduce_vision.cc \

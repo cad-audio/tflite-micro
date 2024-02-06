@@ -147,6 +147,18 @@ TfLiteStatus AveragePrepareHifi(TfLiteContext* context, TfLiteNode* node) {
       data->reference_op_data.padding.height,  // y_padding,
       output_height, output_width, 0 /*NHWC input */, 0 /* NHWC output */);
   }
+#if defined(INCLUDE_FLOAT_OPT)
+  if (input->type == kTfLiteFloat32) {
+      required_scratch = xa_nn_avgpool_getsize(
+      depth, PREC_F32, PREC_F32, input_height, input_width, params->filter_height,
+      params->filter_width,
+      params->stride_width,                    // x_stride,
+      params->stride_height,                   // y_stride,
+      data->reference_op_data.padding.width,   // x_padding,
+      data->reference_op_data.padding.height,  // y_padding,
+      output_height, output_width, 0 /*NHWC input */, 0 /* NHWC output */);
+  }  
+#endif
   if (input->type == kTfLiteInt8 || input->type == kTfLiteInt16) {
     if (required_scratch <= 0) {
       MicroPrintf("Averagepool: xa_nn_avgpool_getsize failed");
@@ -156,7 +168,17 @@ TfLiteStatus AveragePrepareHifi(TfLiteContext* context, TfLiteNode* node) {
       TF_LITE_ENSURE_STATUS(context->RequestScratchBufferInArena(
           context, required_scratch, &(data->scratch_tensor_index)));
   }
+#if defined(INCLUDE_FLOAT_OPT)
+  if (input->type == kTfLiteFloat32) {
+    if (required_scratch <= 0) {
+      MicroPrintf("Averagepool: xa_nn_avgpool_getsize failed");
+      return kTfLiteError;
+    }
 
+      TF_LITE_ENSURE_STATUS(context->RequestScratchBufferInArena(
+          context, required_scratch, &(data->scratch_tensor_index)));
+  }
+#endif
   micro_context->DeallocateTempTfLiteTensor(input);
   return kTfLiteOk;
 }
@@ -218,7 +240,7 @@ TfLiteStatus MaxPrepareHifi(TfLiteContext* context, TfLiteNode* node) {
   TfLiteTensor* input =
       micro_context->AllocateTempInputTensor(node, kPoolingInputTensor);
 
-  if (input->type == kTfLiteInt8 || input->type == kTfLiteInt16) {
+  if (input->type == kTfLiteInt8 || input->type == kTfLiteInt16 || input->type == kTfLiteFloat32) {
     auto* params = reinterpret_cast<TfLitePoolParams*>(node->builtin_data);
     auto* data = static_cast<XtensaOpDataPooling*>(node->user_data);
 
@@ -254,6 +276,18 @@ TfLiteStatus MaxPrepareHifi(TfLiteContext* context, TfLiteNode* node) {
           data->reference_op_data.padding.height,  // y_padding,
           output_height, output_width, 0 /* NHWC inpput */, 0 /* NHWC output */);      
     }
+#if defined(INCLUDE_FLOAT_OPT)   
+    if(input->type == kTfLiteFloat32){
+      required_scratch = xa_nn_maxpool_getsize(
+          depth, PREC_F32, PREC_F32, input_height, input_width, params->filter_height,
+          params->filter_width,
+          params->stride_width,                    // x_stride,
+          params->stride_height,                   // y_stride,
+          data->reference_op_data.padding.width,   // x_padding,
+          data->reference_op_data.padding.height,  // y_padding,
+          output_height, output_width, 0 /* NHWC inpput */, 0 /* NHWC output */);      
+    }
+#endif
 
     if (required_scratch <= 0) {
       MicroPrintf("Maxpool: xa_nn_maxpool_getsize failed");

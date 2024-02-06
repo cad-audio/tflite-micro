@@ -32,13 +32,11 @@ TfLiteStatus AverageEval(TfLiteContext* context, TfLiteNode* node) {
   auto* params = reinterpret_cast<TfLitePoolParams*>(node->builtin_data);
 
   TFLITE_DCHECK(node->user_data != nullptr);
-#if defined(HIFI5) || defined(HIFI4)
-  auto* op_data = static_cast<const XtensaOpDataPooling*>(node->user_data);
-  const OpDataPooling* reference_op_data = &(op_data->reference_op_data);
-#else
+#if !(defined(HIFI5) || defined(HIFI4))
   const OpDataPooling* reference_op_data =
       static_cast<const OpDataPooling*>(node->user_data);
 #endif
+  auto* op_data = static_cast<const XtensaOpDataPooling*>(node->user_data); 
 
   const TfLiteEvalTensor* input =
       micro::GetEvalInput(context, node, kPoolingInputTensor);
@@ -48,8 +46,13 @@ TfLiteStatus AverageEval(TfLiteContext* context, TfLiteNode* node) {
   // Inputs and outputs share the same type, guaranteed by the converter.
   switch (input->type) {
     case kTfLiteFloat32: {
+#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI5) || defined(HIFI4))
+      AverageEvalQuantizedFloat32Hifi(context, node, params, op_data, input, output);
+#else
+      const OpDataPooling* reference_op_data = &(op_data->reference_op_data);
       AveragePoolingEvalFloat(context, node, params, reference_op_data, input,
                               output);
+#endif                              
       break;
     }
     case kTfLiteInt8: {
@@ -88,13 +91,11 @@ TfLiteStatus MaxEval(TfLiteContext* context, TfLiteNode* node) {
   auto* params = reinterpret_cast<TfLitePoolParams*>(node->builtin_data);
 
   TFLITE_DCHECK(node->user_data != nullptr);
-#if defined(HIFI5) || defined(HIFI4)
-  auto* op_data = static_cast<const XtensaOpDataPooling*>(node->user_data);
-  const OpDataPooling* reference_op_data = &(op_data->reference_op_data);
-#else
+#if !(defined(HIFI5) || defined(HIFI4))
   const OpDataPooling* reference_op_data =
       static_cast<const OpDataPooling*>(node->user_data);
 #endif
+  auto* op_data = static_cast<const XtensaOpDataPooling*>(node->user_data);
 
   const TfLiteEvalTensor* input =
       micro::GetEvalInput(context, node, kPoolingInputTensor);
@@ -103,8 +104,13 @@ TfLiteStatus MaxEval(TfLiteContext* context, TfLiteNode* node) {
 
   switch (input->type) {
     case kTfLiteFloat32: {
+#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI5) || defined(HIFI4))
+      MaxEvalQuantizedFloat32Hifi(context, node, params, op_data, input, output);
+#else      
+      const OpDataPooling* reference_op_data = &(op_data->reference_op_data);
       MaxPoolingEvalFloat(context, node, params, reference_op_data, input,
                           output);
+#endif
       break;
     }
     case kTfLiteInt8: {
@@ -164,10 +170,5 @@ TFLMRegistration Register_MAX_POOL_2D() {
 #endif
 }
 
-TFLMRegistration Register_AVERAGE_POOL_2D_INT16() {
-  return Register_AVERAGE_POOL_2D();
-}
-
-TFLMRegistration Register_MAX_POOL_2D_INT16() { return Register_MAX_POOL_2D(); }
 
 }  // namespace tflite

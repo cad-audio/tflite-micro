@@ -66,6 +66,13 @@ TfLiteStatus AverageEvalQuantizedInt16Hifi(TfLiteContext* context,
                                       const TfLiteEvalTensor* input,
                                       TfLiteEvalTensor* output);
 
+TfLiteStatus AverageEvalQuantizedFloat32Hifi(TfLiteContext* context,
+                                      const TfLiteNode* node,
+                                      const TfLitePoolParams* params,
+                                      const XtensaOpDataPooling* data,
+                                      const TfLiteEvalTensor* input,
+                                      TfLiteEvalTensor* output);
+
 TfLiteStatus MaxPrepareHifi(TfLiteContext* context, TfLiteNode* node);
 TfLiteStatus MaxEvalQuantizedInt8Hifi(TfLiteContext* context, TfLiteNode* node,
                                   TfLitePoolParams* params,
@@ -80,6 +87,12 @@ TfLiteStatus MaxEvalQuantizedInt16Hifi(TfLiteContext* context,
                                       const TfLiteEvalTensor* input,
                                       TfLiteEvalTensor* output);                                  
 
+TfLiteStatus MaxEvalQuantizedFloat32Hifi(TfLiteContext* context,
+                                      const TfLiteNode* node,
+                                      const TfLitePoolParams* params,
+                                      const XtensaOpDataPooling* data,
+                                      const TfLiteEvalTensor* input,
+                                      TfLiteEvalTensor* output);  
 #endif  // defined(HIFI5)
 
 void* XtensaPoolingInit(TfLiteContext* context, const char* buffer,

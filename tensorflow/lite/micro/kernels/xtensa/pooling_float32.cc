@@ -24,7 +24,7 @@ limitations under the License.
 
 namespace tflite {
 
-TfLiteStatus AverageEvalInt16(TfLiteContext* context, TfLiteNode* node) {
+TfLiteStatus AverageEvalFloat32(TfLiteContext* context, TfLiteNode* node) {
   TFLITE_DCHECK(node->builtin_data != nullptr);
   auto* params = reinterpret_cast<TfLitePoolParams*>(node->builtin_data);
 
@@ -37,14 +37,14 @@ TfLiteStatus AverageEvalInt16(TfLiteContext* context, TfLiteNode* node) {
 
   // Inputs and outputs share the same type, guaranteed by the converter.
   switch (input->type) {
-    case kTfLiteInt16: {
-#if defined(HIFI5) || defined(HIFI4)
+    case kTfLiteFloat32: {
+#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI5) || defined(HIFI4))
       auto* op_data = static_cast<const XtensaOpDataPooling*>(node->user_data);
-      AverageEvalQuantizedInt16Hifi(context, node, params, op_data, input, output);
+      AverageEvalQuantizedFloat32Hifi(context, node, params, op_data, input, output);
 #else
       const OpDataPooling* reference_op_data =
           static_cast<const OpDataPooling*>(node->user_data);
-      AveragePoolingEvalQuantized<int16_t>(context, node, params,
+      AveragePoolingEvalFloat(context, node, params,
                                           reference_op_data, input, output);
 #endif
       break;
@@ -58,7 +58,7 @@ TfLiteStatus AverageEvalInt16(TfLiteContext* context, TfLiteNode* node) {
   return kTfLiteOk;
 }
 
-TfLiteStatus MaxEvalInt16(TfLiteContext* context, TfLiteNode* node) {
+TfLiteStatus MaxEvalFloat32(TfLiteContext* context, TfLiteNode* node) {
   TFLITE_DCHECK(node->builtin_data != nullptr);
   auto* params = reinterpret_cast<TfLitePoolParams*>(node->builtin_data);
 
@@ -70,14 +70,14 @@ TfLiteStatus MaxEvalInt16(TfLiteContext* context, TfLiteNode* node) {
       micro::GetEvalOutput(context, node, kPoolingOutputTensor);
 
   switch (input->type) {
-    case kTfLiteInt16: {
-#if defined(HIFI5) || defined(HIFI4)
+    case kTfLiteFloat32: {
+#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI5) || defined(HIFI4))
       auto* op_data = static_cast<const XtensaOpDataPooling*>(node->user_data);
-      MaxEvalQuantizedInt16Hifi(context, node, params, op_data, input, output);
+      MaxEvalQuantizedFloat32Hifi(context, node, params, op_data, input, output);
 #else
       const OpDataPooling* reference_op_data =
           static_cast<const OpDataPooling*>(node->user_data);
-      MaxPoolingEvalQuantized<int16_t>(context, node, params, reference_op_data,
+      MaxPoolingEvalFloat(context, node, params, reference_op_data,
                                       input, output);
 #endif
       break;
@@ -91,13 +91,14 @@ TfLiteStatus MaxEvalInt16(TfLiteContext* context, TfLiteNode* node) {
   return kTfLiteOk;
 }
 
-TfLiteStatus AverageEvalQuantizedInt16Hifi(TfLiteContext* context,
+#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI5) || defined(HIFI4))
+TfLiteStatus AverageEvalQuantizedFloat32Hifi(TfLiteContext* context,
                                       const TfLiteNode* node,
                                       const TfLitePoolParams* params,
                                       const XtensaOpDataPooling* data,
                                       const TfLiteEvalTensor* input,
                                       TfLiteEvalTensor* output) {
-  TFLITE_DCHECK(input->type == kTfLiteInt16);
+  TFLITE_DCHECK(input->type == kTfLiteFloat32);
 
   const RuntimeShape& input_shape = tflite::micro::GetTensorShape(input);
   const RuntimeShape& output_shape = tflite::micro::GetTensorShape(output);
@@ -111,15 +112,17 @@ TfLiteStatus AverageEvalQuantizedInt16Hifi(TfLiteContext* context,
   void* p_scratch = static_cast<void*>(
       context->GetScratchBuffer(context, data->scratch_tensor_index));
 
-  const int16_t* inp_data_ptr = tflite::micro::GetTensorData<int16_t>(input);
-  int16_t* out_data_ptr = tflite::micro::GetTensorData<int16_t>(output);
+  const float* inp_data_ptr = tflite::micro::GetTensorData<float>(input);
+  float* out_data_ptr = tflite::micro::GetTensorData<float>(output);
+  const OpDataPooling* reference_op_data =
+    static_cast<const OpDataPooling*>(node->user_data);
 
   for (int batch = 0; batch < batches; ++batch) {
     TF_LITE_ENSURE_EQ(
         context,
-        xa_nn_avgpool_16(
+        xa_nn_avgpool_f32(
             &out_data_ptr[output_height * output_width * depth * batch],
-            const_cast<int16_t*>(
+            const_cast<float*>(
                 &inp_data_ptr[output_height * output_width * depth * batch]),
             input_height, input_width, depth, params->filter_height,
             params->filter_width, params->stride_width, params->stride_height,
@@ -132,21 +135,22 @@ TfLiteStatus AverageEvalQuantizedInt16Hifi(TfLiteContext* context,
   const int out_length = batches * output_height * output_width * depth;
   TF_LITE_ENSURE_EQ(
       context,
-      xa_nn_vec_activation_min_max_16_16(
-          out_data_ptr, out_data_ptr, data->reference_op_data.activation_min,
-          data->reference_op_data.activation_max, out_length),
+      xa_nn_vec_activation_min_max_f32_f32(
+          out_data_ptr, out_data_ptr, reference_op_data->activation_min_f32,
+          reference_op_data->activation_max_f32, out_length),
       0);
 
   return kTfLiteOk;
 }
+#endif
 
-TfLiteStatus MaxEvalQuantizedInt16Hifi(TfLiteContext* context,
+TfLiteStatus MaxEvalQuantizedFloat32Hifi(TfLiteContext* context,
                                       const TfLiteNode* node,
                                       const TfLitePoolParams* params,
                                       const XtensaOpDataPooling* data,
                                       const TfLiteEvalTensor* input,
                                       TfLiteEvalTensor* output) {
-  TFLITE_DCHECK(input->type == kTfLiteInt16);
+  TFLITE_DCHECK(input->type == kTfLiteFloat32);
 
   const RuntimeShape& input_shape = tflite::micro::GetTensorShape(input);
   const RuntimeShape& output_shape = tflite::micro::GetTensorShape(output);
@@ -160,15 +164,17 @@ TfLiteStatus MaxEvalQuantizedInt16Hifi(TfLiteContext* context,
   void* p_scratch = static_cast<void*>(
       context->GetScratchBuffer(context, data->scratch_tensor_index));
 
-  const int16_t* inp_data_ptr = tflite::micro::GetTensorData<int16_t>(input);
-  int16_t* out_data_ptr = tflite::micro::GetTensorData<int16_t>(output);
+  const float* inp_data_ptr = tflite::micro::GetTensorData<float>(input);
+  float* out_data_ptr = tflite::micro::GetTensorData<float>(output);
+  const OpDataPooling* reference_op_data =
+    static_cast<const OpDataPooling*>(node->user_data);
 
   for (int batch = 0; batch < batches; ++batch) {
     TF_LITE_ENSURE_EQ(
         context,
-        xa_nn_maxpool_16(
+        xa_nn_maxpool_f32(
             &out_data_ptr[output_height * output_width * depth * batch],
-            const_cast<int16_t*>(
+            const_cast<float*>(
                 &inp_data_ptr[output_height * output_width * depth * batch]),
             input_height, input_width, depth, params->filter_height,
             params->filter_width, params->stride_width, params->stride_height,
@@ -181,31 +187,31 @@ TfLiteStatus MaxEvalQuantizedInt16Hifi(TfLiteContext* context,
   const int out_length = batches * output_height * output_width * depth;
   TF_LITE_ENSURE_EQ(
       context,
-      xa_nn_vec_activation_min_max_16_16(
-          out_data_ptr, out_data_ptr, data->reference_op_data.activation_min,
-          data->reference_op_data.activation_max, out_length),
+      xa_nn_vec_activation_min_max_f32_f32(
+          out_data_ptr, out_data_ptr, reference_op_data->activation_min_f32,
+          reference_op_data->activation_max_f32, out_length),
       0);
 
   return kTfLiteOk;
 }
 
-TFLMRegistration Register_AVERAGE_POOL_2D_INT16() {
-#if defined(HIFI5) || defined(HIFI4)
+TFLMRegistration Register_AVERAGE_POOL_2D_FLOAT32() {
+#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI5) || defined(HIFI4))
   return tflite::micro::RegisterOp(XtensaPoolingInit, AveragePrepareHifi,
-                                   AverageEvalInt16);
+                                   AverageEvalFloat32);
 #else
   return tflite::micro::RegisterOp(XtensaPoolingInit, PoolingPrepare,
-                                   AverageEvalInt16);
+                                   AverageEvalFloat32);
 #endif
 }
 
-TFLMRegistration Register_MAX_POOL_2D_INT16() {
-#if defined(HIFI5) || defined(HIFI4)
+TFLMRegistration Register_MAX_POOL_2D_FLOAT32() {
+#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI5) || defined(HIFI4))
   return tflite::micro::RegisterOp(XtensaPoolingInit, MaxPrepareHifi,
-                                   MaxEvalInt16);
+                                   MaxEvalFloat32);
 #else
   return tflite::micro::RegisterOp(XtensaPoolingInit, PoolingPrepare,
-                                   MaxEvalInt16);
+                                   MaxEvalFloat32);
 #endif
 }
 

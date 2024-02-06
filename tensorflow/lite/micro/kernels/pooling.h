@@ -120,6 +120,10 @@ TFLMRegistration Register_MAX_POOL_2D_INT8();
 TFLMRegistration Register_AVERAGE_POOL_2D_INT16();
 
 TFLMRegistration Register_MAX_POOL_2D_INT16();
+
+TFLMRegistration Register_AVERAGE_POOL_2D_FLOAT32();
+
+TFLMRegistration Register_MAX_POOL_2D_FLOAT32();
 #else
 inline TFLMRegistration Register_AVERAGE_POOL_2D_INT8() {
   return tflite::Register_AVERAGE_POOL_2D();
