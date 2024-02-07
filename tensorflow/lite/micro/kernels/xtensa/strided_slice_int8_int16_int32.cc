@@ -30,58 +30,56 @@ limitations under the License.
 namespace tflite {
 namespace {
 
-TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
-  TFLITE_DCHECK(node->user_data != nullptr);
-  const StridedSliceParams& op_params =
-      *(static_cast<const StridedSliceParams*>(node->user_data));
-
-  const TfLiteEvalTensor* input =
-      tflite::micro::GetEvalInput(context, node, kStridedSliceInputTensor);
-  TfLiteEvalTensor* output =
-      tflite::micro::GetEvalOutput(context, node, kStridedSliceOutputTensor);
-  switch (output->type) {
-    case kTfLiteFloat32:     
-      StridedSliceInt32Ref(context, node);                                 
-      break;
-    case kTfLiteInt8:
+TfLiteStatus EvalInt8(TfLiteContext* context, TfLiteNode* node) {
 #if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
       StridedSlice_int8_hifi(context, node);
 #else
       StridedSliceInt8Ref(context, node);
 #endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
-      break;
-    case kTfLiteInt16:
+  return kTfLiteOk;
+}
+
+TfLiteStatus EvalInt16(TfLiteContext* context, TfLiteNode* node) {
 #if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
       StridedSlice_int16_hifi(context, node);
 #else
       StridedSliceInt16Ref(context, node);
 #endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
-      break;
-    case kTfLiteInt32:
+  return kTfLiteOk;
+}
+
+TfLiteStatus EvalInt32(TfLiteContext* context, TfLiteNode* node) {
 #if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
       StridedSlice_int32_hifi(context, node);
-#else    
+#else
       StridedSliceInt32Ref(context, node);
-#endif          
-      break;
-    case kTfLiteBool:
-      reference_ops::StridedSlice(op_params,
-                                  tflite::micro::GetTensorShape(input),
-                                  tflite::micro::GetTensorData<bool>(input),
-                                  tflite::micro::GetTensorShape(output),
-                                  tflite::micro::GetTensorData<bool>(output));
-      break;
-    default:
-      MicroPrintf("Type %s (%d) not supported.", TfLiteTypeGetName(input->type),
-                  input->type);
-      return kTfLiteError;
-  }
+#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
   return kTfLiteOk;
 }
 }  // namespace
 
-TFLMRegistration Register_STRIDED_SLICE() {
-  return tflite::micro::RegisterOp(StridedSliceInit, StridedSlicePrepare, Eval);
+TFLMRegistration Register_STRIDED_SLICE_INT8() {
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)  
+  return tflite::micro::RegisterOp(StridedSliceInit, StridedSlicePrepare, EvalInt8);
+#else
+  return tflite::micro::RegisterOp(StridedSliceInit, StridedSlicePrepare, StridedSliceInt8Ref);
+#endif  
+}
+
+TFLMRegistration Register_STRIDED_SLICE_INT16() {
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)       
+  return tflite::micro::RegisterOp(StridedSliceInit, StridedSlicePrepare, EvalInt16);
+#else
+  return tflite::micro::RegisterOp(StridedSliceInit, StridedSlicePrepare, StridedSliceInt16Ref);
+#endif  
+}
+
+TFLMRegistration Register_STRIDED_SLICE_INT32() {
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)       
+  return tflite::micro::RegisterOp(StridedSliceInit, StridedSlicePrepare, EvalInt32);
+#else
+  return tflite::micro::RegisterOp(StridedSliceInit, StridedSlicePrepare, StridedSliceInt32Ref);
+#endif   
 }
 
 }  // namespace tflite

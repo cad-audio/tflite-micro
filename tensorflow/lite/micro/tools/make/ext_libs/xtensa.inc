@@ -38,6 +38,11 @@ MICROLITE_CC_KERNEL_SRCS += \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/transpose_conv_int8_reference.cc \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/transpose_conv_int16_reference.cc \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/transpose_conv_float32_reference.cc \
+  $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/strided_slice_hifi.cc \
+  $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/strided_slice_int8_int16_int32.cc \
+  $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/strided_slice_int8_reference.cc \
+  $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/strided_slice_int16_reference.cc \
+  $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/strided_slice_int32_reference.cc \
 
 ifeq ($(TARGET_ARCH), hifimini)
   # hifimini optimizations are implemented in the TFLM repository itself.

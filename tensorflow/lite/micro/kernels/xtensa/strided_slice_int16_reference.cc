@@ -28,9 +28,9 @@ limitations under the License.
 #include "tensorflow/lite/micro/micro_log.h"
 
 namespace tflite {
-namespace {
 
-TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
+TfLiteStatus StridedSliceInt16Ref(TfLiteContext* context, TfLiteNode* node)
+{
   TFLITE_DCHECK(node->user_data != nullptr);
   const StridedSliceParams& op_params =
       *(static_cast<const StridedSliceParams*>(node->user_data));
@@ -39,49 +39,17 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       tflite::micro::GetEvalInput(context, node, kStridedSliceInputTensor);
   TfLiteEvalTensor* output =
       tflite::micro::GetEvalOutput(context, node, kStridedSliceOutputTensor);
-  switch (output->type) {
-    case kTfLiteFloat32:     
-      StridedSliceInt32Ref(context, node);                                 
-      break;
-    case kTfLiteInt8:
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
-      StridedSlice_int8_hifi(context, node);
-#else
-      StridedSliceInt8Ref(context, node);
-#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
-      break;
-    case kTfLiteInt16:
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
-      StridedSlice_int16_hifi(context, node);
-#else
-      StridedSliceInt16Ref(context, node);
-#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
-      break;
-    case kTfLiteInt32:
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
-      StridedSlice_int32_hifi(context, node);
-#else    
-      StridedSliceInt32Ref(context, node);
-#endif          
-      break;
-    case kTfLiteBool:
-      reference_ops::StridedSlice(op_params,
-                                  tflite::micro::GetTensorShape(input),
-                                  tflite::micro::GetTensorData<bool>(input),
-                                  tflite::micro::GetTensorShape(output),
-                                  tflite::micro::GetTensorData<bool>(output));
-      break;
-    default:
-      MicroPrintf("Type %s (%d) not supported.", TfLiteTypeGetName(input->type),
-                  input->type);
-      return kTfLiteError;
-  }
-  return kTfLiteOk;
-}
-}  // namespace
 
-TFLMRegistration Register_STRIDED_SLICE() {
-  return tflite::micro::RegisterOp(StridedSliceInit, StridedSlicePrepare, Eval);
+  reference_ops::StridedSlice(op_params,
+                              tflite::micro::GetTensorShape(input),
+                              tflite::micro::GetTensorData<int16_t>(input),
+                              tflite::micro::GetTensorShape(output),
+                              tflite::micro::GetTensorData<int16_t>(output));
+   return kTfLiteOk;                          
+}
+
+TFLMRegistration Register_STRIDED_SLICE_INT16_REF() {
+  return tflite::micro::RegisterOp(StridedSliceInit, StridedSlicePrepare, StridedSliceInt16Ref);
 }
 
 }  // namespace tflite

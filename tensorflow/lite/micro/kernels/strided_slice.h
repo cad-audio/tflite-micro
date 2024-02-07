@@ -35,6 +35,25 @@ void* StridedSliceInit(TfLiteContext* context, const char* buffer,
 
 TfLiteStatus StridedSlicePrepare(TfLiteContext* context, TfLiteNode* node);
 
+#if defined(XTENSA)
+TFLMRegistration Register_STRIDED_SLICE_INT8();
+TFLMRegistration Register_STRIDED_SLICE_INT16();
+TFLMRegistration Register_STRIDED_SLICE_INT32();
+#else
+inline TFLMRegistration Register_STRIDED_SLICE_INT8() {
+  return Register_STRIDED_SLICE();
+}
+inline TFLMRegistration Register_STRIDED_SLICE_INT16() {
+  return Register_STRIDED_SLICE();
+}
+inline TFLMRegistration Register_STRIDED_SLICE_INT32() {
+  return Register_STRIDED_SLICE();
+}
+#endif
+
+TFLMRegistration Register_STRIDED_SLICE_INT8_REF();
+TFLMRegistration Register_STRIDED_SLICE_INT16_REF();
+TFLMRegistration Register_STRIDED_SLICE_INT32_REF();
 }  // namespace tflite
 
 #endif  // TENSORFLOW_LITE_MICRO_KERNELS_STRIDED_SLICE_H_
