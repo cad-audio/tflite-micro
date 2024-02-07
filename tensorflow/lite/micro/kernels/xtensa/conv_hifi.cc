@@ -216,10 +216,10 @@ TfLiteStatus ConvEvalHifiInt16(TfLiteContext* context, TfLiteNode* node,
 
   const RuntimeShape& output_shape = tflite::micro::GetTensorShape(output);
   const int batches = MatchingDim(input_shape, 0, output_shape, 0);
-  const int input_depth = input_shape.Dims(3);
   const int output_depth = MatchingDim(filter_shape, 0, output_shape, 3);
   const int input_height = input_shape.Dims(1);
   const int input_width = input_shape.Dims(2);
+  const int input_depth = input_shape.Dims(3);
   const int filter_height = filter_shape.Dims(1);
   const int filter_width = filter_shape.Dims(2);
   const int filter_depth = filter_shape.Dims(3);
@@ -233,94 +233,79 @@ TfLiteStatus ConvEvalHifiInt16(TfLiteContext* context, TfLiteNode* node,
 
   int output_data_format = 0;
   int out_length = output_height * output_width * output_depth;
-  if(params.dilation_height_factor == 1 && params.dilation_width_factor == 1) {
-    if ((filter_height == 1 && filter_width == 1) && (filter_depth == input_depth)) {
-      for (int batch = 0; batch < batches; ++batch) {
-        int16_t* p_out_temp;
-        p_out_temp = &output_data[batch * out_length];
+  if (filter_height == 1 && filter_width == 1) {
+    for (int batch = 0; batch < batches; ++batch) {
+      int16_t* p_out_temp;
+      p_out_temp = &output_data[batch * out_length];
 
+      TF_LITE_ENSURE_EQ(
+          context,
+          xa_nn_conv2d_pointwise_per_chan_sym8sxsym16s(
+              p_out_temp, const_cast<WORD8*>(filter_data),
+              const_cast<WORD16*>(&input_data[batch * input_height *
+                                              input_width * input_depth]),
+              const_cast<WORD64*>(bias_data), input_height, input_width,
+              input_depth, output_depth, 0,
+              data.reference_op_data.per_channel_output_multiplier,
+              data.reference_op_data.per_channel_output_shift, 0,
+              output_data_format),
+          0);
+
+      TF_LITE_ENSURE_EQ(context,
+                        xa_nn_vec_activation_min_max_16_16(
+                            p_out_temp, p_out_temp, output_activation_min,
+                            output_activation_max, out_length),
+                        0);
+    }
+  } else {
+    void* p_scratch = static_cast<void*>(
+        context->GetScratchBuffer(context, data.scratch_tensor_index));
+
+    for (int batch = 0; batch < batches; ++batch) {
+      int16_t* p_out_temp;
+      p_out_temp = &output_data[batch * out_length];
+
+      {
+        if(filter_depth == input_depth){
         TF_LITE_ENSURE_EQ(
             context,
-            xa_nn_conv2d_pointwise_per_chan_sym8sxsym16s(
-                p_out_temp, const_cast<WORD8*>(filter_data),
-                const_cast<WORD16*>(&input_data[batch * input_height *
-                                                input_width * input_depth]),
-                const_cast<WORD64*>(bias_data), input_height, input_width,
-                input_depth, output_depth, 0,
+            xa_nn_conv2d_std_per_chan_sym8sxsym16s(
+                p_out_temp,
+                &input_data[batch * input_height * input_width * input_depth],
+                const_cast<int8_t*>(filter_data),  // filter_data,
+                bias_data, input_height, input_width, input_depth,
+                filter_height, filter_width, output_depth, stride_width,
+                stride_height, pad_width, pad_height, output_height,
+                output_width, 0,
                 data.reference_op_data.per_channel_output_multiplier,
                 data.reference_op_data.per_channel_output_shift, 0,
-                output_data_format),
+                output_data_format, static_cast<void*>(p_scratch)),
             0);
-
-        TF_LITE_ENSURE_EQ(context,
-                          xa_nn_vec_activation_min_max_16_16(
-                              p_out_temp, p_out_temp, output_activation_min,
-                              output_activation_max, out_length),
-                          0);
-      }
-    } else {
-      void* p_scratch = static_cast<void*>(
-          context->GetScratchBuffer(context, data.scratch_tensor_index));
-
-      for (int batch = 0; batch < batches; ++batch) {
-        int16_t* p_out_temp;
-        p_out_temp = &output_data[batch * out_length];
-
-        {
-          if(filter_depth == input_depth){
+        }
+        else{
           TF_LITE_ENSURE_EQ(
-              context,
-              xa_nn_conv2d_std_per_chan_sym8sxsym16s(
+            context,
+              xa_nn_conv2d_per_chan_sym8sxsym16s(
                   p_out_temp,
                   &input_data[batch * input_height * input_width * input_depth],
                   const_cast<int8_t*>(filter_data),  // filter_data,
                   bias_data, input_height, input_width, input_depth,
-                  filter_height, filter_width, output_depth, stride_width,
+                  filter_height, filter_width, filter_depth, params.dilation_height_factor, params.dilation_width_factor, output_depth, stride_width,
                   stride_height, pad_width, pad_height, output_height,
                   output_width, 0,
                   data.reference_op_data.per_channel_output_multiplier,
-                  data.reference_op_data.per_channel_output_shift, 0,
-                  output_data_format, static_cast<void*>(p_scratch)),
-              0);
-          }
-          else{
-          TF_LITE_ENSURE_EQ(
-              context,
-                xa_nn_conv2d_per_chan_sym8sxsym16s(
-                    p_out_temp,
-                    &input_data[batch * input_height * input_width * input_depth],
-                    const_cast<int8_t*>(filter_data),  // filter_data,
-                    bias_data, input_height, input_width, input_depth,
-                    filter_height, filter_width, filter_depth, params.dilation_height_factor, params.dilation_width_factor, output_depth, stride_width,
-                    stride_height, pad_width, pad_height, output_height,
-                    output_width, 0,
-                    data.reference_op_data.per_channel_output_multiplier,
-                    data.reference_op_data.per_channel_output_shift,
-                    0, output_data_format,
-                    static_cast<void*>(p_scratch)),
-              0);                 
-          }
+                  data.reference_op_data.per_channel_output_shift,
+                  0, output_data_format,
+                  static_cast<void*>(p_scratch)),
+              0);              
         }
-        TF_LITE_ENSURE_EQ(context,
-                          xa_nn_vec_activation_min_max_16_16(
-                              p_out_temp, p_out_temp, output_activation_min,
-                              output_activation_max, out_length),
-                          0);
       }
+      TF_LITE_ENSURE_EQ(context,
+                        xa_nn_vec_activation_min_max_16_16(
+                            p_out_temp, p_out_temp, output_activation_min,
+                            output_activation_max, out_length),
+                        0);
     }
-  } else {
-    reference_integer_ops::ConvPerChannel(
-        ConvParamsQuantized(params, data.reference_op_data),
-        data.reference_op_data.per_channel_output_multiplier,
-        data.reference_op_data.per_channel_output_shift,
-        tflite::micro::GetTensorShape(input),
-        tflite::micro::GetTensorData<int16_t>(input),
-        tflite::micro::GetTensorShape(filter),
-        tflite::micro::GetTensorData<int8_t>(filter),
-        tflite::micro::GetTensorShape(bias),
-        tflite::micro::GetOptionalTensorData<std::int64_t>(bias),
-        tflite::micro::GetTensorShape(output),
-        tflite::micro::GetTensorData<int16_t>(output));
   }
 
   return kTfLiteOk;
