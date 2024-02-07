@@ -1,0 +1,624 @@
+diff --git a/algo/common/include/xa_nn_common.h b/algo/common/include/xa_nn_common.h
+index 5a45d27..4fa7215 100644
+--- a/algo/common/include/xa_nn_common.h
++++ b/algo/common/include/xa_nn_common.h
+@@ -64,8 +64,10 @@
+ #define STRINGIZE(A) STRINGIZE_NX(A)    /*  Turn A into a string literal after macro-expanding it. */
+ //#include STRINGIZE(PPCAT(cstub,XTENSA_CORE).h)
+ //#include STRINGIZE(PPCAT(PPCAT(cstub,XTENSA_CORE),c.h))
++#ifndef ENABLE_SCRATCH_SIZE_API_ONLY
+ #include "xtensa/tie/xt_hifi3.h"
+ #include "xtensa/config/core-isa.h"
++#endif /* #ifndef ENABLE_SCRATCH_SIZE_API_ONLY */
+ #endif
+ 
+ //-----------------------------------------------------
+@@ -89,6 +91,7 @@
+ #define INV_TBL_BITS 7
+ extern const int32_t tab_invQ30[128];
+ 
++#ifndef ENABLE_SCRATCH_SIZE_API_ONLY
+ #if XCHAL_HAVE_NSA
+   #define NSA(n) XT_NSA(n)
+ #else
+@@ -100,6 +103,7 @@ extern const int32_t tab_invQ30[128];
+     return AE_NSAQ56S(t)-8;
+   }
+ #endif
++#endif /* #ifndef ENABLE_SCRATCH_SIZE_API_ONLY */
+ 
+ #ifdef COMPILER_XTENSA
+   #define ATTRIBUTE_ALWAYS_INLINE __attribute__((always_inline))
+@@ -123,11 +127,13 @@ extern const int32_t tab_invQ30[128];
+ #define return_int64(x) {  union {ae_int64  ai;int64_t   i; } r; r.ai = x;  return r.i; }
+ #endif
+ 
++#ifndef ENABLE_SCRATCH_SIZE_API_ONLY
+ #if  defined (__cplusplus) || defined(COMPILER_XTENSA)
+ 
+ #else
+ #error sorry, C compiler is not supported excluding the XCC
+ #endif
++#endif /* #ifndef ENABLE_SCRATCH_SIZE_API_ONLY */
+ 
+ 
+ #ifdef COMPILER_MSVC
+diff --git a/algo/common/include/xa_nnlib_common.h b/algo/common/include/xa_nnlib_common.h
+index fcf379a..d66f2a0 100644
+--- a/algo/common/include/xa_nnlib_common.h
++++ b/algo/common/include/xa_nnlib_common.h
+@@ -21,12 +21,16 @@
+ ******************************************************************************/
+ #ifndef __XA_NNLIB_LEGACY_COMPAT_H__
+ #define __XA_NNLIB_LEGACY_COMPAT_H__
++#ifndef ENABLE_SCRATCH_SIZE_API_ONLY
+ #include <xtensa/config/core-isa.h>
+ #include "xtensa/tie/xt_hifi2.h"
++#endif /* #ifndef ENABLE_SCRATCH_SIZE_API_ONLY */
+ #include "xa_nnlib_api.h"
+ #include "xa_nnlib_standards.h"
+ #include "xa_nnlib_err_chk.h"
++#ifndef ENABLE_SCRATCH_SIZE_API_ONLY
+ #include "xa_nnlib_hifi_isa_compat.h"
++#endif
+ #include "xa_nn_common.h"
+ #include "xa_nnlib_common_internal.h"
+ #endif /* __XA_NNLIB_LEGACY_COMPAT_H__ */
+@@ -36,4 +40,4 @@
+ #define XA_HAVE_HIFI3_CORE 1
+ #else
+ #define XA_HAVE_HIFI3_CORE 0
+-#endif
+\ No newline at end of file
++#endif
+diff --git a/algo/common/include/xa_nnlib_common_macros_hifi5.h b/algo/common/include/xa_nnlib_common_macros_hifi5.h
+index b2ac8e3..9ad396d 100644
+--- a/algo/common/include/xa_nnlib_common_macros_hifi5.h
++++ b/algo/common/include/xa_nnlib_common_macros_hifi5.h
+@@ -28,6 +28,8 @@
+ #define NULL (void *)0
+ #endif /* NULL */
+ 
++#define MAX(a, b)   (((a) > (b)) ? (a) : (b))
++
+ /* Macros for memcpy */
+ #define MEMCPY_8b(out, inp, N) \
+ { \
+diff --git a/algo/kernels/cnn/hifi5/xa_nn_circ_buf.c b/algo/kernels/cnn/hifi5/xa_nn_circ_buf.c
+index 7b49a65..2ce9e25 100644
+--- a/algo/kernels/cnn/hifi5/xa_nn_circ_buf.c
++++ b/algo/kernels/cnn/hifi5/xa_nn_circ_buf.c
+@@ -45,7 +45,7 @@ int xa_nn_circ_buf_nchw_getsize(
+   }
+ 
+   circ_buf_width = kernel_width + ((output_width - 1) * x_stride);
+-  circ_buf_width = XT_MAX(circ_buf_width, x_padding + input_width);
++  circ_buf_width = MAX(circ_buf_width, x_padding + input_width);
+ 
+   /* Align circ_buf_width to 8 for 8-bit and 16-bit inputs to make L8X8 and
+   L16X4X2 loads possible */
+@@ -349,7 +349,7 @@ int xa_nn_circ_buf_nhwc_getsize(
+   int size_in_bytes;
+ 
+   circ_buf_height = kernel_height + ((output_height - 1) * y_stride);
+-  circ_buf_height = XT_MAX(circ_buf_height, (y_padding + input_height + dilation_height - 1)/dilation_height);
++  circ_buf_height = MAX(circ_buf_height, (y_padding + input_height + dilation_height - 1)/dilation_height);
+ 
+   if(bytewidth == 4)
+   {
+diff --git a/algo/kernels/cnn/hifi5/xa_nn_conv2d_depthwise.c b/algo/kernels/cnn/hifi5/xa_nn_conv2d_depthwise.c
+index e3ea1be..a377a41 100644
+--- a/algo/kernels/cnn/hifi5/xa_nn_conv2d_depthwise.c
++++ b/algo/kernels/cnn/hifi5/xa_nn_conv2d_depthwise.c
+@@ -77,7 +77,7 @@ static WORD32 xa_nn_dilated_conv2d_depthwise_nchw_getsize
+   circ_buf_size = ALIGNED_SIZE(circ_buf_size, ALIGNMENT_16);
+ 
+   circ_buf_width = dilated_kernel_width + ((output_width - 1) * x_stride);
+-  circ_buf_width = XT_MAX(circ_buf_width, x_padding+input_width);
++  circ_buf_width = MAX(circ_buf_width, x_padding+input_width);
+   if(circ_buf_bytewidth == 1 || circ_buf_bytewidth == 2)
+     circ_buf_width = ALIGNED_SIZE(circ_buf_width, 8);
+   else
+diff --git a/algo/kernels/cnn/hifi5/xa_nn_transpose_conv_circ_buf.c b/algo/kernels/cnn/hifi5/xa_nn_transpose_conv_circ_buf.c
+index 1135ba0..2c2cd33 100644
+--- a/algo/kernels/cnn/hifi5/xa_nn_transpose_conv_circ_buf.c
++++ b/algo/kernels/cnn/hifi5/xa_nn_transpose_conv_circ_buf.c
+@@ -111,6 +111,7 @@ WORD32 xa_nn_transpose_conv_getsize
+     return total_size;
+ }
+ 
++#ifndef ENABLE_SCRATCH_SIZE_API_ONLY
+ VOID xa_nn_transpose_conv_init_state(
+     VOID *p_scratch,
+     VOID *p_kernel,
+@@ -165,3 +166,5 @@ VOID xa_nn_transpose_conv_init_state(
+   AE_SETCEND0(p_state->cir_buf.p_end);
+ 
+ }
++#endif /* #ifndef ENABLE_SCRATCH_SIZE_API_ONLY */
++
+diff --git a/algo/kernels/pool/hifi5/xa_nn_avgpool.c b/algo/kernels/pool/hifi5/xa_nn_avgpool.c
+index fa2bc14..b050dc9 100644
+--- a/algo/kernels/pool/hifi5/xa_nn_avgpool.c
++++ b/algo/kernels/pool/hifi5/xa_nn_avgpool.c
+@@ -24,6 +24,7 @@
+ #include "xa_nnlib_kernels_api.h"
+ #include "xa_nn_avgpool_state.h"
+ #include "xa_nnlib_err_chk.h"
++#include "xa_nnlib_common_macros_hifi5.h"
+ 
+ WORD32 xa_nn_avgpool_getsize_nchw(
+     WORD32 inp_precision,
+@@ -86,7 +87,7 @@ WORD32 xa_nn_avgpool_getsize_nchw(
+         den_array_size = 0;
+     /* Output scratch buffer size */
+     full_buf_width = kernel_width + (out_width - 1)*x_stride;
+-    full_buf_width = XT_MAX(full_buf_width, ALIGNED_SIZE(x_padding, 2)+input_width);
++    full_buf_width = MAX(full_buf_width, ALIGNED_SIZE(x_padding, 2)+input_width);
+     full_buf_width = ALIGNED_SIZE(full_buf_width, ALIGNMENT/2);
+     /* Need 2 rows of padded input width as acratch for temp output */
+     full_out_width = ALIGNED_SIZE(full_buf_width + kernel_width, 4);
+@@ -150,7 +151,7 @@ WORD32 xa_nn_avgpool_getsize_nhwc(
+ 
+         if(kernel_height <= (int)MAX_HEIGHT_16_BIT_ACC) // Accumulation in 16 bit container
+         {
+-            zero_mem_bytes = XT_MAX(sizeof(UWORD8)*cw_plane_size, sizeof(WORD16)*input_channels);
++            zero_mem_bytes = MAX((int)(sizeof(UWORD8)*cw_plane_size), (int)(sizeof(WORD16)*input_channels));
+ 
+             total_size = ALIGNED_SIZE(sizeof(WORD32)* out_height, ALIGNMENT) +
+                          ALIGNED_SIZE(sizeof(WORD32)* out_width, ALIGNMENT) +
+@@ -162,7 +163,7 @@ WORD32 xa_nn_avgpool_getsize_nhwc(
+         }
+         else  // Accumulation in 32 bit container
+         {
+-            zero_mem_bytes = XT_MAX(sizeof(UWORD8)*cw_plane_size, sizeof(WORD32)*input_channels);
++            zero_mem_bytes = MAX((int)(sizeof(UWORD8)*cw_plane_size), (int)(sizeof(WORD32)*input_channels));
+ 
+             total_size = ALIGNED_SIZE(sizeof(WORD32)*out_height, ALIGNMENT) +
+                          ALIGNED_SIZE(sizeof(WORD32)*out_width, ALIGNMENT) +
+@@ -179,7 +180,7 @@ WORD32 xa_nn_avgpool_getsize_nhwc(
+         int zero_mem_bytes;
+ 
+         cw_plane_size = input_width*input_channels;
+-        zero_mem_bytes = XT_MAX(sizeof(WORD16)*cw_plane_size, sizeof(WORD32)*input_channels);
++        zero_mem_bytes = MAX((int)(sizeof(WORD16)*cw_plane_size), (int)(sizeof(WORD32)*input_channels));
+ 
+         total_size = ALIGNED_SIZE(sizeof(WORD32)*out_height, ALIGNMENT) +
+             ALIGNED_SIZE(sizeof(WORD32)*out_width, ALIGNMENT) +
+@@ -256,6 +257,7 @@ WORD32 xa_nn_avgpool_getsize(
+     return scratch_size;
+ }
+ 
++#ifndef ENABLE_SCRATCH_SIZE_API_ONLY
+ VOID xa_nn_avgpool_init(
+     WORD32 inp_precision,
+     pVOID  p_scratch,
+@@ -319,3 +321,4 @@ VOID xa_nn_avgpool_init(
+     /* Initialize output scratch pointer */
+     p_state->p_tmp_out = (pVOID)ALIGN_PTR(p_mem, ALIGNMENT);
+ }
++#endif /* #ifndef ENABLE_SCRATCH_SIZE_API_ONLY */
+diff --git a/algo/kernels/reorg/hifi5/xa_nn_concat_8.c b/algo/kernels/reorg/hifi5/xa_nn_concat_8.c
+new file mode 100644
+index 0000000..3ac35b4
+--- /dev/null
++++ b/algo/kernels/reorg/hifi5/xa_nn_concat_8.c
+@@ -0,0 +1,140 @@
++/*******************************************************************************
++* Copyright (c) 2018-2024 Cadence Design Systems, Inc.
++*
++* Permission is hereby granted, free of charge, to any person obtaining
++* a copy of this software and associated documentation files (the
++* "Software"), to use this Software with Cadence processor cores only and
++* not with any other processors and platforms, subject to
++* the following conditions:
++*
++* The above copyright notice and this permission notice shall be included
++* in all copies or substantial portions of the Software.
++*
++* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
++* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
++* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
++* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
++* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
++* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
++* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
++
++******************************************************************************/
++#include "xa_type_def.h"
++#include "xa_nn_common.h"
++#include "xa_nnlib_kernels_api.h"
++#include "xa_nnlib_common_macros_hifi5.h"
++#include "xa_nnlib_err_chk.h"
++#include "xa_nnlib_common.h"
++#include<string.h>
++
++WORD32 xa_nn_concat_8_8(WORD8 * __restrict__ p_out
++                        ,const WORD32 *const p_out_shape
++                        ,const WORD8 **pp_inps
++                        ,const WORD32 *const *pp_inps_shape
++                        ,WORD32 num_out_dims
++                        ,WORD32 num_inp
++                        ,WORD32 num_inp_dims
++                        ,WORD32 axis)
++{
++  XA_NNLIB_ARG_CHK_PTR(p_out, -1);
++  XA_NNLIB_ARG_CHK_PTR(p_out_shape, -1);
++  XA_NNLIB_ARG_CHK_PTR(pp_inps, -1);
++  XA_NNLIB_ARG_CHK_PTR(pp_inps_shape, -1);
++  /* Pointer alignment checks */
++  XA_NNLIB_ARG_CHK_ALIGN(p_out_shape, sizeof(WORD32), -1);
++  XA_NNLIB_ARG_CHK_ALIGN(pp_inps, sizeof(WORD8 *), -1);
++  XA_NNLIB_ARG_CHK_ALIGN(pp_inps_shape, sizeof(WORD32 *), -1);
++  //Validate Arguments
++  XA_NNLIB_ARG_CHK_COND((num_out_dims <= 0 || num_out_dims > 6), -1);
++  XA_NNLIB_ARG_CHK_COND((num_inp <= 0 || num_inp > 10), -1);
++  XA_NNLIB_ARG_CHK_COND((num_inp_dims != num_out_dims), -1);
++  XA_NNLIB_ARG_CHK_COND((axis < -num_out_dims || axis >= num_out_dims), -1);
++
++  int i = 0, j = 0;
++  for(i = 0; i < num_inp; i++)
++  {
++    XA_NNLIB_ARG_CHK_PTR(pp_inps[i], -1);
++    XA_NNLIB_ARG_CHK_PTR(pp_inps_shape[i], -1);
++    XA_NNLIB_ARG_CHK_ALIGN(pp_inps_shape[i], sizeof(WORD32), -1);
++  }
++  for(i = 0; i < num_out_dims; i++)
++  {
++    XA_NNLIB_ARG_CHK_COND((p_out_shape[i] <= 0), -1);
++    for(j = 0; j < num_inp; j++)
++    {
++      XA_NNLIB_ARG_CHK_COND((pp_inps_shape[j][i] <= 0), -1);
++    }
++  }
++
++  if(axis < 0)
++    axis = num_out_dims + axis;
++
++  WORD32 concat_size = 0;
++  for (int i = 0; i < num_inp; i++)
++  {
++    for(int j = 0; j < num_out_dims; j++)
++    {
++      if(j != axis)
++      {
++        XA_NNLIB_ARG_CHK_COND((pp_inps_shape[i][j] != p_out_shape[j]), -1);
++      }
++    }
++    concat_size += pp_inps_shape[i][axis];
++  }
++
++  XA_NNLIB_ARG_CHK_COND((p_out_shape[axis] != concat_size), -1);
++
++  //Calculate outer and inner size for axis
++  WORD32 outer_size = 1;
++  for(int i = 0; i < axis; i++)
++  {
++    outer_size *= p_out_shape[i];
++  }
++
++  WORD32 base_inner_size = 1;
++  for(int i = axis + 1; i < num_out_dims; i++)
++  {
++    base_inner_size *= p_out_shape[i];
++  }
++
++  {
++    WORD8 *ptmp_out = p_out;
++    for(int i = 0; i < num_inp; i++)
++    {
++      const WORD32 copy_size = pp_inps_shape[i][axis] * base_inner_size;
++
++      if(copy_size < 16)
++      {
++        ae_int8x16 *output_ptr;
++        ae_int8x16 *input_ptr = (ae_int8x16 *)pp_inps[i];
++        ae_valignx2 input_valign, output_valign;
++        input_valign = AE_LA128_PP(input_ptr);
++        ae_int8x8 d_inp1, d_inp2;
++        for(int k = 0; k < outer_size; k++)
++        {
++          output_ptr = (ae_int8x16 *)(ptmp_out + concat_size * base_inner_size * k);
++          output_valign = AE_ZALIGN128();
++          AE_LAV8X8X2_XP(d_inp1, d_inp2, input_valign, input_ptr, copy_size);
++          AE_SAV8X8X2_XP(d_inp1, d_inp2, output_valign, output_ptr, copy_size);
++          AE_SA128POS_FP(output_valign, (void *)output_ptr);
++        }
++        ptmp_out += copy_size;
++      }
++      else
++      {
++        WORD8 *output_ptr = ptmp_out;
++        const WORD8* input_ptr = pp_inps[i];
++
++        for(int k = 0; k < outer_size; k++)
++        {
++          memcpy(output_ptr, input_ptr, copy_size * sizeof(WORD8));
++          input_ptr += copy_size;
++          output_ptr += concat_size * base_inner_size;
++        }
++        ptmp_out += copy_size;
++      }
++    }
++  }
++  return 0;
++
++}
+diff --git a/algo/kernels/reorg/hifi5/xa_nn_transpose_16.c b/algo/kernels/reorg/hifi5/xa_nn_transpose_16.c
+new file mode 100644
+index 0000000..f9b88ed
+--- /dev/null
++++ b/algo/kernels/reorg/hifi5/xa_nn_transpose_16.c
+@@ -0,0 +1,224 @@
++/*******************************************************************************
++* Copyright (c) 2018-2024 Cadence Design Systems, Inc.
++*
++* Permission is hereby granted, free of charge, to any person obtaining
++* a copy of this software and associated documentation files (the
++* "Software"), to use this Software with Cadence processor cores only and
++* not with any other processors and platforms, subject to
++* the following conditions:
++*
++* The above copyright notice and this permission notice shall be included
++* in all copies or substantial portions of the Software.
++*
++* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
++* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
++* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
++* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
++* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
++* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
++* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
++
++******************************************************************************/
++#include "xa_nnlib_common.h"
++
++/*
++ * Currently only supports upto 5D input tensors.
++ * 1/2/3/4 D input tensors will be scaled up to 5D.
++ * For example, 2x3 -> 1x1x1x2x3.
++ */
++
++WORD32 xa_nn_transpose_16_16(WORD16 * __restrict__ p_out
++                    ,const WORD32 *const p_out_shape
++                    ,const WORD16 * __restrict__ p_inp
++                    ,const WORD32 *const p_inp_shape
++                    ,const WORD32 * __restrict__ p_permute_vec
++                    ,WORD32 num_out_dims
++                    ,WORD32 num_inp_dims)
++{
++  /* NULL pointer checks */
++  XA_NNLIB_ARG_CHK_PTR(p_out, -1);
++  XA_NNLIB_ARG_CHK_PTR(p_inp, -1);
++  XA_NNLIB_ARG_CHK_PTR(p_permute_vec, -1);
++  XA_NNLIB_ARG_CHK_PTR(p_out_shape, -1);
++  XA_NNLIB_ARG_CHK_PTR(p_inp_shape, -1);
++
++  /* Invalid input checks */
++  XA_NNLIB_ARG_CHK_COND(((num_inp_dims <= 0) || (num_inp_dims > 5)), -1);
++  XA_NNLIB_ARG_CHK_COND((num_out_dims != num_inp_dims), -1);
++
++  int itr = 0;
++  for(itr=0; itr < num_inp_dims; itr++)
++  {
++    XA_NNLIB_ARG_CHK_COND((p_inp_shape[itr] <= 0), -1);
++  }
++  for(itr=0; itr < num_out_dims; itr++)
++  {
++    XA_NNLIB_ARG_CHK_COND((p_out_shape[itr] <= 0), -1);
++  }
++
++  /* Output shape provided must be correct based on input
++   * shape and permute values */
++  for(itr=0; itr < num_out_dims; itr++)
++  {
++    int output_dim = p_out_shape[itr];
++    int expected_dim = p_inp_shape[p_permute_vec[itr]];
++    XA_NNLIB_ARG_CHK_COND((output_dim != expected_dim), -1);
++  }
++
++  /* Pointer alignment checks */
++  XA_NNLIB_ARG_CHK_ALIGN(p_out, sizeof(WORD16), -1);
++  XA_NNLIB_ARG_CHK_ALIGN(p_inp, sizeof(WORD16), -1);
++  XA_NNLIB_ARG_CHK_ALIGN(p_permute_vec, sizeof(WORD32), -1);
++  XA_NNLIB_ARG_CHK_ALIGN(p_out_shape, sizeof(WORD32), -1);
++  XA_NNLIB_ARG_CHK_ALIGN(p_inp_shape, sizeof(WORD32), -1);
++
++  /* Promoting lesser dim tensors to 5D tensors.
++   * Also updating the permute_vec and shapes as needed for optimization */
++  int p_5D_inp_shape[5] = {1, 1, 1, 1, 1};
++  int p_5D_out_shape[5] = {1, 1, 1, 1, 1};
++  int p_5D_permute_vec[5] = {0, 1, 2, 3, 4};
++
++  /* Check if any inner inp dimension is same in the output */
++  int last_dim_same = 1, last_n_same_dim = 0;
++  itr = num_inp_dims - 1;
++  while(itr >= 0)
++  {
++    last_n_same_dim = (last_dim_same && (p_permute_vec[itr] == itr)) ? (last_n_same_dim + 1) : last_n_same_dim;
++    last_dim_same = (p_permute_vec[itr] == itr) ? last_dim_same & 1 : last_dim_same & 0;
++    itr--;
++  }
++
++  int dims_added = 5 - num_inp_dims;
++  itr = num_inp_dims - 1;
++  int same_count = last_n_same_dim;
++  int count = 4;
++  while(itr >= 0)
++  {
++    p_5D_inp_shape[count] = (same_count > 0) ? p_5D_inp_shape[count]*p_inp_shape[itr] : p_inp_shape[itr];
++    p_5D_out_shape[count] = (same_count > 0) ? p_5D_out_shape[count]*p_out_shape[itr] : p_out_shape[itr];
++    same_count--;
++    itr--;
++    count = (same_count > 0) ? count : count - 1;
++  }
++
++  itr = num_inp_dims - 1;
++  same_count = (last_n_same_dim) ? num_inp_dims - (last_n_same_dim - 1) : 0;
++  count = 4;
++  while(itr >= 0)
++  {
++    p_5D_permute_vec[count] = (same_count > 0) ? p_permute_vec[itr-(last_n_same_dim - 1)] + dims_added + last_n_same_dim - 1 : p_permute_vec[itr] + dims_added;
++    same_count--;
++    itr--;
++    count--;
++  }
++
++  int out_dim0, out_dim1, out_dim2, out_dim3, out_dim4;
++  int inp_dim1, inp_dim2, inp_dim3, inp_dim4;
++  int inp_stride[5];
++
++  out_dim0 = p_5D_out_shape[0];
++  out_dim1 = p_5D_out_shape[1];
++  out_dim2 = p_5D_out_shape[2];
++  out_dim3 = p_5D_out_shape[3];
++  out_dim4 = p_5D_out_shape[4];
++
++  inp_dim1 = p_5D_inp_shape[1];
++  inp_dim2 = p_5D_inp_shape[2];
++  inp_dim3 = p_5D_inp_shape[3];
++  inp_dim4 = p_5D_inp_shape[4];
++
++  inp_stride[0] = inp_dim1*inp_dim2*inp_dim3*inp_dim4;
++  inp_stride[1] = inp_dim2*inp_dim3*inp_dim4;
++  inp_stride[2] = inp_dim3*inp_dim4;
++  inp_stride[3] = inp_dim4;
++  inp_stride[4] = 1;
++
++  if(last_n_same_dim)
++  {
++    int itr0, itr1, itr2, itr3, itr4;
++    WORD16 *p_inp0 = (WORD16*)p_inp;
++    for(itr0 = 0; itr0 < out_dim0; itr0++)
++    {
++      WORD16 *p_inp1 = p_inp0+(itr0*inp_stride[p_5D_permute_vec[0]]);
++#pragma loop_count min=1
++      for(itr1 = 0; itr1 < out_dim1; itr1++)
++      {
++        WORD16 *p_inp2 = p_inp1+(itr1*inp_stride[p_5D_permute_vec[1]]);
++#pragma loop_count min=1
++        for(itr2 = 0; itr2 < out_dim2; itr2++)
++        {
++          WORD16 *p_inp3 = p_inp2+(itr2*inp_stride[p_5D_permute_vec[2]]);
++#pragma loop_count min=1
++          for(itr3 = 0; itr3 < out_dim3; itr3++, p_out+=out_dim4)
++          {
++            WORD16 *p_inp4 = p_inp3+(itr3*inp_stride[p_5D_permute_vec[3]]);
++            ae_int16x8 *__restrict__ pae_i = (ae_int16x8 *)(p_inp4);
++            ae_int16x8 *__restrict__ pae_o = (ae_int16x8 *)(p_out);
++            ae_valignx2 a_inp = AE_LA128_PP(pae_i);
++            ae_valignx2 a_out = AE_ZALIGN128();
++            ae_int16x4 d0,d1;
++            for(itr4 = 0; itr4 < (out_dim4 >> 3); itr4++)
++            {
++              AE_LA16X4X2_IP(d0, d1, a_inp, (ae_int16x8*)pae_i);
++              AE_SA16X4X2_IP(d0, d1, a_out, (ae_int16x8*)pae_o);
++            }
++            AE_LAV16X4X2_XP(d0, d1, a_inp, (ae_int16x8*)pae_i, (out_dim4 & 7)<<1);
++            AE_SAV16X4X2_XP(d0, d1, a_out, (ae_int16x8*)pae_o, (out_dim4 & 7)<<1);
++            AE_SA128POS_FP(a_out, pae_o);
++          }
++        }
++      }
++    }
++  }
++  else
++  {
++    int itr0, itr1, itr2, itr3, itr4;
++    WORD16 *p_inp0 = (WORD16*)p_inp;
++    for(itr0 = 0; itr0 < out_dim0; itr0++)
++    {
++      WORD16 *p_inp1 = p_inp0+(itr0*inp_stride[p_5D_permute_vec[0]]);
++      for(itr1 = 0; itr1 < out_dim1; itr1++)
++      {
++        WORD16 *p_inp2 = p_inp1+(itr1*inp_stride[p_5D_permute_vec[1]]);
++        for(itr2 = 0; itr2 < out_dim2; itr2++)
++        {
++          WORD16 *p_inp3 = p_inp2+(itr2*inp_stride[p_5D_permute_vec[2]]);
++          for(itr3 = 0; itr3 < out_dim3; itr3++)
++          {
++            WORD16 *p_inp4 = p_inp3+(itr3*inp_stride[p_5D_permute_vec[3]]);
++
++            ae_valign a_out = AE_ZALIGN64();
++            for(itr4 = 0; itr4 < (out_dim4 >> 2); itr4++)
++            {
++              ae_int16x4 d0, d1, d2, d3;
++              ae_int16x4 tmp0;
++
++              d1 = AE_L16_X ((ae_int16*)p_inp4, inp_stride[p_5D_permute_vec[4]]<<1);
++              d2 = AE_L16_X ((ae_int16*)p_inp4, 2*inp_stride[p_5D_permute_vec[4]]<<1);
++              d3 = AE_L16_X ((ae_int16*)p_inp4, 3*inp_stride[p_5D_permute_vec[4]]<<1);
++              AE_L16_XP(d0, (ae_int16*)p_inp4, 4*inp_stride[p_5D_permute_vec[4]]<<1);
++
++              tmp0 = AE_SEL16_6543(d0, d1);
++              tmp0 = AE_SEL16_6543(tmp0, d2);
++              tmp0 = AE_SEL16_6543(tmp0, d3);
++
++              AE_SA16X4_IP(tmp0, a_out, (ae_int16x4 *)p_out);
++            }
++            AE_SA64POS_FP(a_out, p_out);
++#pragma loop_count max=3
++            for(itr4 = 0; itr4 < (out_dim4 & 3); itr4++)
++            {
++              ae_int16x4 d0;
++              AE_L16_XP(d0, (ae_int16*)p_inp4, inp_stride[p_5D_permute_vec[4]]<<1);
++              AE_S16_0_IP(d0, (ae_int16 *)p_out, 2);
++            }
++          }
++        }
++      }
++    }
++  }
++
++  return 0;
++}
++
++
+diff --git a/include/nnlib/xa_nnlib_kernels_api.h b/include/nnlib/xa_nnlib_kernels_api.h
+index c8a0bbb..9898f15 100644
+--- a/include/nnlib/xa_nnlib_kernels_api.h
++++ b/include/nnlib/xa_nnlib_kernels_api.h
+@@ -3039,6 +3039,14 @@
+                     ,WORD32 num_out_dims
+                     ,WORD32 num_inp_dims);
+ 
++  WORD32 xa_nn_transpose_16_16(WORD16 * __restrict__ p_out
++                    ,const WORD32 *const p_out_shape
++                    ,const WORD16 * __restrict__ p_inp
++                    ,const WORD32 *const p_inp_shape
++                    ,const WORD32 * __restrict__ p_permute_vec
++                    ,WORD32 num_out_dims
++                    ,WORD32 num_inp_dims);
++
+   WORD32 xa_nn_batch_norm_3D_8_8(WORD8 * __restrict__ p_out
+                     ,const WORD8 * __restrict__ p_inp
+                     ,const WORD16 * __restrict__ p_alpha
+@@ -3083,6 +3091,14 @@ WORD32 xa_nn_resize_nearest_neighbour_8_8(pWORD8 __restrict__ p_out
+                     ,FLOAT32 width_offset
+                     ,WORD32  align_corners);
+ 
++WORD32 xa_nn_concat_8_8(WORD8 * __restrict__ p_out
++        ,const WORD32 *const p_out_shape
++        ,const WORD8 **p_inps
++        ,const WORD32 *const *pp_inps_shape
++        ,WORD32 num_out_dims
++        ,WORD32 num_inp
++        ,WORD32 num_inp_dims
++        ,WORD32 axis);
+ 
+ 	/* Mapping the functions names from previous naming convension for backward compatibility */
+ #define xa_nn_matXvec_asym8xasym8_asym8 xa_nn_matXvec_asym8uxasym8u_asym8u
+diff --git a/include/nnlib/xa_nnlib_standards.h b/include/nnlib/xa_nnlib_standards.h
+index 88c619a..666ebf7 100644
+--- a/include/nnlib/xa_nnlib_standards.h
++++ b/include/nnlib/xa_nnlib_standards.h
+@@ -22,7 +22,9 @@
+ #ifndef __STANDARDS_H__
+ #define __STANDARDS_H__
+ 
++#ifndef ENABLE_SCRATCH_SIZE_API_ONLY
+ #include <xtensa/config/core-isa.h>
++#endif
+ 
+ #if defined(__cplusplus)
+ extern "C"
