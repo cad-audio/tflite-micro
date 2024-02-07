@@ -123,24 +123,6 @@ TfLiteStatus PrepareMeanOrSumHifi(TfLiteContext* context, TfLiteNode* node,
     const int *axis_data_ptr  = tflite::micro::GetTensorData<int>(eval_axis);
     int num_axis = static_cast<int>(ElementCount(*eval_axis->dims));
     int required_scratch;
-    const TfLiteEvalTensor* eval_input = tflite::micro::GetEvalInput(context, node, 0);
-    int resolved_axis[kMaxNumberOfReducedAxisHifi];
-    int num_resolved_axis = 0;
-    if (!reference_ops::ResolveAxis(eval_input->dims->size, tflite::micro::GetTensorData<int>(eval_axis), num_axis, resolved_axis, &num_resolved_axis)) {
-      TF_LITE_ENSURE(context, false);
-    }
-    int num_elm_in_axis = 1;
-    int axis_itr;
-    
-    for(axis_itr=0; axis_itr < num_resolved_axis; axis_itr++)
-    {
-      num_elm_in_axis *= eval_input->dims->data[resolved_axis[axis_itr]];
-    }
-
-    int shift = 63 - CountLeadingZeros(static_cast<uint64_t>(num_elm_in_axis));
-    shift = std::min(std::min(shift, 32), 31 + op_data->shift);
-    xt_data->updated_multiplier = (num_elm_in_axis > 1) ? (WORD32)(((long long int)(op_data->multiplier) << shift) / num_elm_in_axis) : op_data->multiplier;
-    xt_data->updated_shift = op_data->shift - shift;
     
     int inp_precision = -4; /* ASYM8S */ 
     if(input->type == kTfLiteInt16)
@@ -162,10 +144,6 @@ TfLiteStatus PrepareMeanOrSumHifi(TfLiteContext* context, TfLiteNode* node,
         context, required_scratch,
         &(xt_data->scratch_tensor_index));
     TF_LITE_ENSURE_OK(context, scratch_status);
-    micro_context->DeallocateTempTfLiteTensor(input);
-    micro_context->DeallocateTempTfLiteTensor(output);
-    micro_context->DeallocateTempTfLiteTensor(axis);
-    return kTfLiteOk;
   }
 #endif
   TF_LITE_ENSURE_OK(
@@ -311,8 +289,8 @@ TfLiteStatus EvalMeanHifi(TfLiteContext* context, TfLiteNode* node,
                                                  input->dims->size,
                                                  num_resolved_axis,
                                                  op_data->input_zp,
-                                                 xt_data->updated_multiplier,
-                                                 xt_data->updated_shift,
+                                                 op_data->multiplier,
+                                                 op_data->shift,
                                                  op_data->output_zp,
                                                  p_scratch);
         TF_LITE_ENSURE(context, err == 0);
@@ -357,8 +335,8 @@ TfLiteStatus EvalMeanHifi(TfLiteContext* context, TfLiteNode* node,
                                                  input->dims->size,
                                                  num_resolved_axis,
                                                  op_data->input_zp,
-                                                 xt_data->updated_multiplier,
-                                                 xt_data->updated_shift,
+                                                 op_data->multiplier,
+                                                 op_data->shift,
                                                  op_data->output_zp,
                                                  p_scratch);
         TF_LITE_ENSURE(context, err == 0);

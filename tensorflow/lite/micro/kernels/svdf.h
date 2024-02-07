@@ -82,7 +82,7 @@ TfLiteStatus PrepareSvdf(TfLiteContext* context, TfLiteNode* node);
 // implementation (reference or optimized) must define this function.
 TfLiteRegistration_V1 Register_SVDF();
 
-#if defined(HEXAGON) || defined(CMSIS_NN) || defined(XTENSA)
+#if defined(HEXAGON) || defined(CMSIS_NN)
 TfLiteRegistration_V1 Register_SVDF_INT8();
 
 #else
