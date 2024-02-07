@@ -31,7 +31,13 @@ MICROLITE_CC_KERNEL_SRCS += \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/reduce_vision.cc \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/reshape_vision.cc \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/softmax_int8_int16.cc \
-  $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/softmax_vision.cc
+  $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/softmax_vision.cc \
+  $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/transpose_conv_hifi.cc \
+  $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/transpose_conv_int8_int16_float32.cc \
+  $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/transpose_conv_common_xtensa.cc \
+  $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/transpose_conv_int8_reference.cc \
+  $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/transpose_conv_int16_reference.cc \
+  $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/transpose_conv_float32_reference.cc \
 
 ifeq ($(TARGET_ARCH), hifimini)
   # hifimini optimizations are implemented in the TFLM repository itself.
