@@ -355,17 +355,7 @@ TfLiteStatus TransposeConvEvalHifiInt16(TfLiteContext* context, TfLiteNode* node
               scratch_buffer);
         }
 #else // #if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
-        reference_integer_ops::TransposeConv(
-            data.params, data.per_channel_output_multiplier,
-            data.per_channel_output_shift, tflite::micro::GetTensorShape(input),
-            tflite::micro::GetTensorData<int16_t>(input),
-            tflite::micro::GetTensorShape(filter),
-            tflite::micro::GetTensorData<int8_t>(filter),
-            tflite::micro::GetTensorShape(bias),
-            tflite::micro::GetTensorData<std::int64_t>(bias),
-            tflite::micro::GetTensorShape(output),
-            tflite::micro::GetTensorData<int16_t>(output),
-            tflite::micro::GetTensorShape(nullptr), nullptr, scratch_buffer);
+        return TransposeConvReferenceEvalInt16(context, node);
 #endif // #if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
   }
   return kTfLiteOk;
@@ -378,10 +368,10 @@ TfLiteStatus TransposeConvEvalHifiInt8(TfLiteContext* context, TfLiteNode* node,
                               const TfLiteEvalTensor* filter,
                               const TfLiteEvalTensor* bias,
                               TfLiteEvalTensor* output) {
-      int32_t* scratch_buffer = static_cast<int32_t*>(
-          context->GetScratchBuffer(context, data.scratch_buffer_index));
 #if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
       if((bias != NULL) && (bias->type == kTfLiteInt32)){
+        int32_t* scratch_buffer = static_cast<int32_t*>(
+        context->GetScratchBuffer(context, data.scratch_buffer_index));
         const RuntimeShape& input_shape = tflite::micro::GetTensorShape(input);
         const RuntimeShape& filter_shape =
             tflite::micro::GetTensorShape(filter);
@@ -426,30 +416,10 @@ TfLiteStatus TransposeConvEvalHifiInt8(TfLiteContext* context, TfLiteNode* node,
         }
       }
       else{
-        reference_integer_ops::TransposeConv(
-            data.params, data.per_channel_output_multiplier,
-            data.per_channel_output_shift, tflite::micro::GetTensorShape(input),
-            tflite::micro::GetTensorData<int8_t>(input),
-            tflite::micro::GetTensorShape(filter),
-            tflite::micro::GetTensorData<int8_t>(filter),
-            tflite::micro::GetTensorShape(bias),
-            tflite::micro::GetOptionalTensorData<int32_t>(bias),
-            tflite::micro::GetTensorShape(output),
-            tflite::micro::GetTensorData<int8_t>(output),
-            tflite::micro::GetTensorShape(nullptr), nullptr, scratch_buffer);          
+        return TransposeConvReferenceEvalInt8(context, node);        
       }
 #else
-      reference_integer_ops::TransposeConv(
-          data.params, data.per_channel_output_multiplier,
-          data.per_channel_output_shift, tflite::micro::GetTensorShape(input),
-          tflite::micro::GetTensorData<int8_t>(input),
-          tflite::micro::GetTensorShape(filter),
-          tflite::micro::GetTensorData<int8_t>(filter),
-          tflite::micro::GetTensorShape(bias),
-          tflite::micro::GetOptionalTensorData<int32_t>(bias),
-          tflite::micro::GetTensorShape(output),
-          tflite::micro::GetTensorData<int8_t>(output),
-          tflite::micro::GetTensorShape(nullptr), nullptr, scratch_buffer);
+      return TransposeConvReferenceEvalInt8(context, node);
 #endif          
   return kTfLiteOk;
 }
@@ -515,16 +485,7 @@ TfLiteStatus TransposeConvEvalHifiFloat32(TfLiteContext* context, TfLiteNode* no
                                            output_activation_max, num_elements);
     }
     else{
-       reference_ops::TransposeConv(
-          op_params, tflite::micro::GetTensorShape(input),
-          tflite::micro::GetTensorData<float>(input),
-          tflite::micro::GetTensorShape(filter),
-          tflite::micro::GetTensorData<float>(filter),
-          tflite::micro::GetTensorShape(bias),
-          tflite::micro::GetTensorData<float>(bias),
-          tflite::micro::GetTensorShape(output),
-          tflite::micro::GetTensorData<float>(output),
-          tflite::micro::GetTensorShape(nullptr), nullptr);
+      return TransposeConvReferenceEvalFloat32(context, node);
     }
   return kTfLiteOk;
 }
