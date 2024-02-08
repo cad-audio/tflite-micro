@@ -54,7 +54,17 @@ TfLiteStatus PrepareMaxHifi(TfLiteContext* context, TfLiteNode* node, OpDataRedu
 
 TfLiteStatus EvalMeanHifi(TfLiteContext* context, TfLiteNode* node, OpDataReduce* op_data);
 
+TfLiteStatus EvalMeanHifiInt8(TfLiteContext* context, TfLiteNode* node);
+
+TfLiteStatus EvalMeanHifiInt16(TfLiteContext* context, TfLiteNode* node);
+
 TfLiteStatus EvalMaxHifi(TfLiteContext* context, TfLiteNode* node, OpDataReduce* op_data);
+
+void* XtensaInitReduce(TfLiteContext* context, const char* buffer, size_t length);
+
+TfLiteStatus XtensaPrepareMeanOrSum(TfLiteContext* context, TfLiteNode* node);
+
+TfLiteStatus XtensaEvalMean(TfLiteContext* context, TfLiteNode* node);
 
 #endif  // VISION_P6
 

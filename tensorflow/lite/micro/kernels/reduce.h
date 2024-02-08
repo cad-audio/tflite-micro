@@ -60,6 +60,11 @@ TFLMRegistration Register_MEAN();
 TFLMRegistration Register_REDUCE_MAX();
 TFLMRegistration Register_SUM();
 
+#if defined(XTENSA)
+TFLMRegistration Register_MEAN_INT8();
+TFLMRegistration Register_MEAN_INT16();
+#endif
+
 }  // namespace tflite
 
 #endif  // TENSORFLOW_LITE_MICRO_KERNELS_REDUCE_H_
