@@ -288,11 +288,20 @@ TfLiteStatus MaxPrepareHifi(TfLiteContext* context, TfLiteNode* node) {
           output_height, output_width, 0 /* NHWC inpput */, 0 /* NHWC output */);      
     }
 #endif
-
-    if (required_scratch <= 0) {
-      MicroPrintf("Maxpool: xa_nn_maxpool_getsize failed");
-      return kTfLiteError;
+    if(input->type == kTfLiteInt16 || input->type == kTfLiteInt8){
+      if (required_scratch <= 0) {
+        MicroPrintf("Maxpool: xa_nn_maxpool_getsize failed");
+        return kTfLiteError;
+      }
     }
+#if defined(INCLUDE_FLOAT_OPT) 
+    if(input->type == kTfLiteFloat32){
+      if (required_scratch <= 0) {
+        MicroPrintf("Maxpool: xa_nn_maxpool_getsize failed");
+        return kTfLiteError;
+      }
+    }
+#endif    
 
     TF_LITE_ENSURE_STATUS(context->RequestScratchBufferInArena(
         context, required_scratch, &(data->scratch_tensor_index)));
