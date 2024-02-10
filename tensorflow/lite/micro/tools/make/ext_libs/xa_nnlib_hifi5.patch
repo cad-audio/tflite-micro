@@ -84,6 +84,23 @@ index b2ac8e3..9ad396d 100644
  /* Macros for memcpy */
  #define MEMCPY_8b(out, inp, N) \
  { \
+diff --git a/algo/kernels/basic/hifi5/xa_nn_reduce_asym8s_asym8s.c b/algo/kernels/basic/hifi5/xa_nn_reduce_asym8s_asym8s.c
+index 6fdcbe5..c079731 100644
+--- a/algo/kernels/basic/hifi5/xa_nn_reduce_asym8s_asym8s.c
++++ b/algo/kernels/basic/hifi5/xa_nn_reduce_asym8s_asym8s.c
+@@ -80,6 +80,7 @@ WORD32 xa_nn_reduce_getsize_nhwc(WORD32 inp_precision
+     return 0;
+ }
+ 
++#ifndef ENABLE_SCRATCH_SIZE_API_ONLY
+ /*
+  * Currently only supports upto 4D input tensors.
+  * 1/2/3 D input tensors will be scaled up to 4D.
+@@ -1512,3 +1513,4 @@ WORD32 xa_nn_reduce_mean_4D_asym8s_asym8s(WORD8 * __restrict__ p_out
+ 
+   return 0;
+ }
++#endif /* #ifndef ENABLE_SCRATCH_SIZE_API_ONLY */
 diff --git a/algo/kernels/cnn/hifi5/xa_nn_circ_buf.c b/algo/kernels/cnn/hifi5/xa_nn_circ_buf.c
 index 7b49a65..2ce9e25 100644
 --- a/algo/kernels/cnn/hifi5/xa_nn_circ_buf.c
@@ -196,6 +213,49 @@ index fa2bc14..b050dc9 100644
 @@ -319,3 +321,4 @@ VOID xa_nn_avgpool_init(
      /* Initialize output scratch pointer */
      p_state->p_tmp_out = (pVOID)ALIGN_PTR(p_mem, ALIGNMENT);
+ }
++#endif /* #ifndef ENABLE_SCRATCH_SIZE_API_ONLY */
+diff --git a/algo/kernels/pool/hifi5/xa_nn_maxpool.c b/algo/kernels/pool/hifi5/xa_nn_maxpool.c
+index 647ed11..b5bf4dd 100644
+--- a/algo/kernels/pool/hifi5/xa_nn_maxpool.c
++++ b/algo/kernels/pool/hifi5/xa_nn_maxpool.c
+@@ -24,6 +24,7 @@
+ #include "xa_nnlib_kernels_api.h"
+ #include "xa_nn_maxpool_state.h"
+ #include "xa_nnlib_err_chk.h"
++#include "xa_nnlib_common_macros_hifi5.h"
+ 
+ WORD32 xa_nn_maxpool_getsize_nchw(
+     WORD32 inp_precision,
+@@ -76,7 +77,7 @@ WORD32 xa_nn_maxpool_getsize_nchw(
+     state_size = ALIGNED_SIZE(sizeof(xa_nn_maxpool_state_t), ALIGNMENT);
+     /* Output scratch buffer size */
+     full_buf_width = kernel_width + (out_width - 1)*x_stride;
+-    full_buf_width = XT_MAX(full_buf_width, x_padding + input_width);
++    full_buf_width = MAX(full_buf_width, x_padding + input_width);
+     full_buf_width = ALIGNED_SIZE(full_buf_width, ALIGNMENT/2);
+     /* maxpool: Need 2 rows of padded input width as acratch for temp output */
+     full_out_width = ALIGNED_SIZE(full_buf_width + kernel_width, 4);
+@@ -102,7 +103,7 @@ WORD32 xa_nn_maxpool_getsize_nhwc(WORD32  inp_precision,
+     int full_buf_width;
+     int left_pad_aligned = ALIGNED_SIZE(x_padding, ALIGNMENT);
+     full_buf_width = kernel_width + (out_width - 1)*x_stride;
+-    full_buf_width = XT_MAX(full_buf_width, x_padding + input_width);
++    full_buf_width = MAX(full_buf_width, x_padding + input_width);
+     int right_pad = full_buf_width - (x_padding + input_width);
+     full_buf_width = full_buf_width + left_pad_aligned + right_pad + kernel_width;
+     
+@@ -203,6 +204,7 @@ WORD32 xa_nn_maxpool_getsize(
+     return scratch_size;
+ }
+ 
++#ifndef ENABLE_SCRATCH_SIZE_API_ONLY
+ WORD32 xa_nn_maxpool_init(
+     WORD32 inp_precision,
+     pVOID  p_scratch,
+@@ -253,3 +255,4 @@ WORD32 xa_nn_maxpool_init(
+     p_state->p_scratch = (pVOID)p_mem;
+     return 0;
  }
 +#endif /* #ifndef ENABLE_SCRATCH_SIZE_API_ONLY */
 diff --git a/algo/kernels/reorg/hifi5/xa_nn_concat_8.c b/algo/kernels/reorg/hifi5/xa_nn_concat_8.c
@@ -609,7 +669,7 @@ index c8a0bbb..9898f15 100644
  	/* Mapping the functions names from previous naming convension for backward compatibility */
  #define xa_nn_matXvec_asym8xasym8_asym8 xa_nn_matXvec_asym8uxasym8u_asym8u
 diff --git a/include/nnlib/xa_nnlib_standards.h b/include/nnlib/xa_nnlib_standards.h
-index 88c619a..666ebf7 100644
+index 88c619a..fb91967 100644
 --- a/include/nnlib/xa_nnlib_standards.h
 +++ b/include/nnlib/xa_nnlib_standards.h
 @@ -22,7 +22,9 @@
@@ -622,3 +682,12 @@ index 88c619a..666ebf7 100644
  
  #if defined(__cplusplus)
  extern "C"
+@@ -151,7 +153,7 @@ typedef struct _xa_nnlib_shape_t{
+ 
+ enum xa_error_severity {
+   xa_severity_nonfatal = 0,
+-  xa_severity_fatal    = (int)0xffffffff
++  xa_severity_fatal    = (unsigned int)0xffffffff
+ };
+ 
+ enum xa_error_class {

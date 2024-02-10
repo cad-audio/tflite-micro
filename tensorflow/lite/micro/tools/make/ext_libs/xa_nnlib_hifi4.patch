@@ -94,6 +94,54 @@ index a2d1867..4b3f0c5 100644
  #if XCHAL_HAVE_HIFI1
  
  #if (XCHAL_HW_VERSION >= 281090)
+diff --git a/algo/kernels/basic/hifi4/xa_nn_reduce_asym8s_asym8s.c b/algo/kernels/basic/hifi4/xa_nn_reduce_asym8s_asym8s.c
+index 47b0956..b400bcb 100644
+--- a/algo/kernels/basic/hifi4/xa_nn_reduce_asym8s_asym8s.c
++++ b/algo/kernels/basic/hifi4/xa_nn_reduce_asym8s_asym8s.c
+@@ -33,17 +33,6 @@
+ 
+ #define BUS_WIDTH_8 7
+ 
+-#define STORE_8X4_FROM_16X4(out_ptr, val){\
+-    int o1, o2, o3, o4;\
+-    o1 = AE_MOVAD16_3(val);\
+-    o2 = AE_MOVAD16_2(val);\
+-    o3 = AE_MOVAD16_1(val);\
+-    o4 = AE_MOVAD16_0(val);\
+-    *out_ptr++ = (WORD8)o1;\
+-    *out_ptr++ = (WORD8)o2;\
+-    *out_ptr++ = (WORD8)o3;\
+-    *out_ptr++ = (WORD8)o4;\
+-}
+ 
+ WORD32 xa_nn_reduce_getsize_nhwc(WORD32 inp_precision
+                                  ,const WORD32 *const p_inp_shape
+@@ -96,6 +85,20 @@ WORD32 xa_nn_reduce_getsize_nhwc(WORD32 inp_precision
+     return 0;
+ }
+ 
++#ifndef ENABLE_SCRATCH_SIZE_API_ONLY
++
++#define STORE_8X4_FROM_16X4(out_ptr, val){\
++    int o1, o2, o3, o4;\
++    o1 = AE_MOVAD16_3(val);\
++    o2 = AE_MOVAD16_2(val);\
++    o3 = AE_MOVAD16_1(val);\
++    o4 = AE_MOVAD16_0(val);\
++    *out_ptr++ = (WORD8)o1;\
++    *out_ptr++ = (WORD8)o2;\
++    *out_ptr++ = (WORD8)o3;\
++    *out_ptr++ = (WORD8)o4;\
++}
++
+ static void vecmax8_inpx3_aligned(const WORD8 *p_src1, const WORD8* p_src2, const WORD8* p_src3, WORD8 *p_dst, int N){
+     int i = 0;
+ #if XCHAL_HAVE_HIFI1
+@@ -1992,3 +1995,4 @@ WORD32 xa_nn_reduce_mean_4D_asym8s_asym8s(WORD8 * __restrict__ p_out
+ 
+   return 0;
+ }
++#endif /* #ifndef ENABLE_SCRATCH_SIZE_API_ONLY */
 diff --git a/algo/kernels/cnn/hifi4/xa_nn_circ_buf.c b/algo/kernels/cnn/hifi4/xa_nn_circ_buf.c
 index dace733..7e9856d 100644
 --- a/algo/kernels/cnn/hifi4/xa_nn_circ_buf.c
@@ -289,6 +337,40 @@ index d7481e8..5fc8963 100644
      full_buf_width = ALIGNED_SIZE(full_buf_width, ALIGNMENT/2);
      /* Need 2 rows of padded input width as acratch for temp output */
      full_out_width = ALIGNED_SIZE(full_buf_width + kernel_width, 4);
+diff --git a/algo/kernels/pool/hifi4/xa_nn_maxpool.c b/algo/kernels/pool/hifi4/xa_nn_maxpool.c
+index 5ffd08a..5140c92 100644
+--- a/algo/kernels/pool/hifi4/xa_nn_maxpool.c
++++ b/algo/kernels/pool/hifi4/xa_nn_maxpool.c
+@@ -24,6 +24,7 @@
+ #include "xa_nnlib_kernels_api.h"
+ #include "xa_nn_maxpool_state.h"
+ #include "xa_nnlib_err_chk.h"
++#include "xa_nnlib_common_macros.h"
+ 
+ WORD32 xa_nn_maxpool_getsize_nchw(
+     WORD32 inp_precision,
+@@ -76,7 +77,7 @@ WORD32 xa_nn_maxpool_getsize_nchw(
+     state_size = ALIGNED_SIZE(sizeof(xa_nn_maxpool_state_t), ALIGNMENT);
+     /* Output scratch buffer size */
+     full_buf_width = kernel_width + (out_width - 1)*x_stride;
+-    full_buf_width = XT_MAX(full_buf_width, x_padding + input_width);
++    full_buf_width = MAX(full_buf_width, x_padding + input_width);
+     full_buf_width = ALIGNED_SIZE(full_buf_width, ALIGNMENT/2);
+     /* maxpool: Need 2 rows of padded input width as acratch for temp output */
+     full_out_width = ALIGNED_SIZE(full_buf_width + kernel_width, 4);
+@@ -264,6 +265,7 @@ WORD32 xa_nn_maxpool_getsize(
+ }
+ #endif
+ 
++#ifndef ENABLE_SCRATCH_SIZE_API_ONLY
+ WORD32 xa_nn_maxpool_init(
+     WORD32 inp_precision,
+     pVOID  p_scratch)
+@@ -300,3 +302,4 @@ WORD32 xa_nn_maxpool_init(
+     p_state->p_scratch = (pVOID)p_mem;
+     return 0;
+ }
++#endif /* #ifndef ENABLE_SCRATCH_SIZE_API_ONLY */
 diff --git a/algo/kernels/reorg/hifi4/xa_nn_concat_8.c b/algo/kernels/reorg/hifi4/xa_nn_concat_8.c
 new file mode 100644
 index 0000000..e11f5eb
@@ -742,7 +824,7 @@ index c8a0bbb..9898f15 100644
  	/* Mapping the functions names from previous naming convension for backward compatibility */
  #define xa_nn_matXvec_asym8xasym8_asym8 xa_nn_matXvec_asym8uxasym8u_asym8u
 diff --git a/include/nnlib/xa_nnlib_standards.h b/include/nnlib/xa_nnlib_standards.h
-index 88c619a..666ebf7 100644
+index 88c619a..fb91967 100644
 --- a/include/nnlib/xa_nnlib_standards.h
 +++ b/include/nnlib/xa_nnlib_standards.h
 @@ -22,7 +22,9 @@
@@ -755,3 +837,12 @@ index 88c619a..666ebf7 100644
  
  #if defined(__cplusplus)
  extern "C"
+@@ -151,7 +153,7 @@ typedef struct _xa_nnlib_shape_t{
+ 
+ enum xa_error_severity {
+   xa_severity_nonfatal = 0,
+-  xa_severity_fatal    = (int)0xffffffff
++  xa_severity_fatal    = (unsigned int)0xffffffff
+ };
+ 
+ enum xa_error_class {
