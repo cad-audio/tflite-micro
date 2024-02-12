@@ -19,6 +19,7 @@ limitations under the License.
 
 #include "tensorflow/lite/c/common.h"
 #include "tensorflow/lite/kernels/internal/types.h"
+#include "tensorflow/lite/micro/kernels/pad.h"
 namespace tflite {
 
 struct OpDataPad {
@@ -43,6 +44,21 @@ TfLiteStatus PadEvalVision(const XtensaPadData& data,
                            const TfLiteEvalTensor* input,
                            TfLiteEvalTensor* output);
 #endif  // VISION_P6
+
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+TfLiteStatus PadEvalHifiInt8(TfLiteContext* context, TfLiteNode* node);
+TfLiteStatus PadEvalHifiInt16(TfLiteContext* context, TfLiteNode* node);
+TfLiteStatus PadEvalHifiInt32(TfLiteContext* context, TfLiteNode* node);
+#if defined(INCLUDE_FLOAT_OPT)
+TfLiteStatus PadEvalHifiFloat32(TfLiteContext* context, TfLiteNode* node);
+#endif
+#endif
+
+void* XtensaPadInit(TfLiteContext* context, const char* buffer, size_t length);
+TfLiteStatus XtensaPadPrepare(TfLiteContext* context, TfLiteNode* node);
+TfLiteStatus PadReferenceEvalInt8(TfLiteContext* context, TfLiteNode* node);
+TfLiteStatus PadReferenceEvalInt16(TfLiteContext* context, TfLiteNode* node);
+TfLiteStatus PadReferenceEvalInt32(TfLiteContext* context, TfLiteNode* node);
 
 }  // namespace tflite
 

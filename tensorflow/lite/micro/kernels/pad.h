@@ -22,6 +22,17 @@ namespace tflite {
 
 TfLiteStatus PadPrepare(TfLiteContext* context, TfLiteNode* node);
 
-}  // namespace tflite
+#if defined(XTENSA)
+TFLMRegistration Register_PAD_INT8();
+TFLMRegistration Register_PAD_INT16();
+TFLMRegistration Register_PAD_INT32();
+TFLMRegistration Register_PAD_FLOAT32();
+#endif
 
+TFLMRegistration Register_PAD_INT8REF();
+TFLMRegistration Register_PAD_INT16REF();
+TFLMRegistration Register_PAD_INT32REF();
+TFLMRegistration Register_PAD_FLOAT32REF();
+
+}  // namespace tflite
 #endif  // TENSORFLOW_LITE_MICRO_KERNELS_PAD_H_
