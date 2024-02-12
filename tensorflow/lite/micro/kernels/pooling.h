@@ -141,6 +141,14 @@ inline TFLMRegistration Register_MAX_POOL_2D_INT16() {
   return tflite::Register_MAX_POOL_2D();
 }
 #endif
+
+TFLMRegistration Register_AVERAGE_POOL_2D_INT8REF();
+TFLMRegistration Register_MAX_POOL_2D_INT8REF();
+TFLMRegistration Register_AVERAGE_POOL_2D_INT16REF();
+TFLMRegistration Register_MAX_POOL_2D_INT16REF();
+TFLMRegistration Register_AVERAGE_POOL_2D_FLOAT32REF();
+TFLMRegistration Register_MAX_POOL_2D_FLOAT32REF();
+
 }  // namespace tflite
 
 #endif  // TENSORFLOW_LITE_MICRO_KERNELS_POOLING_H_
