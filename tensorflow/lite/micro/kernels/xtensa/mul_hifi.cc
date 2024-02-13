@@ -30,6 +30,7 @@ limitations under the License.
 
 namespace tflite {
 
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
 TfLiteStatus EvalMulQuantizedHiFiInt8(TfLiteContext* context,
                    TfLiteNode* node, const OpDataMul* data,
                    const TfLiteEvalTensor* input1,
@@ -105,6 +106,7 @@ TfLiteStatus EvalMulQuantizedHiFiInt16(TfLiteContext* context,
   return kTfLiteOk;
 }
 
+#if defined(INCLUDE_FLOAT_OPT)
 TfLiteStatus EvalMulFloatHiFi(TfLiteContext* context, TfLiteNode* node,
     TfLiteMulParams* params, const OpDataMul* data,
     const TfLiteEvalTensor* input1, const TfLiteEvalTensor* input2,
@@ -133,5 +135,6 @@ TfLiteStatus EvalMulFloatHiFi(TfLiteContext* context, TfLiteNode* node,
   TF_LITE_ENSURE(context, err == 0);
   return kTfLiteOk;
 }
-
+#endif
+#endif
 }  // namespace tflite
