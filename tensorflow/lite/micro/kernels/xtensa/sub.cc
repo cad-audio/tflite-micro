@@ -36,7 +36,7 @@ void* SubInit(TfLiteContext* context, const char* buffer, size_t length) {
   return context->AllocatePersistentBuffer(context, sizeof(OpDataSub));
 }
 
-void EvalSub(TfLiteContext* context, TfLiteNode* node, TfLiteSubParams* params,
+TfLiteStatus EvalSub(TfLiteContext* context, TfLiteNode* node, TfLiteSubParams* params,
              const OpDataSub* data, const TfLiteEvalTensor* input1,
              const TfLiteEvalTensor* input2, TfLiteEvalTensor* output) {
   float output_activation_min, output_activation_max;
@@ -44,6 +44,32 @@ void EvalSub(TfLiteContext* context, TfLiteNode* node, TfLiteSubParams* params,
                            &output_activation_max);
   tflite::ArithmeticParams op_params;
   SetActivationParams(output_activation_min, output_activation_max, &op_params);
+#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI3) || defined(HIFI4) || defined(HIFI5))  
+  int err;
+  const RuntimeShape& input1_shape = tflite::micro::GetTensorShape(input1);
+  const RuntimeShape& input2_shape = tflite::micro::GetTensorShape(input2);
+  const RuntimeShape& output_shape = tflite::micro::GetTensorShape(output);  
+  const RuntimeShape extended_input1_shape =
+      RuntimeShape::ExtendedShape(4, input1_shape);
+  const RuntimeShape extended_input2_shape =
+      RuntimeShape::ExtendedShape(4, input2_shape);
+  const RuntimeShape extended_output_shape =
+      RuntimeShape::ExtendedShape(4, output_shape);
+  const int* input1_dims = extended_input1_shape.DimsData();
+  const int* input2_dims = extended_input2_shape.DimsData();
+  const int* output_dims = extended_output_shape.DimsData();
+
+  err = xa_nn_elm_sub_broadcast_4D_f32xf32_f32(
+      tflite::micro::GetTensorData<float>(output), output_dims, 
+      tflite::micro::GetTensorData<float>(input1), input1_dims,
+      tflite::micro::GetTensorData<float>(input2), input2_dims);
+  TF_LITE_ENSURE(context, err == 0);
+
+  const int flat_size = output_shape.FlatSize();
+  err = xa_nn_vec_activation_min_max_f32_f32(
+      tflite::micro::GetTensorData<float>(output), tflite::micro::GetTensorData<float>(output),
+      output_activation_min, output_activation_max, flat_size);  
+#else
   if (data->requires_broadcast) {
     tflite::reference_ops::BroadcastSubSlow(
         op_params, tflite::micro::GetTensorShape(input1),
@@ -61,6 +87,8 @@ void EvalSub(TfLiteContext* context, TfLiteNode* node, TfLiteSubParams* params,
         tflite::micro::GetTensorShape(output),
         tflite::micro::GetTensorData<float>(output));
   }
+#endif
+  return kTfLiteOk;
 }
 
 TfLiteStatus EvalSubQuantized(TfLiteContext* context, TfLiteNode* node,
