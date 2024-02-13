@@ -115,6 +115,22 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
 #endif   // defined(HIFI4) || defined(HIFI5)    
       }                        
       break;
+    case kTfLiteInt16:
+#if defined(HIFI4) || defined(HIFI5)
+    xa_nn_transpose_16_16(tflite::micro::GetTensorData<int16_t>(output),
+                          tflite::micro::GetTensorShape(output).DimsData(),
+                          tflite::micro::GetTensorData<int16_t>(input),
+                          tflite::micro::GetTensorShape(input).DimsData(),
+                          params.perm,
+                          tflite::micro::GetTensorShape(output).DimensionsCount(),
+                          tflite::micro::GetTensorShape(input).DimensionsCount());
+#else    
+      reference_ops::Transpose(params, tflite::micro::GetTensorShape(input),
+                               tflite::micro::GetTensorData<int16_t>(input),
+                               tflite::micro::GetTensorShape(output),
+                               tflite::micro::GetTensorData<int16_t>(output));
+#endif
+      break;
     default:
       MicroPrintf(
           "Type %s is currently not supported by Transpose. "
