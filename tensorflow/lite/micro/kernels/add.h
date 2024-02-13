@@ -63,7 +63,7 @@ TfLiteStatus AddPrepare(TfLiteContext* context, TfLiteNode* node);
 // Generic must define registration function.
 TFLMRegistration Register_ADD();
 
-#if defined(CMSIS_NN)
+#if defined(CMSIS_NN) || defined(XTENSA)
 TFLMRegistration Register_ADD_INT8();
 
 TFLMRegistration Register_ADD_INT16();
@@ -73,6 +73,15 @@ inline TFLMRegistration Register_ADD_INT8() { return Register_ADD(); }
 
 inline TFLMRegistration Register_ADD_INT16() { return Register_ADD(); }
 #endif
+
+#if defined(XTENSA)
+TFLMRegistration Register_ADD_FLOAT32();
+#endif
+
+TFLMRegistration Register_ADD_INT8REF();
+TFLMRegistration Register_ADD_INT16REF();
+TFLMRegistration Register_ADD_FLOAT32REF();
+
 }  // namespace tflite
 
 #endif  // TENSORFLOW_LITE_MICRO_KERNELS_ADD_H_

@@ -3,6 +3,11 @@
 # implementations.
 MICROLITE_CC_KERNEL_SRCS += \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/add_vision.cc \
+  $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/add_hifi.cc \
+  $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/add_int8_int16_float32.cc \
+  $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/add_int8_reference.cc \
+  $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/add_int16_reference.cc \
+  $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/add_float32_reference.cc \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/conv_common_xtensa.cc \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/depthwise_conv_common_xtensa.cc \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/conv_hifi.cc \

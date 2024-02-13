@@ -43,6 +43,25 @@ TfLiteStatus AddEvalQuantizedVision(TfLiteContext* context, TfLiteNode* node,
 
 #endif  // VISION_P6
 
+TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node);
+void* AddInit(TfLiteContext* context, const char* buffer, size_t length);
+TfLiteStatus EvalAddReferenceInt8(TfLiteContext* context, TfLiteNode* node);
+TfLiteStatus EvalAddReferenceInt16(TfLiteContext* context, TfLiteNode* node);
+TfLiteStatus EvalAddReferenceFloat32(TfLiteContext* context, TfLiteNode* node);
+#if defined(XTENSA)
+TfLiteStatus AddEvalHifiFloat32(TfLiteContext* context, TfLiteNode* node,
+                     TfLiteAddParams* params, const OpDataAdd* data,
+                     const TfLiteEvalTensor* input1,
+                     const TfLiteEvalTensor* input2, TfLiteEvalTensor* output);
+TfLiteStatus AddEvalHifiInt8(TfLiteContext* context, TfLiteNode* node,
+                     TfLiteAddParams* params, const OpDataAdd* data,
+                     const TfLiteEvalTensor* input1,
+                     const TfLiteEvalTensor* input2, TfLiteEvalTensor* output, tflite::ArithmeticParams op_params);
+TfLiteStatus AddEvalHifiInt16(TfLiteContext* context, TfLiteNode* node,
+                     TfLiteAddParams* params, const OpDataAdd* data,
+                     const TfLiteEvalTensor* input1,
+                     const TfLiteEvalTensor* input2, TfLiteEvalTensor* output, tflite::ArithmeticParams op_params);                                          
+#endif
 }  // namespace tflite
 
 #endif  // TENSORFLOW_LITE_MICRO_KERNELS_XTENSA_XTENSA_ADD_H_
