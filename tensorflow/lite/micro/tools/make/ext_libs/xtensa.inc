@@ -16,6 +16,10 @@ MICROLITE_CC_KERNEL_SRCS += \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/sub_int8_reference.cc \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/sub_int16_reference.cc \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/sub_float32_reference.cc \
+  $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/squared_difference_hifi.cc \
+  $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/squared_difference_int8_int16.cc \
+  $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/squared_difference_int8_reference.cc \
+  $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/squared_difference_int16_reference.cc \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/conv_common_xtensa.cc \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/depthwise_conv_common_xtensa.cc \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/conv_hifi.cc \

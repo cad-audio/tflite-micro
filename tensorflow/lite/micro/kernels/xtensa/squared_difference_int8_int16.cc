@@ -26,7 +26,8 @@ limitations under the License.
 namespace tflite {
 namespace {
 
-TfLiteStatus SquaredDifferenceEval(TfLiteContext* context, TfLiteNode* node) {
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+TfLiteStatus SquaredDifferenceEvalInt8(TfLiteContext* context, TfLiteNode* node) {
   OpData* data = reinterpret_cast<OpData*>(node->user_data);
 
   const TfLiteEvalTensor* input1 =
@@ -36,42 +37,47 @@ TfLiteStatus SquaredDifferenceEval(TfLiteContext* context, TfLiteNode* node) {
   TfLiteEvalTensor* output =
       tflite::micro::GetEvalOutput(context, node, kOutputTensor);
 
-  if (output->type == kTfLiteFloat32) {
-    EvalSquaredDifference<float>(context, node, data, input1, input2, output);
-  } else if (output->type == kTfLiteInt32) {
-    EvalSquaredDifference<int32_t>(context, node, data, input1, input2, output);
-  } else if (output->type == kTfLiteInt8) {
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
-    EvalQuantizedSquaredDifferenceInt8Hifi(context, node, data, input1, input2,
-                                           output);
-#else
-    EvalQuantizedSquaredDifference<int8_t>(context, node, data, input1, input2,
-                                           output);
-#endif
-  } else if (output->type == kTfLiteInt16) {
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
-    EvalQuantizedSquaredDifferenceInt16Hifi(context, node, data, input1, input2,
-                                           output);
-#else
-    EvalQuantizedSquaredDifference<int16_t>(context, node, data, input1, input2,
-                                            output);
-#endif
-  } else {
-    MicroPrintf(
-        "SquaredDifference only supports FLOAT32, INT32 , INT16 and INT8 now, "
-        "got %d.",
-        output->type);
-    return kTfLiteError;
-  }
+  EvalQuantizedSquaredDifferenceInt8Hifi(context, node, data, input1, input2,
+                                        output);
 
   return kTfLiteOk;
 }
 
+TfLiteStatus SquaredDifferenceEvalInt16(TfLiteContext* context, TfLiteNode* node) {
+  OpData* data = reinterpret_cast<OpData*>(node->user_data);
+
+  const TfLiteEvalTensor* input1 =
+      tflite::micro::GetEvalInput(context, node, kInputTensor1);
+  const TfLiteEvalTensor* input2 =
+      tflite::micro::GetEvalInput(context, node, kInputTensor2);
+  TfLiteEvalTensor* output =
+      tflite::micro::GetEvalOutput(context, node, kOutputTensor);
+
+  EvalQuantizedSquaredDifferenceInt16Hifi(context, node, data, input1, input2,
+                                        output);
+  return kTfLiteOk;
+}
+#endif
 }  // namespace
 
-TFLMRegistration Register_SQUARED_DIFFERENCE() {
+TFLMRegistration Register_SQUARED_DIFFERENCE_INT8() {
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)  
   return tflite::micro::RegisterOp(
-      SquaredDifferenceInit, SquaredDifferencePrepare, SquaredDifferenceEval);
+      SquaredDifferenceInit, SquaredDifferencePrepare, SquaredDifferenceEvalInt8);
+#else
+  return tflite::micro::RegisterOp(
+      SquaredDifferenceInit, SquaredDifferencePrepare, SquaredDifferenceEvalInt8Reference);
+#endif      
+}
+
+TFLMRegistration Register_SQUARED_DIFFERENCE_INT16() {
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)  
+  return tflite::micro::RegisterOp(
+      SquaredDifferenceInit, SquaredDifferencePrepare, SquaredDifferenceEvalInt16);
+#else
+  return tflite::micro::RegisterOp(
+      SquaredDifferenceInit, SquaredDifferencePrepare, SquaredDifferenceEvalInt16Reference);
+#endif      
 }
 
 }  // namespace tflite
