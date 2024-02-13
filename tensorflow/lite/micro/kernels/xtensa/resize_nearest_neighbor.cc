@@ -90,7 +90,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
         tflite::micro::GetTensorShape(output),
         tflite::micro::GetTensorData<int32_t>(output));
   } else if (output->type == kTfLiteInt8) {
-#if HIFI_VFPU && (defined(HIFI5) || defined(HIFI4))
+#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI5) || defined(HIFI4))
 
   const RuntimeShape input_shape =
       RuntimeShape::ExtendedShape(4, tflite::micro::GetTensorShape(input));   

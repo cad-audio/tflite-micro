@@ -256,7 +256,7 @@ TfLiteStatus EvalXtensa(TfLiteContext* context, TfLiteNode* node) {
     case kTfLiteFloat32: {
       switch (output->type) {
         case kTfLiteInt8: {
-#if HIFI_VFPU && (defined(HIFI4) || defined(HIFI5))
+#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI4) || defined(HIFI5))
           int size = ElementCount(*input->dims);
           int32_t zero_point = op_data->quantization_params.zero_point;
           const float* input_data_ptr;
@@ -271,18 +271,18 @@ TfLiteStatus EvalXtensa(TfLiteContext* context, TfLiteNode* node) {
                   static_cast<float>(op_data->quantization_params.scale),
                   zero_point, size),
               0);
-#else // #if HIFI_VFPU && (defined(HIFI4) || defined(HIFI5))
+#else // #if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI4) || defined(HIFI5))
           reference_ops::AffineQuantize(
               op_data->quantization_params,
               tflite::micro::GetTensorShape(input),
               tflite::micro::GetTensorData<float>(input),
               tflite::micro::GetTensorShape(output),
               tflite::micro::GetTensorData<int8_t>(output));
-#endif // #if HIFI_VFPU && (defined(HIFI4) || defined(HIFI5))
+#endif // #if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI4) || defined(HIFI5))
           break;
         }
         case kTfLiteInt16: {
-#if HIFI_VFPU && (defined(HIFI4) || defined(HIFI5))
+#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI4) || defined(HIFI5))
           int size = ElementCount(*input->dims);
           int32_t zero_point = op_data->quantization_params.zero_point;
           const float* input_data_ptr;
@@ -297,7 +297,7 @@ TfLiteStatus EvalXtensa(TfLiteContext* context, TfLiteNode* node) {
                   static_cast<float>(op_data->quantization_params.scale),
                   zero_point, size),
               0);
-#else // #if HIFI_VFPU && (defined(HIFI4) || defined(HIFI5))             
+#else // #if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI4) || defined(HIFI5))             
           reference_ops::AffineQuantize(
               op_data->quantization_params,
               tflite::micro::GetTensorShape(input),

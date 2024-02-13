@@ -45,7 +45,7 @@ TfLiteStatus DequantizeEval(TfLiteContext* context, TfLiteNode* node) {
   if (output->type == kTfLiteFloat32) {
     switch (input->type) {
       case kTfLiteInt8 : {
-#if HIFI_VFPU && (defined(HIFI5) || defined(HIFI4))
+#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI5) || defined(HIFI4))
         int err;
         const int8_t *input_data_ptr;
         float *output_data_ptr;
@@ -69,7 +69,7 @@ TfLiteStatus DequantizeEval(TfLiteContext* context, TfLiteNode* node) {
         break;
       }
       case kTfLiteInt16 : {
-#if HIFI_VFPU && (defined(HIFI5) || defined(HIFI4))
+#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI5) || defined(HIFI4))
         int err;
         const int16_t *input_data_ptr;
         float *output_data_ptr;

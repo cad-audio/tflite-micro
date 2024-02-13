@@ -46,7 +46,7 @@ TfLiteStatus ReluEval(TfLiteContext* context, TfLiteNode* node) {
 
   switch (input->type) {
     case kTfLiteFloat32: {
-#if HIFI_VFPU
+#if defined(INCLUDE_FLOAT_OPT)
       int err;
       const float* inp_data_ptr;
       float* out_data_ptr;
@@ -64,7 +64,7 @@ TfLiteStatus ReluEval(TfLiteContext* context, TfLiteNode* node) {
                 tflite::micro::GetTensorData<float>(input),
                 tflite::micro::GetTensorShape(output),
                 tflite::micro::GetTensorData<float>(output));
-#endif // HIFI_VFPU
+#endif // defined(INCLUDE_FLOAT_OPT)
       return kTfLiteOk;
     }
     case kTfLiteInt8: {
@@ -122,7 +122,7 @@ TfLiteStatus Relu6Eval(TfLiteContext* context, TfLiteNode* node) {
 
   switch (input->type) {
     case kTfLiteFloat32: {
-#if HIFI_VFPU
+#if defined(INCLUDE_FLOAT_OPT)
       int err;
       const float* inp_data_ptr;
       float* out_data_ptr;
@@ -140,7 +140,7 @@ TfLiteStatus Relu6Eval(TfLiteContext* context, TfLiteNode* node) {
                  tflite::micro::GetTensorData<float>(input),
                  tflite::micro::GetTensorShape(output),
                  tflite::micro::GetTensorData<float>(output));
-#endif // HIFI_VFPU
+#endif // defined(INCLUDE_FLOAT_OPT)
 
       return kTfLiteOk;
     }

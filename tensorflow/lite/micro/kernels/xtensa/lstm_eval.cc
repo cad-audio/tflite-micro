@@ -130,7 +130,7 @@ void AddElementWise(const int16_t* input_1, const int16_t* input_2, int n_batch,
 
 void AddElementWise(const float* input_1, const float* input_2, int n_batch,
                     int n_input, float* output) {
-#if HIFI_VFPU && (defined(HIFI5) || defined(HIFI4))
+#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI5) || defined(HIFI4))
   WORD32 err;
   err = xa_nn_elm_add_f32xf32_f32(output, input_1, input_2, n_batch * n_input);
   (void)err;
@@ -160,7 +160,7 @@ void Sigmoid(const RuntimeShape& data_shape, int16_t* data) {
 }
 
 void Sigmoid(const RuntimeShape& data_shape, float* data) {
-#if HIFI_VFPU && (defined(HIFI5) || defined(HIFI4))
+#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI5) || defined(HIFI4))
   WORD32 err;
   err = xa_nn_vec_sigmoid_f32_f32(data, data, data_shape.FlatSize());
   (void)err;
@@ -341,7 +341,7 @@ void Clipping(const int v_size, const CellStateInfo& cell_state_info,
 
 void Clipping(const int v_size, const CellStateInfo& cell_state_info,
               float* vector) {
-#if HIFI_VFPU && (defined(HIFI5) || defined(HIFI4))
+#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI5) || defined(HIFI4))
   WORD32 err;
   err = xa_nn_vec_activation_min_max_f32_f32(vector, vector, -cell_state_info.cell_clip,
                                       cell_state_info.cell_clip , v_size);
