@@ -260,10 +260,10 @@ index 647ed11..b5bf4dd 100644
 +#endif /* #ifndef ENABLE_SCRATCH_SIZE_API_ONLY */
 diff --git a/algo/kernels/reorg/hifi5/xa_nn_concat_8.c b/algo/kernels/reorg/hifi5/xa_nn_concat_8.c
 new file mode 100644
-index 0000000..3ac35b4
+index 0000000..4cf4fd2
 --- /dev/null
 +++ b/algo/kernels/reorg/hifi5/xa_nn_concat_8.c
-@@ -0,0 +1,140 @@
+@@ -0,0 +1,157 @@
 +/*******************************************************************************
 +* Copyright (c) 2018-2024 Cadence Design Systems, Inc.
 +*
@@ -317,34 +317,26 @@ index 0000000..3ac35b4
 +  XA_NNLIB_ARG_CHK_COND((axis < -num_out_dims || axis >= num_out_dims), -1);
 +
 +  int i = 0, j = 0;
-+  for(i = 0; i < num_inp; i++)
-+  {
-+    XA_NNLIB_ARG_CHK_PTR(pp_inps[i], -1);
-+    XA_NNLIB_ARG_CHK_PTR(pp_inps_shape[i], -1);
-+    XA_NNLIB_ARG_CHK_ALIGN(pp_inps_shape[i], sizeof(WORD32), -1);
-+  }
 +  for(i = 0; i < num_out_dims; i++)
 +  {
 +    XA_NNLIB_ARG_CHK_COND((p_out_shape[i] <= 0), -1);
-+    for(j = 0; j < num_inp; j++)
-+    {
-+      XA_NNLIB_ARG_CHK_COND((pp_inps_shape[j][i] <= 0), -1);
-+    }
 +  }
 +
 +  if(axis < 0)
 +    axis = num_out_dims + axis;
 +
 +  WORD32 concat_size = 0;
-+  for (int i = 0; i < num_inp; i++)
++  for (i = 0; i < num_inp; i++)
 +  {
-+    for(int j = 0; j < num_out_dims; j++)
++    XA_NNLIB_ARG_CHK_PTR(pp_inps[i], -1);
++    XA_NNLIB_ARG_CHK_PTR(pp_inps_shape[i], -1);
++    XA_NNLIB_ARG_CHK_ALIGN(pp_inps_shape[i], sizeof(WORD32), -1);
++#pragma loop_count min=1
++    for(j = 0; j < num_out_dims; j++)
 +    {
-+      if(j != axis)
-+      {
-+        XA_NNLIB_ARG_CHK_COND((pp_inps_shape[i][j] != p_out_shape[j]), -1);
-+      }
++      XA_NNLIB_ARG_CHK_COND((pp_inps_shape[i][j] != p_out_shape[j] && j != axis), -1);
 +    }
++    XA_NNLIB_ARG_CHK_COND((pp_inps_shape[i][axis] <= 0), -1);
 +    concat_size += pp_inps_shape[i][axis];
 +  }
 +
@@ -352,30 +344,54 @@ index 0000000..3ac35b4
 +
 +  //Calculate outer and inner size for axis
 +  WORD32 outer_size = 1;
++#pragma no_simd
 +  for(int i = 0; i < axis; i++)
 +  {
 +    outer_size *= p_out_shape[i];
 +  }
 +
 +  WORD32 base_inner_size = 1;
++#pragma no_simd
 +  for(int i = axis + 1; i < num_out_dims; i++)
 +  {
 +    base_inner_size *= p_out_shape[i];
 +  }
 +
++  if(outer_size == 1)
 +  {
 +    WORD8 *ptmp_out = p_out;
 +    for(int i = 0; i < num_inp; i++)
 +    {
 +      const WORD32 copy_size = pp_inps_shape[i][axis] * base_inner_size;
 +
-+      if(copy_size < 16)
++      {
++        WORD8 *output_ptr = ptmp_out;
++        const WORD8* input_ptr = pp_inps[i];
++
++        {
++          MEMCPY_8b(output_ptr, input_ptr, copy_size);
++        }
++        ptmp_out += copy_size;
++      }
++    }
++  }
++  else
++  {
++    WORD8 *ptmp_out = p_out;
++#pragma loop_count min=1
++    for(int i = 0; i < num_inp; i++)
++    {
++      const WORD32 copy_size = pp_inps_shape[i][axis] * base_inner_size;
++
++      if(copy_size <= 16)
 +      {
 +        ae_int8x16 *output_ptr;
 +        ae_int8x16 *input_ptr = (ae_int8x16 *)pp_inps[i];
 +        ae_valignx2 input_valign, output_valign;
 +        input_valign = AE_LA128_PP(input_ptr);
 +        ae_int8x8 d_inp1, d_inp2;
++#pragma loop_count min=1
++#pragma concurrent
 +        for(int k = 0; k < outer_size; k++)
 +        {
 +          output_ptr = (ae_int8x16 *)(ptmp_out + concat_size * base_inner_size * k);
@@ -384,21 +400,22 @@ index 0000000..3ac35b4
 +          AE_SAV8X8X2_XP(d_inp1, d_inp2, output_valign, output_ptr, copy_size);
 +          AE_SA128POS_FP(output_valign, (void *)output_ptr);
 +        }
-+        ptmp_out += copy_size;
 +      }
 +      else
 +      {
 +        WORD8 *output_ptr = ptmp_out;
 +        const WORD8* input_ptr = pp_inps[i];
 +
++#pragma loop_count min=1
 +        for(int k = 0; k < outer_size; k++)
 +        {
-+          memcpy(output_ptr, input_ptr, copy_size * sizeof(WORD8));
++          // memcpy(output_ptr, input_ptr, copy_size * sizeof(WORD8));
++          MEMCPY_8b(output_ptr, input_ptr, (int)(copy_size * sizeof(WORD8)));
 +          input_ptr += copy_size;
 +          output_ptr += concat_size * base_inner_size;
 +        }
-+        ptmp_out += copy_size;
 +      }
++      ptmp_out += copy_size;
 +    }
 +  }
 +  return 0;
