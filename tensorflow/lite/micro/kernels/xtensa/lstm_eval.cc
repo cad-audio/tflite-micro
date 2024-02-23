@@ -115,6 +115,7 @@ void AddElementWise(const int16_t* input_1, const int16_t* input_2, int n_batch,
 #if defined(HIFI5) || defined(HIFI4)
   WORD32 err;
   err = xa_nn_elm_add_16x16_16(output, input_1, input_2, n_batch * n_input);
+  (void)err;
 #else
   for (int batch = 0; batch < n_batch; ++batch) {
     for (int i = 0; i < n_input; ++i) {
@@ -142,6 +143,7 @@ void Sigmoid(const RuntimeShape& data_shape, int16_t* data) {
   WORD32 err;
   err = xa_nn_vec_sigmoid_sym16s_sym16s(data, data, 0, 0,
       data_shape.FlatSize());
+  (void)err;
 #else
   reference_integer_ops::Logistic(
       0 /*data->input_multiplier*/, 0 /*data->input_left_shift */,
@@ -177,6 +179,7 @@ void Tanh(int32_t cell_state_scale_power, const RuntimeShape& input_data_shape,
   WORD32 err;
   err = xa_nn_vec_tanh_sym16s_sym16s(output_data, input_data, input_multiplier,
       tanh_input_left_shift, input_data_shape.FlatSize());
+  (void)err;
 #else
   if (tanh_input_left_shift < 0) /* handling negative shift value */
   {
@@ -206,6 +209,7 @@ void Mul(const RuntimeShape& shape, const ArithmeticParams& params,
       params.output_shift, params.output_multiplier,
       params.quantized_activation_min, params.quantized_activation_max,
       input1_data, input2_data, shape.FlatSize());
+  (void)err;
 #else
   return reference_integer_ops::MulElementwise(
       shape.FlatSize(), params, input1_data, input2_data, output_data);
@@ -224,6 +228,7 @@ void Mul(const RuntimeShape& shape, const ArithmeticParams& params,
       params.quantized_activation_min, params.quantized_activation_max,
       input1_data, extended_shape.DimsData(), input2_data,
       extended_shape.DimsData());
+  (void)err;
   return;
 #else
   return reference_integer_ops::MulElementwise(
@@ -260,6 +265,7 @@ void FullyConnected(const FullyConnectedParams& params,
         accum_depth, 1, params.input_offset, params.output_multiplier,
         params.output_shift);
   }
+  (void)err;
   return;
 #else
   return tflite::reference_integer_ops::FullyConnected(
@@ -286,6 +292,7 @@ void FullyConnected(const FullyConnectedParams& params,
       bias_data, output_depth, accum_depth, accum_depth, num_batches,
       accum_depth, output_depth, 1, params.input_offset,
       params.output_multiplier, params.output_shift, params.output_offset);
+  (void)err;
   return;
 #else
   return tflite::reference_integer_ops::FullyConnected(
@@ -347,6 +354,7 @@ void UpdateLstmCell(const LstmStepManager& step_info,
       forget_cell_mul_params.output_shift - 1,
       input_mul_params.output_shift - 1, cell_state_info.quantized_cell_clip,
       cell_state_shape.FlatSize());
+  (void)err;
 }
 
 void UpdateLstmCell(const LstmStepManager& step_info,

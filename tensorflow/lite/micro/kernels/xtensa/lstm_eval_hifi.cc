@@ -431,6 +431,8 @@ void xa_nn_elm_mul_16x16_asym8s(int8_t* output, const int16_t* input_1,
   ae_int16x4 d_zp;
   ae_int16x4 data_c_0, data_c_1;
   ae_int8x8 data_c;
+  (void) d_multiplier;
+  (void) d_left_shift;
 
   int i = 0;
   int left_shift, right_shift;
