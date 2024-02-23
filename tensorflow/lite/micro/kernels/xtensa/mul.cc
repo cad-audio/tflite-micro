@@ -170,6 +170,7 @@ TfLiteStatus MulEval(TfLiteContext* context, TfLiteNode* node) {
       else
         EvalMulFloatReference(context, node, params, data, input1, input2, output);
 #else
+      (void) need_broadcast;
       EvalMulFloatReference(context, node, params, data, input1, input2, output);
 #endif
       break;

@@ -107,6 +107,7 @@ TfLiteStatus EvalSubQuantized(TfLiteContext* context, TfLiteNode* node,
       int inp1_off = 0;
       int inp2_off = 0;
       int out_off;
+      (void) inp2_off;
       out_off =
           output_dims[1] * output_dims[2] * output_dims[3] * output_dims[4];
       if (input1_dims[0] > 1) {
@@ -170,6 +171,7 @@ TfLiteStatus EvalSubQuantized(TfLiteContext* context, TfLiteNode* node,
       int inp1_off = 0;
       int inp2_off = 0;
       int out_off;
+      (void) inp2_off;
       out_off =
           output_dims[1] * output_dims[2] * output_dims[3] * output_dims[4];
       if (input1_dims[0] > 1) {
