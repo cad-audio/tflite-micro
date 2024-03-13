@@ -86,10 +86,10 @@ index b2ac8e3..9ad396d 100644
  { \
 diff --git a/algo/kernels/activations/hifi5/xa_nn_softmax_sym16s_16.c b/algo/kernels/activations/hifi5/xa_nn_softmax_sym16s_16.c
 new file mode 100644
-index 0000000..ae14ab3
+index 0000000..8cc14c5
 --- /dev/null
 +++ b/algo/kernels/activations/hifi5/xa_nn_softmax_sym16s_16.c
-@@ -0,0 +1,428 @@
+@@ -0,0 +1,429 @@
 +/*******************************************************************************
 +* Copyright (c) 2018-2024 Cadence Design Systems, Inc.
 +*
@@ -473,6 +473,7 @@ index 0000000..ae14ab3
 +    ae_int16x8 *temp_out2 = (ae_int16x8 *)p_out;
 +    ae_valignx2 align_output128 = AE_ZALIGN128();
 +    ae_int16x4 zero = AE_MOVDA16(0);
++#pragma concurrent
 +    for(i=0; i<(vec_length>>3); i++)
 +    {
 +      AE_LA16X4X2_IP(exp1, exp2, exp_aligner, temp_out1);
@@ -518,6 +519,154 @@ index 0000000..ae14ab3
 +
 +  return 0;
 +}
+diff --git a/algo/kernels/basic/hifi5/xa_nn_elm_quantize.c b/algo/kernels/basic/hifi5/xa_nn_elm_quantize.c
+index eab6c50..6e08991 100644
+--- a/algo/kernels/basic/hifi5/xa_nn_elm_quantize.c
++++ b/algo/kernels/basic/hifi5/xa_nn_elm_quantize.c
+@@ -23,7 +23,6 @@
+ #include "xa_nnlib_common_fpu.h"
+ #include "xa_nnlib_common_macros_hifi5.h"
+ #include <math.h>
+-
+ #define PACK_32X2(dst1, src1, src2) \
+ dst1 = AE_SEL8X8(AE_MOVINT8X8_FROMINT16X4(src1), AE_MOVINT8X8_FROMINT16X4(src2), AE_MOVINT8X8_FROMINT32X2(AE_MOVDA32X2(0x0e0c0a08, 0x06040200)));
+ 
+@@ -584,7 +583,8 @@ WORD32 xa_nn_elm_quantize_f32_asym8s(WORD8 * __restrict__ p_out,
+   ae_int16x4 d_out_zero_bias = AE_MOVDA16(out_zero_bias);
+   xtfloat *out_scale_ptr = &out_scale;
+   xtfloatx2 d_out_scale = (xtfloatx2)*out_scale_ptr;
+-
++  xtfloatx2 d_one = FLOAT_SX2(AE_MOVDA32(1),0);
++  xtfloatx2 d_one_over_out_scale = XT_DIV_SX2(d_one, d_out_scale);
+   for(i = 0; i < (num_elm >> 3); i++)
+   {
+     xtfloatx2 d_inp0, d_inp1, d_inp2, d_inp3;
+@@ -593,14 +593,11 @@ WORD32 xa_nn_elm_quantize_f32_asym8s(WORD8 * __restrict__ p_out,
+     ae_int16x4 d_out16_0, d_out16_1;
+     ae_int32x2 d_out32_0, d_out32_1, d_out32_2, d_out32_3;
+ 
+-
+     AE_LASX2X2_IP(d_inp0, d_inp1, align_inp, p_i);
+     AE_LASX2X2_IP(d_inp2, d_inp3, align_inp, p_i);
+ 
+-    d_inp0_t = XT_DIV_SX2(d_inp0, d_out_scale);
+-    d_inp1_t = XT_DIV_SX2(d_inp1, d_out_scale);
+-    d_inp2_t = XT_DIV_SX2(d_inp2, d_out_scale);
+-    d_inp3_t = XT_DIV_SX2(d_inp3, d_out_scale);
++    MUL_SX2X2(d_inp0_t, d_inp1_t, d_inp0, d_inp1, d_one_over_out_scale, d_one_over_out_scale);
++    MUL_SX2X2(d_inp2_t, d_inp3_t, d_inp2, d_inp3, d_one_over_out_scale, d_one_over_out_scale);
+ 
+     d_inp0_t = XT_FIROUND_SX2(d_inp0_t);
+     d_inp1_t = XT_FIROUND_SX2(d_inp1_t);
+@@ -624,31 +621,60 @@ WORD32 xa_nn_elm_quantize_f32_asym8s(WORD8 * __restrict__ p_out,
+   }
+   AE_SA64POS_FP(align_dst, p_o);
+ 
+-  for(i = 0; i < (num_elm & 7); i++)
++  WORD32 rem_elm = (num_elm & 7);
++  if(rem_elm > 0)
+   {
+-    FLOAT32 d_inp0;
+-    FLOAT32 d_inp0_t;
++    xtfloatx2 d_inp0, d_inp1, d_inp2, d_inp3;
++    xtfloatx2 d_inp0_t, d_inp1_t, d_inp2_t, d_inp3_t;
+     ae_int8x8 d_out0;
+-    ae_int16x4 d_out16_0;
+-    ae_int32x2 d_out32_0;
++    ae_int16x4 d_out16_0, d_out16_1;
++    ae_int32x2 d_out32_0, d_out32_1, d_out32_2, d_out32_3;
++    ae_int16x4 d_tmp0, d_tmp1, d_tmp2, d_tmp3;
++    ae_valignx2 align_dstx2;
++
++    WORD32 rem_elm0, rem_elm1;
++    rem_elm0 = rem_elm >= 4 ? 16 : rem_elm << 2;
++    rem_elm1 = rem_elm <= 4 ? 0 : (rem_elm - 4) << 2;
++    ae_int16x8 *p_i16 = (ae_int16x8 *)p_i;
++    align_inp = AE_LA128_PP(p_i16);
++    align_dstx2 = AE_ZALIGN128();
++    AE_LAV16X4X2_XP(d_tmp0, d_tmp1, align_inp, p_i16, rem_elm0);
++    AE_LAV16X4X2_XP(d_tmp2, d_tmp3, align_inp, p_i16, rem_elm1);
++
++    d_tmp0 = AE_SEL16_2301(d_tmp0, d_tmp0);
++    d_tmp1 = AE_SEL16_2301(d_tmp1, d_tmp1);
++    d_tmp2 = AE_SEL16_2301(d_tmp2, d_tmp2);
++    d_tmp3 = AE_SEL16_2301(d_tmp3, d_tmp3);
+ 
+-    AE_LSIP(d_inp0, (xtfloat *)p_i, 4);
++    d_inp0 = AE_MOVXTFLOATX2_FROMINT32X2(AE_MOVINT32X2_FROMINT16X4(d_tmp0));
++    d_inp1 = AE_MOVXTFLOATX2_FROMINT32X2(AE_MOVINT32X2_FROMINT16X4(d_tmp1));
++    d_inp2 = AE_MOVXTFLOATX2_FROMINT32X2(AE_MOVINT32X2_FROMINT16X4(d_tmp2));
++    d_inp3 = AE_MOVXTFLOATX2_FROMINT32X2(AE_MOVINT32X2_FROMINT16X4(d_tmp3));
+ 
+-    d_inp0_t = XT_DIV_S(d_inp0, (FLOAT32)d_out_scale);
++    MUL_SX2X2(d_inp0_t, d_inp1_t, d_inp0, d_inp1, d_one_over_out_scale, d_one_over_out_scale);
++    MUL_SX2X2(d_inp2_t, d_inp3_t, d_inp2, d_inp3, d_one_over_out_scale, d_one_over_out_scale);
+ 
+-    d_inp0_t = XT_FIROUND_S(d_inp0_t);
++    d_inp0_t = XT_FIROUND_SX2(d_inp0_t);
++    d_inp1_t = XT_FIROUND_SX2(d_inp1_t);
++    d_inp2_t = XT_FIROUND_SX2(d_inp2_t);
++    d_inp3_t = XT_FIROUND_SX2(d_inp3_t);
+ 
+-    d_out32_0 = XT_TRUNC_S(d_inp0_t, 0);
++    d_out32_0 = XT_TRUNC_SX2(d_inp0_t, 0);
++    d_out32_1 = XT_TRUNC_SX2(d_inp1_t, 0);
++    d_out32_2 = XT_TRUNC_SX2(d_inp2_t, 0);
++    d_out32_3 = XT_TRUNC_SX2(d_inp3_t, 0);
+ 
+-    d_out16_0 = AE_SAT16X4(d_out32_0, d_out32_0);
++    d_out16_0 = AE_SAT16X4(d_out32_0, d_out32_1);
++    d_out16_1 = AE_SAT16X4(d_out32_2, d_out32_3);
+ 
+     d_out16_0 = AE_ADD16S(d_out16_0, d_out_zero_bias);
++    d_out16_1 = AE_ADD16S(d_out16_1, d_out_zero_bias);
+ 
+-    d_out0 = AE_SAT8X8X16(d_out16_0, d_out16_0);
++    d_out0 = AE_SAT8X8X16(d_out16_0, d_out16_1);
+ 
+-    *((ae_int8 *)p_o + i) = AE_MOVINT8_FROMINT8X8(d_out0);
++    AE_SAV8X8X2_XP(d_out0, d_out0, align_dstx2, (ae_int8x16 *)p_o, rem_elm);
++    AE_SA128POS_FP(align_dstx2, (ae_int8x16 *)p_o);
+   }
+-
+   return 0;
+ }
+ #endif /* #if !HAVE_VFPU */
+@@ -791,6 +817,8 @@ WORD32 xa_nn_elm_quantize_f32_asym16s(WORD16 * __restrict__ p_out,
+   ae_int32x2 d_out_zero_bias = AE_MOVDA32(out_zero_bias);
+   xtfloat *out_scale_ptr = &out_scale;
+   xtfloatx2 d_out_scale = (xtfloatx2)*out_scale_ptr;
++  xtfloatx2 d_one = FLOAT_SX2(AE_MOVDA32(1),0);
++  xtfloatx2 d_one_over_out_scale = XT_DIV_SX2(d_one, d_out_scale);
+ 
+   for(i = 0; i < (num_elm >> 3); i++)
+   {
+@@ -803,10 +831,8 @@ WORD32 xa_nn_elm_quantize_f32_asym16s(WORD16 * __restrict__ p_out,
+     AE_LASX2X2_IP(d_inp0, d_inp1, align_inp, p_i);
+     AE_LASX2X2_IP(d_inp2, d_inp3, align_inp, p_i);
+ 
+-    d_inp0_t = XT_DIV_SX2(d_inp0, d_out_scale);
+-    d_inp1_t = XT_DIV_SX2(d_inp1, d_out_scale);
+-    d_inp2_t = XT_DIV_SX2(d_inp2, d_out_scale);
+-    d_inp3_t = XT_DIV_SX2(d_inp3, d_out_scale);
++    MUL_SX2X2(d_inp0_t, d_inp1_t, d_inp0, d_inp1, d_one_over_out_scale, d_one_over_out_scale);
++    MUL_SX2X2(d_inp2_t, d_inp3_t, d_inp2, d_inp3, d_one_over_out_scale, d_one_over_out_scale);
+ 
+     d_inp0_t = XT_FIROUND_SX2(d_inp0_t);
+     d_inp1_t = XT_FIROUND_SX2(d_inp1_t);
+@@ -856,10 +882,8 @@ WORD32 xa_nn_elm_quantize_f32_asym16s(WORD16 * __restrict__ p_out,
+     d_inp2 = AE_MOVXTFLOATX2_FROMINT32X2(AE_MOVINT32X2_FROMINT16X4(d_tmp2));
+     d_inp3 = AE_MOVXTFLOATX2_FROMINT32X2(AE_MOVINT32X2_FROMINT16X4(d_tmp3));
+ 
+-    d_inp0_t = XT_DIV_SX2(d_inp0, d_out_scale);
+-    d_inp1_t = XT_DIV_SX2(d_inp1, d_out_scale);
+-    d_inp2_t = XT_DIV_SX2(d_inp2, d_out_scale);
+-    d_inp3_t = XT_DIV_SX2(d_inp3, d_out_scale);
++    MUL_SX2X2(d_inp0_t, d_inp1_t, d_inp0, d_inp1, d_one_over_out_scale, d_one_over_out_scale);
++    MUL_SX2X2(d_inp2_t, d_inp3_t, d_inp2, d_inp3, d_one_over_out_scale, d_one_over_out_scale);
+ 
+     d_inp0_t = XT_FIROUND_SX2(d_inp0_t);
+     d_inp1_t = XT_FIROUND_SX2(d_inp1_t);
 diff --git a/algo/kernels/basic/hifi5/xa_nn_reduce_asym8s_asym8s.c b/algo/kernels/basic/hifi5/xa_nn_reduce_asym8s_asym8s.c
 index 6fdcbe5..c079731 100644
 --- a/algo/kernels/basic/hifi5/xa_nn_reduce_asym8s_asym8s.c
@@ -558,7 +707,7 @@ index 7b49a65..2ce9e25 100644
    if(bytewidth == 4)
    {
 diff --git a/algo/kernels/cnn/hifi5/xa_nn_conv2d_depthwise.c b/algo/kernels/cnn/hifi5/xa_nn_conv2d_depthwise.c
-index e3ea1be..a377a41 100644
+index e3ea1be..d22c403 100644
 --- a/algo/kernels/cnn/hifi5/xa_nn_conv2d_depthwise.c
 +++ b/algo/kernels/cnn/hifi5/xa_nn_conv2d_depthwise.c
 @@ -77,7 +77,7 @@ static WORD32 xa_nn_dilated_conv2d_depthwise_nchw_getsize
@@ -570,6 +719,14 @@ index e3ea1be..a377a41 100644
    if(circ_buf_bytewidth == 1 || circ_buf_bytewidth == 2)
      circ_buf_width = ALIGNED_SIZE(circ_buf_width, 8);
    else
+@@ -385,6 +385,7 @@ static WORD32 xa_nn_dilated_conv2d_depthwise_getsize_generic
+     case -2: /* For f16*/
+       scratch_bytewidth = 2; /* 16b scratch */
+       circ_buf_bytewidth = 2; /* bytewidth as per precision */
++      break;
+     case -8: /* For sym16s */
+       scratch_bytewidth = 8; /* 64b scratch */
+       circ_buf_bytewidth = 2; /* bytewidth for sym16s */
 diff --git a/algo/kernels/cnn/hifi5/xa_nn_transpose_conv_circ_buf.c b/algo/kernels/cnn/hifi5/xa_nn_transpose_conv_circ_buf.c
 index 1135ba0..2c2cd33 100644
 --- a/algo/kernels/cnn/hifi5/xa_nn_transpose_conv_circ_buf.c
@@ -857,10 +1014,10 @@ index 0000000..4cf4fd2
 +}
 diff --git a/algo/kernels/reorg/hifi5/xa_nn_transpose_16.c b/algo/kernels/reorg/hifi5/xa_nn_transpose_16.c
 new file mode 100644
-index 0000000..f9b88ed
+index 0000000..8e1e13a
 --- /dev/null
 +++ b/algo/kernels/reorg/hifi5/xa_nn_transpose_16.c
-@@ -0,0 +1,224 @@
+@@ -0,0 +1,265 @@
 +/*******************************************************************************
 +* Copyright (c) 2018-2024 Cadence Design Systems, Inc.
 +*
@@ -889,6 +1046,7 @@ index 0000000..f9b88ed
 + * 1/2/3/4 D input tensors will be scaled up to 5D.
 + * For example, 2x3 -> 1x1x1x2x3.
 + */
++
 +
 +WORD32 xa_nn_transpose_16_16(WORD16 * __restrict__ p_out
 +                    ,const WORD32 *const p_out_shape
@@ -935,6 +1093,45 @@ index 0000000..f9b88ed
 +  XA_NNLIB_ARG_CHK_ALIGN(p_out_shape, sizeof(WORD32), -1);
 +  XA_NNLIB_ARG_CHK_ALIGN(p_inp_shape, sizeof(WORD32), -1);
 +
++
++  /* Shift all dim with 1 in the outer part */
++  int eff_output_shape[5];
++  int eff_permute_vec[5];
++
++  for(int i = 0; i < num_out_dims; i++)
++  {
++    eff_output_shape[i] = p_out_shape[i];
++    eff_permute_vec[i] = p_permute_vec[i];
++  }
++
++  int one_i=num_out_dims-1, non_one_i=num_out_dims-1;
++  while(one_i > 0 && non_one_i >=0){
++    while(one_i > 0 && eff_output_shape[one_i]!=1){
++      one_i--;
++    }
++    non_one_i = one_i;
++    while(non_one_i >= 0 && eff_output_shape[non_one_i]==1)
++    {
++      non_one_i--;
++    }
++    if(one_i > 0 && non_one_i >=0){
++      int temp;
++      /*swap output_shape*/
++      {
++        temp = eff_output_shape[one_i];
++        eff_output_shape[one_i] = eff_output_shape[non_one_i];
++        eff_output_shape[non_one_i] = temp;
++      }
++      /*swap permute_vec*/
++      {
++        temp = eff_permute_vec[one_i];
++        eff_permute_vec[one_i] = eff_permute_vec[non_one_i];
++        eff_permute_vec[non_one_i] = temp;
++      }
++
++    }
++  }
++
 +  /* Promoting lesser dim tensors to 5D tensors.
 +   * Also updating the permute_vec and shapes as needed for optimization */
 +  int p_5D_inp_shape[5] = {1, 1, 1, 1, 1};
@@ -944,10 +1141,11 @@ index 0000000..f9b88ed
 +  /* Check if any inner inp dimension is same in the output */
 +  int last_dim_same = 1, last_n_same_dim = 0;
 +  itr = num_inp_dims - 1;
++
 +  while(itr >= 0)
 +  {
-+    last_n_same_dim = (last_dim_same && (p_permute_vec[itr] == itr)) ? (last_n_same_dim + 1) : last_n_same_dim;
-+    last_dim_same = (p_permute_vec[itr] == itr) ? last_dim_same & 1 : last_dim_same & 0;
++    last_n_same_dim = (last_dim_same && (eff_permute_vec[itr] == itr)) ? (last_n_same_dim + 1) : last_n_same_dim;
++    last_dim_same = (eff_permute_vec[itr] == itr) ? last_dim_same & 1 : last_dim_same & 0;
 +    itr--;
 +  }
 +
@@ -958,7 +1156,7 @@ index 0000000..f9b88ed
 +  while(itr >= 0)
 +  {
 +    p_5D_inp_shape[count] = (same_count > 0) ? p_5D_inp_shape[count]*p_inp_shape[itr] : p_inp_shape[itr];
-+    p_5D_out_shape[count] = (same_count > 0) ? p_5D_out_shape[count]*p_out_shape[itr] : p_out_shape[itr];
++    p_5D_out_shape[count] = (same_count > 0) ? p_5D_out_shape[count]*eff_output_shape[itr] : eff_output_shape[itr];
 +    same_count--;
 +    itr--;
 +    count = (same_count > 0) ? count : count - 1;
@@ -969,7 +1167,7 @@ index 0000000..f9b88ed
 +  count = 4;
 +  while(itr >= 0)
 +  {
-+    p_5D_permute_vec[count] = (same_count > 0) ? p_permute_vec[itr-(last_n_same_dim - 1)] + dims_added + last_n_same_dim - 1 : p_permute_vec[itr] + dims_added;
++    p_5D_permute_vec[count] = (same_count > 0) ? eff_permute_vec[itr-(last_n_same_dim - 1)] + dims_added + last_n_same_dim - 1 : eff_permute_vec[itr] + dims_added;
 +    same_count--;
 +    itr--;
 +    count--;
@@ -1085,6 +1283,84 @@ index 0000000..f9b88ed
 +}
 +
 +
+diff --git a/algo/kernels/reorg/hifi5/xa_nn_transpose_8.c b/algo/kernels/reorg/hifi5/xa_nn_transpose_8.c
+index 62fce74..65706e9 100644
+--- a/algo/kernels/reorg/hifi5/xa_nn_transpose_8.c
++++ b/algo/kernels/reorg/hifi5/xa_nn_transpose_8.c
+@@ -72,6 +72,44 @@ WORD32 xa_nn_transpose_8_8(WORD8 * __restrict__ p_out
+   XA_NNLIB_ARG_CHK_ALIGN(p_out_shape, sizeof(WORD32), -1);
+   XA_NNLIB_ARG_CHK_ALIGN(p_inp_shape, sizeof(WORD32), -1);
+ 
++  /* Shift all dim with 1 in the outer part */
++  int eff_output_shape[5];
++  int eff_permute_vec[5];
++
++  for(int i = 0; i < num_out_dims; i++)
++  {
++    eff_output_shape[i] = p_out_shape[i];
++    eff_permute_vec[i] = p_permute_vec[i];
++  }
++
++  int one_i=num_out_dims-1, non_one_i=num_out_dims-1;
++  while(one_i > 0 && non_one_i >=0){
++    while(one_i > 0 && eff_output_shape[one_i]!=1){
++      one_i--;
++    }
++    non_one_i = one_i;
++    while(non_one_i >= 0 && eff_output_shape[non_one_i]==1)
++    {
++      non_one_i--;
++    }
++    if(one_i > 0 && non_one_i >=0){
++      int temp;
++      /*swap output_shape*/
++      {
++        temp = eff_output_shape[one_i];
++        eff_output_shape[one_i] = eff_output_shape[non_one_i];
++        eff_output_shape[non_one_i] = temp;
++      }
++      /*swap permute_vec*/
++      {
++        temp = eff_permute_vec[one_i];
++        eff_permute_vec[one_i] = eff_permute_vec[non_one_i];
++        eff_permute_vec[non_one_i] = temp;
++      }
++    }
++  }
++
++
+   /* Promoting lesser dim tensors to 5D tensors. 
+    * Also updating the permute_vec and shapes as needed for optimization */
+   int p_5D_inp_shape[5] = {1, 1, 1, 1, 1};
+@@ -83,8 +121,8 @@ WORD32 xa_nn_transpose_8_8(WORD8 * __restrict__ p_out
+   itr = num_inp_dims - 1;
+   while(itr >= 0)
+   {
+-    last_n_same_dim = (last_dim_same && (p_permute_vec[itr] == itr)) ? (last_n_same_dim + 1) : last_n_same_dim;
+-    last_dim_same = (p_permute_vec[itr] == itr) ? last_dim_same & 1 : last_dim_same & 0;
++    last_n_same_dim = (last_dim_same && (eff_permute_vec[itr] == itr)) ? (last_n_same_dim + 1) : last_n_same_dim;
++    last_dim_same = (eff_permute_vec[itr] == itr) ? last_dim_same & 1 : last_dim_same & 0;
+     itr--;
+   }
+   
+@@ -95,7 +133,7 @@ WORD32 xa_nn_transpose_8_8(WORD8 * __restrict__ p_out
+   while(itr >= 0)
+   {
+     p_5D_inp_shape[count] = (same_count > 0) ? p_5D_inp_shape[count]*p_inp_shape[itr] : p_inp_shape[itr];
+-    p_5D_out_shape[count] = (same_count > 0) ? p_5D_out_shape[count]*p_out_shape[itr] : p_out_shape[itr];
++    p_5D_out_shape[count] = (same_count > 0) ? p_5D_out_shape[count]*eff_output_shape[itr] : eff_output_shape[itr];
+     same_count--;
+     itr--;
+     count = (same_count > 0) ? count : count - 1;
+@@ -106,7 +144,7 @@ WORD32 xa_nn_transpose_8_8(WORD8 * __restrict__ p_out
+   count = 4;
+   while(itr >= 0)
+   {
+-    p_5D_permute_vec[count] = (same_count > 0) ? p_permute_vec[itr-(last_n_same_dim - 1)] + dims_added + last_n_same_dim - 1 : p_permute_vec[itr] + dims_added;
++    p_5D_permute_vec[count] = (same_count > 0) ? eff_permute_vec[itr-(last_n_same_dim - 1)] + dims_added + last_n_same_dim - 1 : eff_permute_vec[itr] + dims_added;
+     same_count--;
+     itr--;
+     count--;
 diff --git a/include/nnlib/xa_nnlib_kernels_api.h b/include/nnlib/xa_nnlib_kernels_api.h
 index c8a0bbb..20f33ec 100644
 --- a/include/nnlib/xa_nnlib_kernels_api.h
