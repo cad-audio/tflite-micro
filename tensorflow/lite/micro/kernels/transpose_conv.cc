@@ -111,7 +111,7 @@ TfLiteStatus CalculateOpData(TfLiteContext* context, TfLiteNode* node,
     int output_channels = filter->dims->data[kConvQuantizedDimension];
 
     TF_LITE_ENSURE_STATUS(tflite::PopulateConvolutionQuantizationParams(
-        context, input, filter, bias, output, kTfLiteActNone,
+        context, input, filter, bias, output, params->activation,
         &data->params.output_multiplier, &data->params.output_shift,
         &data->params.quantized_activation_min,
         &data->params.quantized_activation_max,
@@ -123,7 +123,7 @@ TfLiteStatus CalculateOpData(TfLiteContext* context, TfLiteNode* node,
     if (input->type == kTfLiteInt16) {
       TFLITE_DCHECK(filter->type == kTfLiteInt8);
       TFLITE_DCHECK(output->type == kTfLiteInt16);
-      if (bias->type == kTfLiteInt16) {
+      if (has_bias && bias->type == kTfLiteInt16) {
         TFLITE_DCHECK(
             context->RequestScratchBufferInArena(
                 context, GetTensorShape(bias).FlatSize() * sizeof(std::int64_t),
