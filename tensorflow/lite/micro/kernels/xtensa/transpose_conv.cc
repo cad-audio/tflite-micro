@@ -129,6 +129,14 @@ TfLiteStatus CalculateOpData(TfLiteContext* context, TfLiteNode* node,
                 context, GetTensorShape(bias).FlatSize() * sizeof(std::int64_t),
                 &(data->bias_converted_buffer_index)) == kTfLiteOk);
       }
+#if defined(HIFI4) || defined(HIFI5)
+      else if(!has_bias) {
+        TFLITE_DCHECK(
+            context->RequestScratchBufferInArena(
+                context, output_channels * sizeof(std::int64_t),
+                &(data->bias_converted_buffer_index)) == kTfLiteOk);
+      }
+#endif
     }
     micro_context->DeallocateTempTfLiteTensor(input);
     micro_context->DeallocateTempTfLiteTensor(output);
@@ -365,7 +373,16 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
             tflite::micro::GetTensorData<int16_t>(input);
         const int8_t* filter_data =
             tflite::micro::GetTensorData<int8_t>(filter);
-        const int64_t* bias_data = tflite::micro::GetTensorData<int64_t>(bias);
+        const int64_t* bias_data;
+        if(bias == NULL) {
+          bias_data =
+              static_cast<const int64_t*>(context->GetScratchBuffer(
+                  context, data.bias_converted_buffer_index));
+          memset((void *)bias_data, 0, output_depth*sizeof(bias_data[0]));
+        }
+        else {
+            bias_data = tflite::micro::GetTensorData<int64_t>(bias); 
+        }
         int16_t* output_data = tflite::micro::GetTensorData<int16_t>(output);
 
         const int num_elements = output_shape.FlatSize();
