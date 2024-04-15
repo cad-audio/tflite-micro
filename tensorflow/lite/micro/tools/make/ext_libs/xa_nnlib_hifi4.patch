@@ -498,10 +498,161 @@ index 0000000..9817fd6
 +  return 0;
 +}
 diff --git a/algo/kernels/basic/hifi4/xa_nn_elm_quantize.c b/algo/kernels/basic/hifi4/xa_nn_elm_quantize.c
-index fd0cc13..99955c5 100644
+index fd0cc13..194c0b1 100644
 --- a/algo/kernels/basic/hifi4/xa_nn_elm_quantize.c
 +++ b/algo/kernels/basic/hifi4/xa_nn_elm_quantize.c
-@@ -827,6 +827,10 @@ WORD32 xa_nn_elm_quantize_f32_asym8s(WORD8 * __restrict__ p_out,
+@@ -647,6 +647,150 @@ WORD32 xa_nn_elm_requantize_asym8s_asym8s(WORD8 * __restrict__ p_out,
+   return 0;
+ }
+ 
++WORD32 xa_nn_elm_requantize_asym8u_asym8s(WORD8 * __restrict__ p_out,
++                                    const UWORD8 * __restrict__ p_inp,
++                                    WORD32  inp_zero_bias,
++                                    WORD32  out_zero_bias,
++                                    WORD32  out_shift,
++                                    WORD32  out_multiplier,
++                                    WORD32  num_elm)
++{
++  /* NULL pointer checks */
++  XA_NNLIB_ARG_CHK_PTR(p_out, -1);
++  XA_NNLIB_ARG_CHK_PTR(p_inp, -1);
++  /* Pointer alignment checks */
++  XA_NNLIB_ARG_CHK_ALIGN(p_out, sizeof(WORD8), -1);
++  XA_NNLIB_ARG_CHK_ALIGN(p_inp, sizeof(WORD8), -1);
++  /* Basic Parameter checks */
++  XA_NNLIB_ARG_CHK_COND((num_elm <= 0), -1);
++  XA_NNLIB_ARG_CHK_COND(((out_zero_bias < -128) || (out_zero_bias > 127)), -1);
++  XA_NNLIB_ARG_CHK_COND(((inp_zero_bias < 0) || (inp_zero_bias > 255)), -1);
++  XA_NNLIB_ARG_CHK_COND(((out_shift < -31) || (out_shift > 31)), -1);
++  XA_NNLIB_ARG_CHK_COND((out_multiplier < 0), -1);
++
++  int i;
++  int left_shift, right_shift;
++#if TFLITE_SINGLE_ROUNDING
++  left_shift = out_shift;
++  /* Single rounding doesn't need two shifts */
++  (void)right_shift;
++#else /* #if TFLITE_SINGLE_ROUNDING */
++  left_shift  = (out_shift < 0)?0:out_shift;
++  right_shift = (out_shift > 0)?0:-out_shift;
++#endif /* #if TFLITE_SINGLE_ROUNDING */
++
++  WORD8 *p_i = (WORD8 *)p_inp;
++  WORD8 *p_o = (WORD8 *)p_out;
++
++  ae_int16x4 ONE = AE_MOVDA16(1);
++  ae_int16x4 d_inp_zero_bias  = AE_MOVDA16(inp_zero_bias);
++  ae_int32x2 d_out_multiplier = AE_MOVDA32(out_multiplier);
++  ae_int16x4 d_inp0;
++  ae_int32x2 d_inp32_0, d_inp32_1;
++  ae_int32x2 d_out0_32, d_out1_32;
++  ae_int32x2 quant_min = AE_MOVDA32(-128);
++  ae_int32x2 quant_max = AE_MOVDA32(127);
++
++  xtbool io_pointers_aligned = ((((uintptr_t)p_inp) & 3) == 0);
++#if XCHAL_HAVE_HIFI1
++  ALIGN_REGISTER_TYPE align_out = AE_ZALIGN64();
++#endif
++  if(io_pointers_aligned){
++    for(i = 0; i < num_elm >> 2; i++)
++    {
++#if XCHAL_HAVE_HIFI1
++      AE_L8X4U_IP(d_inp0, p_i, 4);
++#else
++      AE_L8X4F_IP(d_inp0, p_i, 4);
++      d_inp0 = AE_SRAI16(d_inp0, 8);
++      d_inp0 = AE_AND16(d_inp0, AE_MOVDA16(0x00ff));
++#endif
++      d_inp0 = AE_SUB16S(d_inp0, d_inp_zero_bias);
++
++      AE_MUL16X4(d_inp32_0 , d_inp32_1 , d_inp0 , ONE);
++      MPY_BY_QUANT_MULT_SLS_X2_OUT32(d_out0_32, d_inp32_0, d_out_multiplier, left_shift, right_shift);
++      MPY_BY_QUANT_MULT_SLS_X2_OUT32(d_out1_32, d_inp32_1, d_out_multiplier, left_shift, right_shift);
++      d_out0_32 = AE_ADD32S(d_out0_32, AE_MOVDA32(out_zero_bias));
++      d_out1_32 = AE_ADD32S(d_out1_32, AE_MOVDA32(out_zero_bias));
++#if XCHAL_HAVE_HIFI1
++#if ( XCHAL_HW_VERSION >= RI9_HWVERSION )
++      // clamped_out
++      ae_int8x8 clamped_01 = AE_SAT8X4X32_H(d_out0_32, d_out1_32);
++      // Store Output
++      AE_SAV8X8_XP(clamped_01, align_out, (ae_int8x8 *)p_o, 4);
++#else
++      CLAMP_VAL(d_out0_32, d_out0_32, quant_min, quant_max)
++      CLAMP_VAL(d_out1_32, d_out1_32, quant_min, quant_max)
++      ae_int16x4 out = AE_SEL16_6420(AE_MOVF16X4_FROMF32X2(d_out0_32), AE_MOVF16X4_FROMF32X2(d_out1_32));
++      AE_SA8X4U_IP(out, align_out, (ae_int32 *)p_o);
++#endif
++#else
++      CLAMP_VAL(d_out0_32, d_out0_32, quant_min, quant_max)
++      CLAMP_VAL(d_out1_32, d_out1_32, quant_min, quant_max)
++      STORE_8X4_FROM_32X4(p_o, d_out0_32, d_out1_32);
++#endif
++    }
++#if XCHAL_HAVE_HIFI1
++    AE_SA64POS_FP(align_out, p_o);
++#endif
++  }
++  else{
++    ALIGN_REGISTER_TYPE align_inp;
++    PRIME_8X4F(p_i, align_inp);
++    for(i = 0; i < num_elm >> 2; i++)
++    {
++#if XCHAL_HAVE_HIFI1
++      AE_LA8X4U_IP(d_inp0, align_inp, p_i);
++#else
++      AE_LA8X4F_IP(d_inp0, align_inp, p_i);
++      d_inp0 = AE_SRAI16(d_inp0, 8);
++      d_inp0 = AE_AND16(d_inp0, AE_MOVDA16(0x00ff));
++#endif
++      d_inp0 = AE_SUB16S(d_inp0, d_inp_zero_bias);
++
++      AE_MUL16X4(d_inp32_0 , d_inp32_1 , d_inp0 , ONE);
++      MPY_BY_QUANT_MULT_SLS_X2_OUT32(d_out0_32, d_inp32_0, d_out_multiplier, left_shift, right_shift);
++      MPY_BY_QUANT_MULT_SLS_X2_OUT32(d_out1_32, d_inp32_1, d_out_multiplier, left_shift, right_shift);
++      d_out0_32 = AE_ADD32S(d_out0_32, AE_MOVDA32(out_zero_bias));
++      d_out1_32 = AE_ADD32S(d_out1_32, AE_MOVDA32(out_zero_bias));
++#if XCHAL_HAVE_HIFI1
++#if ( XCHAL_HW_VERSION >= RI9_HWVERSION )
++      // clamped_out
++      ae_int8x8 clamped_01 = AE_SAT8X4X32_H(d_out0_32, d_out1_32);
++      // Store Output
++      AE_SAV8X8_XP(clamped_01, align_out, (ae_int8x8 *)p_o, 4);
++#else
++      CLAMP_VAL(d_out0_32, d_out0_32, quant_min, quant_max)
++      CLAMP_VAL(d_out1_32, d_out1_32, quant_min, quant_max)
++      ae_int16x4 out = AE_SEL16_6420(AE_MOVF16X4_FROMF32X2(d_out0_32), AE_MOVF16X4_FROMF32X2(d_out1_32));
++      AE_SA8X4U_IP(out, align_out, (ae_int32 *)p_o);
++#endif
++#else
++      CLAMP_VAL(d_out0_32, d_out0_32, quant_min, quant_max)
++      CLAMP_VAL(d_out1_32, d_out1_32, quant_min, quant_max)
++      STORE_8X4_FROM_32X4(p_o, d_out0_32, d_out1_32);
++#endif
++    }
++#if XCHAL_HAVE_HIFI1
++    AE_SA64POS_FP(align_out, p_o);
++#endif
++  }
++#pragma loop_count max=3
++  for(i = 0; i < (num_elm & 3) ; i++)
++  {
++    ae_int16x4 d_inp0 = AE_MOVDA16((WORD32)((UWORD8 *)p_i)[i] - inp_zero_bias);
++
++    d_inp32_0 = AE_SEXT32X2D16_10(d_inp0);
++    MPY_BY_QUANT_MULT_SLS_X2_OUT32(d_out0_32, d_inp32_0, d_out_multiplier, left_shift, right_shift);
++    d_out0_32 = AE_ADD32S(d_out0_32, AE_MOVDA32(out_zero_bias));
++
++    CLAMP_VAL(d_out0_32, d_out0_32, quant_min, quant_max)
++    *p_o = (WORD8)AE_MOVAD32_L(d_out0_32);
++    p_o++;
++  }
++  return 0;
++}
++
+ #if !HAVE_VFPU
+ DISCARD_FUN_FOR_NONVOID_RETURN(WORD32, xa_nn_elm_dequantize_asym8s_f32,
+                                (FLOAT32 * __restrict__ p_out,
+@@ -827,6 +971,10 @@ WORD32 xa_nn_elm_quantize_f32_asym8s(WORD8 * __restrict__ p_out,
    ae_valign align_inp = AE_LA64_PP(p_inp);
    ae_int32x2 quant_max = AE_MOVDA32(127);
    ae_int32x2 quant_min = AE_MOVDA32(-128);
@@ -512,7 +663,7 @@ index fd0cc13..99955c5 100644
  #if (XCHAL_HAVE_HIFI1 &( XCHAL_HW_VERSION >= RI9_HWVERSION ))
    ALIGN_REGISTER_TYPE align_out = AE_ZALIGN64();
  #endif
-@@ -835,12 +839,11 @@ WORD32 xa_nn_elm_quantize_f32_asym8s(WORD8 * __restrict__ p_out,
+@@ -835,12 +983,11 @@ WORD32 xa_nn_elm_quantize_f32_asym8s(WORD8 * __restrict__ p_out,
      xtfloatx2 d_inp0, d_inp1;
      xtfloatx2 d_inp0_t, d_inp1_t;
      ae_int32x2 d_out32_0, d_out32_1;
@@ -527,7 +678,7 @@ index fd0cc13..99955c5 100644
      d_inp0_t = XT_FIROUND_SX2(d_inp0_t);
      d_inp1_t = XT_FIROUND_SX2(d_inp1_t);    
      d_out32_0 = XT_TRUNC_SX2(d_inp0_t, 0);
-@@ -863,12 +866,11 @@ WORD32 xa_nn_elm_quantize_f32_asym8s(WORD8 * __restrict__ p_out,
+@@ -863,12 +1010,11 @@ WORD32 xa_nn_elm_quantize_f32_asym8s(WORD8 * __restrict__ p_out,
  #endif
    for(i = 0; i < (num_elm & 3) ; i++)
    {
@@ -541,7 +692,7 @@ index fd0cc13..99955c5 100644
      d_inp0_t = XT_FIROUND_S(d_inp0_t);
      d_out32_0 = XT_TRUNC_S(d_inp0_t, 0);    
      d_out32_0 = AE_ADD32S(d_out32_0, d_out_zero_bias);
-@@ -915,18 +917,20 @@ WORD32 xa_nn_elm_quantize_f32_asym16s(WORD16 * __restrict__ p_out,
+@@ -915,18 +1061,20 @@ WORD32 xa_nn_elm_quantize_f32_asym16s(WORD16 * __restrict__ p_out,
    ae_valign align_out = AE_ZALIGN64();
    ae_int32x2 quant_max = AE_MOVDA32(32767);
    ae_int32x2 quant_min = AE_MOVDA32(-32768);
@@ -565,7 +716,7 @@ index fd0cc13..99955c5 100644
      d_inp0_t = XT_FIROUND_SX2(d_inp0_t);
      d_inp1_t = XT_FIROUND_SX2(d_inp1_t);    
      d_out32_0 = XT_TRUNC_SX2(d_inp0_t, 0);
-@@ -943,12 +947,11 @@ WORD32 xa_nn_elm_quantize_f32_asym16s(WORD16 * __restrict__ p_out,
+@@ -943,12 +1091,11 @@ WORD32 xa_nn_elm_quantize_f32_asym16s(WORD16 * __restrict__ p_out,
  
    for(i = 0; i < (num_elm & 3) ; i++)
    {
@@ -579,6 +730,21 @@ index fd0cc13..99955c5 100644
      d_inp0_t = XT_FIROUND_S(d_inp0_t);
      d_out32_0 = XT_TRUNC_S(d_inp0_t, 0);    
      d_out32_0 = AE_ADD32S(d_out32_0, d_out_zero_bias);
+diff --git a/algo/kernels/basic/hifi4/xa_nn_elm_rsqrt_f32.c b/algo/kernels/basic/hifi4/xa_nn_elm_rsqrt_f32.c
+index 5d14ba4..e8c8d74 100644
+--- a/algo/kernels/basic/hifi4/xa_nn_elm_rsqrt_f32.c
++++ b/algo/kernels/basic/hifi4/xa_nn_elm_rsqrt_f32.c
+@@ -138,7 +138,9 @@ WORD32 xa_nn_elm_rsqrt_f32_f32(FLOAT32 * __restrict__ p_out,
+   {
+     xtfloat a1, a;
+     XT_LSIP(a1, (xtfloat *)inp, 0);
+-    a = XT_RSQRT_S(a1);
++    x1 = a1;
++    y1 = XT_RSQRT_SX2(x1);
++    a = y1;
+     XT_SSI(a, (xtfloat *)out, 0);
+   }
+ 
 diff --git a/algo/kernels/basic/hifi4/xa_nn_reduce_asym8s_asym8s.c b/algo/kernels/basic/hifi4/xa_nn_reduce_asym8s_asym8s.c
 index 47b0956..b400bcb 100644
 --- a/algo/kernels/basic/hifi4/xa_nn_reduce_asym8s_asym8s.c
@@ -650,6 +816,22 @@ index dace733..7e9856d 100644
  
    if(bytewidth == 4)
    {
+diff --git a/algo/kernels/cnn/hifi4/xa_nn_circ_buf.h b/algo/kernels/cnn/hifi4/xa_nn_circ_buf.h
+index 4315be5..5d1979b 100644
+--- a/algo/kernels/cnn/hifi4/xa_nn_circ_buf.h
++++ b/algo/kernels/cnn/hifi4/xa_nn_circ_buf.h
+@@ -23,6 +23,11 @@
+ #ifndef __XA_NN_CIRC_BUF_H__
+ #define __XA_NN_CIRC_BUF_H__
+ 
++#ifdef ENABLE_SCRATCH_SIZE_API_ONLY
++#define xa_nn_circ_buf_nchw_getsize     xa_nn_circ_buf_nchw_getsize_hifi4
++#define xa_nn_circ_buf_nhwc_getsize     xa_nn_circ_buf_nhwc_getsize_hifi4
++#endif
++
+ #define OUT_HEIGHT_PER_ITER 2
+ 
+ #define ALIGNMENT   8   /* 8 bytes alignment */
 diff --git a/algo/kernels/cnn/hifi4/xa_nn_conv2d_depthwise.c b/algo/kernels/cnn/hifi4/xa_nn_conv2d_depthwise.c
 index ac6ab07..04aa355 100644
 --- a/algo/kernels/cnn/hifi4/xa_nn_conv2d_depthwise.c
@@ -713,10 +895,81 @@ index ac6ab07..04aa355 100644
  WORD32 xa_nn_dilated_conv2d_depthwise_getsize
  (WORD32 input_height
 diff --git a/algo/kernels/cnn/hifi4/xa_nn_conv2d_std_sym8sxasym8s.c b/algo/kernels/cnn/hifi4/xa_nn_conv2d_std_sym8sxasym8s.c
-index c4f5804..28d4d65 100644
+index c4f5804..e78cd47 100644
 --- a/algo/kernels/cnn/hifi4/xa_nn_conv2d_std_sym8sxasym8s.c
 +++ b/algo/kernels/cnn/hifi4/xa_nn_conv2d_std_sym8sxasym8s.c
-@@ -630,7 +630,7 @@ WORD32 xa_nn_conv2d_std_per_chan_sym8sxasym8s(
+@@ -64,17 +64,27 @@ static WORD32 conv_x_left_pad(
+ #else /* #if TFLITE_SINGLE_ROUNDING */
+         left_shift  = p_out_shift[k] < 0 ? 0 : p_out_shift[k];
+         right_shift = p_out_shift[k] > 0 ? 0 : -p_out_shift[k];
+-#endif /* #if TFLITE_SINGLE_ROUNDING */          
++#endif /* #if TFLITE_SINGLE_ROUNDING */
++        ae_int32x2 acc;
+ #if XCHAL_HAVE_HIFI1
+-        ae_int32x2 acc = AE_L32_I((ae_int32*)&p_bias[k], 0);
++        if(p_bias != NULL){
++          acc = AE_L32_I((ae_int32*)&p_bias[k], 0);
++        }
++        else{
++          acc = AE_MOVDA32(0);
++        }
+         MPY_BY_QUANT_MULT_SLS_X2_OUT32(acc, acc, p_out_multiplier[k], left_shift, right_shift);
+         acc = AE_ADD32S(acc, AE_MOVDA32(out_zero_bias));
+         acc = AE_MAX32(acc, min_int8);
+         acc = AE_MIN32(acc, max_int8);
+         AE_S8_0_X_HIFI1( AE_MOVINT16X4_FROMINT32X2(acc), (WORD8 *)p_out, (i * out_height_offset + j * out_width_offset + k * out_channels_offset));
+ #else
+-
+-        ae_int32x2 acc = AE_MOVDA32(p_bias[k]);
++        if(p_bias != NULL){
++          acc = AE_MOVDA32(p_bias[k]);
++        }
++        else{
++          acc = AE_MOVDA32(0);
++        }
+         MPY_BY_QUANT_MULT_SLS_X2_OUT32(acc, acc, p_out_multiplier[k], left_shift, right_shift);
+         acc = AE_ADD32S(acc, AE_MOVDA32(out_zero_bias));
+ #if 0
+@@ -129,16 +139,27 @@ static WORD32 conv_x_right_pad(
+ #else /* #if TFLITE_SINGLE_ROUNDING */
+         left_shift  = p_out_shift[k] < 0 ? 0 : p_out_shift[k];
+         right_shift = p_out_shift[k] > 0 ? 0 : -p_out_shift[k];
+-#endif /* #if TFLITE_SINGLE_ROUNDING */          
++#endif /* #if TFLITE_SINGLE_ROUNDING */
++        ae_int32x2 acc;
+ #if XCHAL_HAVE_HIFI1
+-        ae_int32x2 acc = AE_L32_I((ae_int32*)&p_bias[k], 0);
++        if(p_bias != NULL){
++           acc = AE_L32_I((ae_int32*)&p_bias[k], 0);
++        }
++        else{
++          acc = AE_MOVDA32(0);
++        }
+         MPY_BY_QUANT_MULT_SLS_X2_OUT32(acc, acc, p_out_multiplier[k], left_shift, right_shift);
+         acc = AE_ADD32S(acc, AE_MOVDA32(out_zero_bias));
+         acc = AE_MAX32(acc, min_int8);
+         acc = AE_MIN32(acc, max_int8);
+         AE_S8_0_X_HIFI1( AE_MOVINT16X4_FROMINT32X2(acc), (WORD8 *)p_out, (i * out_height_offset + j * out_width_offset + k * out_channels_offset));
+ #else
+-        ae_int32x2 acc = AE_MOVDA32(p_bias[k]);
++        if(p_bias != NULL){
++          acc = AE_MOVDA32(p_bias[k]);
++        }
++        else{
++          acc = AE_MOVDA32(0);
++        }
+         MPY_BY_QUANT_MULT_SLS_X2_OUT32(acc, acc, p_out_multiplier[k], left_shift, right_shift);
+         acc = AE_ADD32S(acc, AE_MOVDA32(out_zero_bias));
+ #if 0
+@@ -565,7 +586,6 @@ WORD32 xa_nn_conv2d_std_per_chan_sym8sxasym8s(
+   XA_NNLIB_ARG_CHK_PTR(p_out, -1);
+   XA_NNLIB_ARG_CHK_PTR(p_kernel, -1);
+   XA_NNLIB_ARG_CHK_PTR(p_inp, -1);
+-  XA_NNLIB_ARG_CHK_PTR(p_bias, -1);
+   XA_NNLIB_ARG_CHK_PTR(p_scratch, -1);
+   /* Pointer alignment checks */
+   //XA_NNLIB_ARG_CHK_ALIGN(p_out, sizeof(UWORD8), -1);
+@@ -630,7 +650,7 @@ WORD32 xa_nn_conv2d_std_per_chan_sym8sxasym8s(
        ,inp_h
        ,input_channels
        ,ker_h
@@ -726,10 +979,55 @@ index c4f5804..28d4d65 100644
        ,y_pad
        ,out_h
 diff --git a/algo/kernels/cnn/hifi4/xa_nn_conv2d_std_sym8sxsym16s.c b/algo/kernels/cnn/hifi4/xa_nn_conv2d_std_sym8sxsym16s.c
-index a8d82fd..793eb16 100644
+index a8d82fd..31bedf2 100644
 --- a/algo/kernels/cnn/hifi4/xa_nn_conv2d_std_sym8sxsym16s.c
 +++ b/algo/kernels/cnn/hifi4/xa_nn_conv2d_std_sym8sxsym16s.c
-@@ -497,7 +497,7 @@ WORD32 inp_h, inp_w, ker_h, ker_w, x_str, y_str, x_pad, y_pad, out_h, out_w;
+@@ -171,7 +171,12 @@ static WORD32 conv_x_left_pad(
+       ae_int64 q1;
+       for(k = 0; k < out_channels; k++)
+       {
+-	AE_L64_IP(q1, pbias, 8);
++        if(p_bias != NULL){
++          AE_L64_IP(q1, pbias, 8);
++        }
++        else{
++          q1 = 0;
++        }
+ 	ae_int32x2 acc = MultiplyByQuantizedMultiplier_ref(q1, p_out_multiplier[k], p_out_shift[k]);
+ 	d1 = AE_SAT16X4(acc, acc);
+ 	AE_S16_0_XP(d1, ptrout, out_channels_offset*sizeof(WORD16));
+@@ -211,7 +216,12 @@ static WORD32 conv_x_right_pad(
+       ae_int64 q1;
+       for(k = 0; k < out_channels; k++)
+       {
+-	AE_L64_IP(q1, pbias, 8);
++        if(p_bias != NULL){
++          AE_L64_IP(q1, pbias, 8);
++        }
++        else{
++          q1 = 0;
++        }
+ 	ae_int32x2 acc = MultiplyByQuantizedMultiplier_ref(q1, p_out_multiplier[k], p_out_shift[k]);
+ 	d1 = AE_SAT16X4(acc, acc);
+ 	AE_S16_0_XP(d1, ptrout, out_channels_offset*sizeof(WORD16));
+@@ -404,7 +414,6 @@ WORD32 xa_nn_conv2d_std_per_chan_sym8sxsym16s(
+   XA_NNLIB_ARG_CHK_PTR(p_out, -1);
+   XA_NNLIB_ARG_CHK_PTR(p_kernel, -1);
+   XA_NNLIB_ARG_CHK_PTR(p_inp, -1);
+-  XA_NNLIB_ARG_CHK_PTR(p_bias, -1);
+   XA_NNLIB_ARG_CHK_PTR(p_scratch, -1);
+   /* Pointer alignment checks */
+   XA_NNLIB_ARG_CHK_ALIGN(p_bias, sizeof(WORD64), -1);
+@@ -427,7 +436,7 @@ WORD32 xa_nn_conv2d_std_per_chan_sym8sxsym16s(
+     XA_NNLIB_ARG_CHK_COND((p_out_shift[itr] < -31 || p_out_shift[itr] > 31), -1);
+   }
+ 
+-  if ( !(x_padding) && !(input_channels & 0x3) && !(out_channels & 0x3) && !(out_width & 0x1) && (out_data_format == 0) && ((out_width-1)*x_stride <=(input_width-kernel_width) ) )
++  if ( !(x_padding) && !(input_channels & 0x3) && !(out_channels & 0x3) && !(out_width & 0x1) && (out_data_format == 0) && ((out_width-1)*x_stride <=(input_width-kernel_width) ) && p_bias)
+   {
+     int ret_val=0;
+     ret_val=xa_nn_conv2d_std_per_chan_sym8sxsym16s_no_circ_buf(p_out,
+@@ -497,7 +506,7 @@ WORD32 inp_h, inp_w, ker_h, ker_w, x_str, y_str, x_pad, y_pad, out_h, out_w;
        ,inp_h
        ,input_channels
        ,ker_h
@@ -738,7 +1036,7 @@ index a8d82fd..793eb16 100644
        ,y_str
        ,y_pad
        ,out_h
-@@ -510,7 +510,7 @@ WORD32 inp_h, inp_w, ker_h, ker_w, x_str, y_str, x_pad, y_pad, out_h, out_w;
+@@ -510,7 +519,7 @@ WORD32 inp_h, inp_w, ker_h, ker_w, x_str, y_str, x_pad, y_pad, out_h, out_w;
        ,inp_h
        ,input_channels
        ,ker_h
@@ -747,6 +1045,291 @@ index a8d82fd..793eb16 100644
        ,y_str
        ,y_pad
        ,out_h
+diff --git a/algo/kernels/cnn/hifi4/xa_nn_matXvec_sym8sxasym8s_asym8s_circ.c b/algo/kernels/cnn/hifi4/xa_nn_matXvec_sym8sxasym8s_asym8s_circ.c
+index 504e9da..88dfbca 100644
+--- a/algo/kernels/cnn/hifi4/xa_nn_matXvec_sym8sxasym8s_asym8s_circ.c
++++ b/algo/kernels/cnn/hifi4/xa_nn_matXvec_sym8sxasym8s_asym8s_circ.c
+@@ -634,13 +634,15 @@ WORD32 xa_nn_matXvec_sym8sxasym8s_asym8s_circ(
+ 
+   int left_shift, right_shift;
+   int m_itr, vec_itr;
+-
++  ae_int32 zeros[4] = {0, 0, 0, 0};
+   /* vec, mat and bias 4-byte aigned */
+-  if(p_mat1 && p_vec1 && p_bias &&
+-      (((unsigned int)p_mat1&0x3)==0) && (((unsigned int)p_vec1&0x3)==0) && (((unsigned int)p_bias&0x3) == 0) &&
++  if(p_mat1 && p_vec1 && (((unsigned int)p_mat1&0x3)==0) && (((unsigned int)p_vec1&0x3)==0) && (((unsigned int)p_bias&0x3) == 0) &&
+       ((cols1&0x3)==0) && ((vec_stride&0x3)==0) && ((row_stride1&0x3)==0))
+   {
+     ae_int32 *bias_ptr = (ae_int32*)p_bias;
++    if(p_bias == NULL){
++      bias_ptr = zeros;
++    }
+     for(vec_itr = 0; vec_itr < ((vec_count>>2)<<2); vec_itr+=4)
+     {
+       ae_int32x2 acc_row0_vec0, acc_row0_vec1, acc_row0_vec2, acc_row0_vec3;
+@@ -813,7 +815,9 @@ WORD32 xa_nn_matXvec_sym8sxasym8s_asym8s_circ(
+ #endif
+       }
+       /* dummy load, just to increment the pointer */
+-      AE_L32_IP(acc_row0_vec0, bias_ptr, 16);
++      if(p_bias != NULL){
++        AE_L32_IP(acc_row0_vec0, bias_ptr, 16);
++      }
+     }
+ 
+     /* for vec_count=2 */
+@@ -930,7 +934,9 @@ WORD32 xa_nn_matXvec_sym8sxasym8s_asym8s_circ(
+       }
+       /* dummy load, just to increment the pointer */
+       vec_itr+=2;
+-      AE_L32_IP(acc_row0_vec0, bias_ptr, 8);
++      if(p_bias != NULL){
++        AE_L32_IP(acc_row0_vec0, bias_ptr, 8);
++      }
+     }
+ 
+     /* for vec_count=1 */
+@@ -1014,11 +1020,17 @@ WORD32 xa_nn_matXvec_sym8sxasym8s_asym8s_circ(
+ #endif
+       }
+       /* dummy load, just to increment the pointer */
+-      AE_L32_IP(acc_row0_vec0, bias_ptr, 4);
++      if(p_bias != NULL){
++        AE_L32_IP(acc_row0_vec0, bias_ptr, 4);
++      }
+     }
+   }
+-  else if(p_mat1 && p_vec1 && p_bias)
++  else if(p_mat1 && p_vec1)
+   {
++    ae_int32 *bias_ptr = (ae_int32*)p_bias;
++    if(p_bias == NULL){
++      bias_ptr = zeros;
++    }
+ //#if !ENABLE_PADDING_CONV2D_STD
+ #if HW_AE_ADDCIRC16X4_XC
+     vec_itr = 0; 
+@@ -1050,14 +1062,14 @@ WORD32 xa_nn_matXvec_sym8sxasym8s_asym8s_circ(
+       for (; m_itr < (rows&~3); m_itr+=4)
+       {
+         int c_itr;
+-        ae_int32x2 acc_row01_vec0 = AE_MOVDA32(p_bias[vec_itr + 0]);
+-        ae_int32x2 acc_row23_vec0 = AE_MOVDA32(p_bias[vec_itr + 0]);
+-        ae_int32x2 acc_row01_vec1 = AE_MOVDA32(p_bias[vec_itr + 1]);
+-        ae_int32x2 acc_row23_vec1 = AE_MOVDA32(p_bias[vec_itr + 1]);
+-        ae_int32x2 acc_row01_vec2 = AE_MOVDA32(p_bias[vec_itr + 2]);
+-        ae_int32x2 acc_row23_vec2 = AE_MOVDA32(p_bias[vec_itr + 2]);
+-        ae_int32x2 acc_row01_vec3 = AE_MOVDA32(p_bias[vec_itr + 3]);
+-        ae_int32x2 acc_row23_vec3 = AE_MOVDA32(p_bias[vec_itr + 3]);
++        ae_int32x2 acc_row01_vec0 = AE_L32_I(bias_ptr, 0);
++        ae_int32x2 acc_row23_vec0 = AE_L32_I(bias_ptr, 0);
++        ae_int32x2 acc_row01_vec1 = AE_L32_I(bias_ptr, 4);
++        ae_int32x2 acc_row23_vec1 = AE_L32_I(bias_ptr, 4);
++        ae_int32x2 acc_row01_vec2 = AE_L32_I(bias_ptr, 8);
++        ae_int32x2 acc_row23_vec2 = AE_L32_I(bias_ptr, 8);
++        ae_int32x2 acc_row01_vec3 = AE_L32_I(bias_ptr, 12);
++        ae_int32x2 acc_row23_vec3 = AE_L32_I(bias_ptr, 12);
+ 
+         WORD8* p_vec_0  = (WORD8*)(p_vec1 + (vec_itr+0) * vec_stride);
+         WORD8* p_vec_1  = (WORD8*)(p_vec1 + (vec_itr+1) * vec_stride);
+@@ -1179,10 +1191,10 @@ WORD32 xa_nn_matXvec_sym8sxasym8s_asym8s_circ(
+       /* Remainder Loop */
+       for (; m_itr < rows; m_itr++)
+       {
+-        ae_int32x2 acc_row0_vec0 = AE_MOVDA32(p_bias[vec_itr + 0]);
+-        ae_int32x2 acc_row0_vec1 = AE_MOVDA32(p_bias[vec_itr + 1]);
+-        ae_int32x2 acc_row0_vec2 = AE_MOVDA32(p_bias[vec_itr + 2]);
+-        ae_int32x2 acc_row0_vec3 = AE_MOVDA32(p_bias[vec_itr + 3]);
++        ae_int32x2 acc_row0_vec0 = AE_L32_I(bias_ptr, 0);
++        ae_int32x2 acc_row0_vec1 = AE_L32_I(bias_ptr, 4);
++        ae_int32x2 acc_row0_vec2 = AE_L32_I(bias_ptr, 8);
++        ae_int32x2 acc_row0_vec3 = AE_L32_I(bias_ptr, 12);
+ 
+         WORD8* p_vec_0  = (WORD8*)(p_vec1 + (vec_itr+0) * vec_stride);
+         WORD8* p_vec_1  = (WORD8*)(p_vec1 + (vec_itr+1) * vec_stride);
+@@ -1238,6 +1250,10 @@ WORD32 xa_nn_matXvec_sym8sxasym8s_asym8s_circ(
+         AE_S8_FROM32_WITHSTRIDE(AE_MOVAD32_L(acc_row0_vec2), p_dst2, out_stride);
+         AE_S8_FROM32_WITHSTRIDE(AE_MOVAD32_L(acc_row0_vec3), p_dst3, out_stride);
+       }
++      if(p_bias != NULL){
++        ae_int32x2 dummy;
++        AE_L32_IP(dummy, bias_ptr, 16);
++      }
+     }
+     for(; vec_itr < vec_count; vec_itr++)
+     {
+@@ -1256,8 +1272,8 @@ WORD32 xa_nn_matXvec_sym8sxasym8s_asym8s_circ(
+       for (m_itr = 0; m_itr < (rows&~3); m_itr+=4)
+       {
+         int c_itr;
+-        ae_int32x2 acc_row01_vec0 = AE_MOVDA32(p_bias[vec_itr + 0]);
+-        ae_int32x2 acc_row23_vec0 = AE_MOVDA32(p_bias[vec_itr + 0]);
++        ae_int32x2 acc_row01_vec0 = AE_L32_I(bias_ptr, 0);
++        ae_int32x2 acc_row23_vec0 = AE_L32_I(bias_ptr, 0);
+ 
+         WORD8* p_vec_0  = (WORD8*)(p_vec1 + vec_itr * vec_stride);
+         WORD8 *p_mat1_0 = (WORD8*)p_mat1;
+@@ -1311,7 +1327,7 @@ WORD32 xa_nn_matXvec_sym8sxasym8s_asym8s_circ(
+ 
+       for (; m_itr < rows; m_itr++)
+       {
+-        ae_int32x2 acc_row0_vec0 = AE_MOVDA32(p_bias[vec_itr + 0]);
++        ae_int32x2 acc_row0_vec0 = AE_L32_I(bias_ptr, 0);
+ 
+         WORD8* p_vec_0  = (WORD8*)(p_vec1 + vec_itr * vec_stride);
+         WORD8 *p_mat1_0 = (WORD8*)p_mat1;
+@@ -1337,6 +1353,10 @@ WORD32 xa_nn_matXvec_sym8sxasym8s_asym8s_circ(
+ 
+         AE_S8_FROM32_WITHSTRIDE(AE_MOVAD32_L(acc_row0_vec0), p_dst0, out_stride);
+       }
++      if(p_bias != NULL){
++        ae_int32x2 dummy;
++        AE_L32_IP(dummy, bias_ptr, 4);
++      }
+     }
+ #else
+ /* Under normal mode of operation, this code is not expected to be executed. It is added only as a compliance code in case the aligend code is not executed */
+@@ -1360,7 +1380,7 @@ WORD32 xa_nn_matXvec_sym8sxasym8s_asym8s_circ(
+       m_itr = 0;
+       for (; m_itr < rows; m_itr++)
+       {
+-        ae_int32x2 acc_row0_vec0 = AE_MOVDA32(p_bias[vec_itr + 0]);
++        ae_int32x2 acc_row0_vec0 = AE_L32_I(bias_ptr, 0);
+ 
+         WORD8* p_vec_0  = (WORD8*)(p_vec1 + vec_itr * vec_stride);
+         WORD8 *p_mat1_0 = (WORD8*)p_mat1;
+@@ -1391,6 +1411,10 @@ WORD32 xa_nn_matXvec_sym8sxasym8s_asym8s_circ(
+ 
+         AE_S8_FROM32_WITHSTRIDE(AE_MOVAD32_L(acc_row0_vec0), p_dst0, out_stride);
+       }
++      if(p_bias != NULL){
++        ae_int32x2 dummy;
++        AE_L32_IP(dummy, bias_ptr, 4);
++      }
+     }
+ #endif /* ENABLE_PADDING_CONV2D_STD */
+   }
+diff --git a/algo/kernels/cnn/hifi4/xa_nn_matXvec_sym8sxsym16s_sym16s_circ.c b/algo/kernels/cnn/hifi4/xa_nn_matXvec_sym8sxsym16s_sym16s_circ.c
+index d876754..4fd8aee 100644
+--- a/algo/kernels/cnn/hifi4/xa_nn_matXvec_sym8sxsym16s_sym16s_circ.c
++++ b/algo/kernels/cnn/hifi4/xa_nn_matXvec_sym8sxsym16s_sym16s_circ.c
+@@ -1234,11 +1234,14 @@ WORD32 xa_nn_matXvec_sym8sxsym16s_sym16s_circ(
+   int m_itr, vec_itr;
+   row_stride1 = row_stride1<<1;
+ 
+- if(p_mat1 && p_vec1 && p_bias &&
+-      (((unsigned int)p_mat1&0x7)==0) && (((unsigned int)p_vec1&0x3)==0) && (((unsigned int)p_bias&0x7) == 0) &&
++  ae_int64 zeros[4] = {0, 0, 0, 0};
++  if(p_mat1 && p_vec1 && (((unsigned int)p_mat1&0x7)==0) && (((unsigned int)p_vec1&0x3)==0) && (((unsigned int)p_bias&0x7) == 0) &&
+       ((cols1&0x3)==0) && ((vec_stride&0x3)==0) && ((row_stride1&0x7)==0))
+   {
+     ae_int64 *pbias = (ae_int64*)p_bias;
++    if(p_bias == NULL){
++      pbias = zeros;
++    }
+     for(vec_itr = 0; vec_itr<(vec_count&(~0x3)); vec_itr+=4)
+     {
+       ae_int32x2 acc_row0_vec0, acc_row0_vec1, acc_row0_vec2, acc_row0_vec3;
+@@ -1302,6 +1305,7 @@ WORD32 xa_nn_matXvec_sym8sxsym16s_sym16s_circ(
+         acc3 = AE_L64_I(pbias, 8);
+         acc5 = AE_L64_I(pbias, 16);
+         acc7 = AE_L64_I(pbias, 24);
++
+         WORD16 *p_mat1_0 = (WORD16*)p_mat1;
+         AE_ADDCIRC16X4_XC((ae_int16x4*)p_mat1_0, (m_itr+0) * row_stride1);
+         _xa_nn_dot_product_1row_4vec_mat_vecs_4bytes_aligned
+@@ -1325,7 +1329,9 @@ WORD32 xa_nn_matXvec_sym8sxsym16s_sym16s_circ(
+ 	AE_S16_0_XP(                   d1, (ae_int16*)p_dst3, out_stride);
+       }
+       /* dummy load, just to increment the pointer */
+-      AE_L64_IP(acc1, pbias, 32);
++      if(p_bias != NULL){
++        AE_L64_IP(acc1, pbias, 32);
++      }
+     }
+     if(vec_count&0x2)
+     {
+@@ -1384,7 +1390,9 @@ WORD32 xa_nn_matXvec_sym8sxsym16s_sym16s_circ(
+ 	AE_S16_0_XP(	               d1, (ae_int16*)p_dst1, out_stride);
+       }
+       /* dummy load, just to increment the pointer */
+-      AE_L64_IP(acc1, pbias, 16);
++      if(p_bias != NULL){
++        AE_L64_IP(acc1, pbias, 16);
++      }
+       vec_itr += 2;
+     }
+     if(vec_count&0x1)
+@@ -1396,7 +1404,12 @@ WORD32 xa_nn_matXvec_sym8sxsym16s_sym16s_circ(
+       ae_int16x4 d1;
+       for (m_itr=0; m_itr < (rows&(~0x1)); m_itr+=2)
+       {
+-        acc1 = acc2 = AE_L64_I(pbias, 0);
++        if(p_bias != NULL){
++          acc1 = acc2 = AE_L64_I(pbias, 0);
++        }
++        else{
++          acc1 = acc2 = 0;
++        }
+         WORD16 *p_mat1_0 = (WORD16*)p_mat1;
+         WORD16 *p_mat1_1 = (WORD16*)p_mat1;
+         AE_ADDCIRC16X4_XC((ae_int16x4*)p_mat1_0, (m_itr+0) * row_stride1);
+@@ -1430,14 +1443,18 @@ WORD32 xa_nn_matXvec_sym8sxsym16s_sym16s_circ(
+ 	AE_S16_0_XP(d1, (ae_int16*)p_dst0, out_stride);
+       }
+       /* dummy load, just to increment the pointer */
+-      AE_L64_IP(acc1, pbias, 8);
++      if(p_bias != NULL){
++        AE_L64_IP(acc1, pbias, 8);
++      }
+     }
+   }
+-  else if(p_mat1 && p_vec1 && p_bias &&
+-      (((unsigned int)p_vec1&0x3)==0) && (((unsigned int)p_bias&0x7) == 0) &&
++  else if(p_mat1 && p_vec1 && (((unsigned int)p_vec1&0x3)==0) && (((unsigned int)p_bias&0x7) == 0) &&
+       ((cols1&0x3)==0) && ((vec_stride&0x3)==0))
+   {
+     ae_int64 *pbias = (ae_int64*)p_bias;
++    if(p_bias == NULL){
++      pbias = zeros;
++    }
+     for(vec_itr = 0; vec_itr<(vec_count&(~0x3)); vec_itr+=4)
+     {
+       ae_int32x2 acc_row0_vec0, acc_row0_vec1, acc_row0_vec2, acc_row0_vec3;
+@@ -1524,7 +1541,9 @@ WORD32 xa_nn_matXvec_sym8sxsym16s_sym16s_circ(
+ 	AE_S16_0_XP(                   d1, (ae_int16*)p_dst3, out_stride);
+       }
+       /* dummy load, just to increment the pointer */
+-      AE_L64_IP(acc1, pbias, 32);
++      if(p_bias != NULL){
++        AE_L64_IP(acc1, pbias, 32);
++      }
+     }
+     if(vec_count&0x2)
+     {
+@@ -1583,7 +1602,9 @@ WORD32 xa_nn_matXvec_sym8sxsym16s_sym16s_circ(
+ 	AE_S16_0_XP(	               d1, (ae_int16*)p_dst1, out_stride);
+       }
+       /* dummy load, just to increment the pointer */
+-      AE_L64_IP(acc1, pbias, 16);
++      if(p_bias != NULL){
++        AE_L64_IP(acc1, pbias, 16);
++      }
+       vec_itr += 2;
+     }
+     if(vec_count&0x1)
+@@ -1629,7 +1650,9 @@ WORD32 xa_nn_matXvec_sym8sxsym16s_sym16s_circ(
+ 	AE_S16_0_XP(d1, (ae_int16*)p_dst0, out_stride);
+       }
+       /* dummy load, just to increment the pointer */
+-      AE_L64_IP(acc1, pbias, 8);
++      if(p_bias != NULL){
++        AE_L64_IP(acc1, pbias, 8);
++      }
+     }
+   }
+   else
 diff --git a/algo/kernels/cnn/hifi4/xa_nn_transpose_conv_circ_buf.c b/algo/kernels/cnn/hifi4/xa_nn_transpose_conv_circ_buf.c
 index 4a2f875..36903ee 100644
 --- a/algo/kernels/cnn/hifi4/xa_nn_transpose_conv_circ_buf.c
@@ -765,18 +1348,91 @@ index 4a2f875..36903ee 100644
  }
 +#endif /* #ifndef ENABLE_SCRATCH_SIZE_API_ONLY */
 +
+diff --git a/algo/kernels/cnn/hifi4/xa_nn_transpose_conv_f32.c b/algo/kernels/cnn/hifi4/xa_nn_transpose_conv_f32.c
+index c8f3998..31de98d 100644
+--- a/algo/kernels/cnn/hifi4/xa_nn_transpose_conv_f32.c
++++ b/algo/kernels/cnn/hifi4/xa_nn_transpose_conv_f32.c
+@@ -619,7 +619,7 @@ DISCARD_FUN_FOR_NONVOID_RETURN(WORD32, xa_nn_transpose_conv_f32, (FLOAT32* outpu
+             int filter_height, int filter_width,
+             int output_height, int output_width,
+             int num_elements,
+-            FLOAT32* scratch_buffer))
++            void* scratch_buffer))
+ #else
+ WORD32 xa_nn_transpose_conv_f32(FLOAT32* output_data,
+ 		const FLOAT32* input_data,
+@@ -632,7 +632,7 @@ WORD32 xa_nn_transpose_conv_f32(FLOAT32* output_data,
+ 		int filter_height, int filter_width,
+ 		int output_height, int output_width,
+ 		int num_elements,
+-		FLOAT32* scratch_buffer)
++		void* scratch_buffer)
+ {
+ 	/* NULL pointer checks */
+ 	XA_NNLIB_ARG_CHK_PTR(output_data, -1);
+diff --git a/algo/kernels/cnn/hifi4/xa_nn_transpose_conv_sym8sxasym8s.c b/algo/kernels/cnn/hifi4/xa_nn_transpose_conv_sym8sxasym8s.c
+index 1fcf93f..a50a8e9 100644
+--- a/algo/kernels/cnn/hifi4/xa_nn_transpose_conv_sym8sxasym8s.c
++++ b/algo/kernels/cnn/hifi4/xa_nn_transpose_conv_sym8sxasym8s.c
+@@ -641,7 +641,7 @@ int xa_nn_transpose_conv_sym8sxasym8s(WORD8* output_data,
+     int num_elements,
+     int input_offset, int output_offset,
+     int *output_shift, int *output_multiplier,
+-    int32_t* scratch_buffer)
++    void* scratch_buffer)
+ {
+   /* NULL pointer checks */
+   XA_NNLIB_ARG_CHK_PTR(output_data, -1);
+diff --git a/algo/kernels/cnn/hifi4/xa_nn_transpose_conv_sym8sxsym16s.c b/algo/kernels/cnn/hifi4/xa_nn_transpose_conv_sym8sxsym16s.c
+index 026166b..438f597 100644
+--- a/algo/kernels/cnn/hifi4/xa_nn_transpose_conv_sym8sxsym16s.c
++++ b/algo/kernels/cnn/hifi4/xa_nn_transpose_conv_sym8sxsym16s.c
+@@ -630,18 +630,18 @@ static inline void transpose_conv2d_std_sym8sxsym16s(WORD16* output_data,
+ }
+ 
+ int xa_nn_transpose_conv_sym8sxsym16s(WORD16* output_data,
+-		const WORD16* input_data,
+-		const WORD8* filter_data,
+-		const WORD64* bias_data,
+-		int stride_width, int stride_height,
+-		int pad_width, int pad_height,
+-		int input_depth, int output_depth,
+-		int input_height, int input_width,
+-		int filter_height, int filter_width,
+-		int output_height, int output_width,
+-		int num_elements,
+-		int *output_shift, int *output_multiplier,
+-		int64_t* scratch_buffer)
++    const WORD16* input_data,
++    const WORD8* filter_data,
++    const WORD64* bias_data,
++    int stride_width, int stride_height,
++    int pad_width, int pad_height,
++    int input_depth, int output_depth,
++    int input_height, int input_width,
++    int filter_height, int filter_width,
++    int output_height, int output_width,
++    int num_elements,
++    int *output_shift, int *output_multiplier,
++    void* scratch_buffer)
+ {
+ 	/* NULL pointer checks */
+ 	XA_NNLIB_ARG_CHK_PTR(output_data, -1);
 diff --git a/algo/kernels/pool/hifi4/xa_nn_avgpool.c b/algo/kernels/pool/hifi4/xa_nn_avgpool.c
-index d7481e8..5fc8963 100644
+index d7481e8..351965f 100644
 --- a/algo/kernels/pool/hifi4/xa_nn_avgpool.c
 +++ b/algo/kernels/pool/hifi4/xa_nn_avgpool.c
-@@ -24,6 +24,7 @@
+@@ -24,8 +24,9 @@
  #include "xa_nnlib_kernels_api.h"
  #include "xa_nn_avgpool_state.h"
  #include "xa_nnlib_err_chk.h"
 +#include "xa_nnlib_common_macros.h"
  
- WORD32 xa_nn_avgpool_getsize_nchw(
+-WORD32 xa_nn_avgpool_getsize_nchw(
++static WORD32 xa_nn_avgpool_getsize_nchw(
      WORD32 inp_precision,
+     WORD32 input_width,
+     WORD32 kernel_height,
 @@ -86,7 +87,7 @@ WORD32 xa_nn_avgpool_getsize_nchw(
          den_array_size = 0;
      /* Output scratch buffer size */
@@ -786,6 +1442,15 @@ index d7481e8..5fc8963 100644
      full_buf_width = ALIGNED_SIZE(full_buf_width, ALIGNMENT/2);
      /* Need 2 rows of padded input width as acratch for temp output */
      full_out_width = ALIGNED_SIZE(full_buf_width + kernel_width, 4);
+@@ -97,7 +98,7 @@ WORD32 xa_nn_avgpool_getsize_nchw(
+     return total_size;
+ }
+ 
+-WORD32 xa_nn_avgpool_getsize_nhwc(
++static WORD32 xa_nn_avgpool_getsize_nhwc(
+     WORD32 inp_precision,
+     WORD32 input_channels,
+     WORD32 input_width,
 @@ -150,7 +151,7 @@ WORD32 xa_nn_avgpool_getsize_nhwc(
  
          if(kernel_height <= (int)MAX_HEIGHT_16_BIT_ACC) // Accumulation in 16 bit container
@@ -823,17 +1488,20 @@ index d7481e8..5fc8963 100644
      /* Need 2 rows of padded input width as acratch for temp output */
      full_out_width = ALIGNED_SIZE(full_buf_width + kernel_width, 4);
 diff --git a/algo/kernels/pool/hifi4/xa_nn_maxpool.c b/algo/kernels/pool/hifi4/xa_nn_maxpool.c
-index 5ffd08a..5140c92 100644
+index 5ffd08a..b765988 100644
 --- a/algo/kernels/pool/hifi4/xa_nn_maxpool.c
 +++ b/algo/kernels/pool/hifi4/xa_nn_maxpool.c
-@@ -24,6 +24,7 @@
+@@ -24,8 +24,9 @@
  #include "xa_nnlib_kernels_api.h"
  #include "xa_nn_maxpool_state.h"
  #include "xa_nnlib_err_chk.h"
 +#include "xa_nnlib_common_macros.h"
  
- WORD32 xa_nn_maxpool_getsize_nchw(
+-WORD32 xa_nn_maxpool_getsize_nchw(
++static WORD32 xa_nn_maxpool_getsize_nchw(
      WORD32 inp_precision,
+     WORD32 input_width,
+     WORD32 kernel_height,
 @@ -76,7 +77,7 @@ WORD32 xa_nn_maxpool_getsize_nchw(
      state_size = ALIGNED_SIZE(sizeof(xa_nn_maxpool_state_t), ALIGNMENT);
      /* Output scratch buffer size */
@@ -843,6 +1511,31 @@ index 5ffd08a..5140c92 100644
      full_buf_width = ALIGNED_SIZE(full_buf_width, ALIGNMENT/2);
      /* maxpool: Need 2 rows of padded input width as acratch for temp output */
      full_out_width = ALIGNED_SIZE(full_buf_width + kernel_width, 4);
+@@ -87,15 +88,15 @@ WORD32 xa_nn_maxpool_getsize_nchw(
+     return total_size;
+ }
+ 
+-WORD32 xa_nn_maxpool_getsize_nhwc(WORD32  inp_precision,
+-                                  WORD32  input_width,
+-                                  WORD32  input_channels,
+-                                  WORD32 kernel_height,
+-                                  WORD32 kernel_width,
+-                                  WORD32 x_stride,
+-                                  WORD32 y_stride,
+-                                  WORD32 x_padding,
+-                                  WORD32 out_width)
++static WORD32 xa_nn_maxpool_getsize_nhwc(WORD32  inp_precision,
++                                         WORD32  input_width,
++                                         WORD32  input_channels,
++                                         WORD32 kernel_height,
++                                         WORD32 kernel_width,
++                                         WORD32 x_stride,
++                                         WORD32 y_stride,
++                                         WORD32 x_padding,
++                                         WORD32 out_width)
+ {
+     int scratch_bytewidth, scratch_size;
+ 
 @@ -264,6 +265,7 @@ WORD32 xa_nn_maxpool_getsize(
  }
  #endif
@@ -1052,6 +1745,205 @@ index 0000000..a4c5cf6
 +      }
 +    }
 +    ptmp_out += copy_size;
++  }
++  return 0;
++}
+diff --git a/algo/kernels/reorg/hifi4/xa_nn_split_v_8.c b/algo/kernels/reorg/hifi4/xa_nn_split_v_8.c
+new file mode 100644
+index 0000000..ee9b16b
+--- /dev/null
++++ b/algo/kernels/reorg/hifi4/xa_nn_split_v_8.c
+@@ -0,0 +1,193 @@
++/*******************************************************************************
++* Copyright (c) 2018-2024 Cadence Design Systems, Inc.
++*
++* Permission is hereby granted, free of charge, to any person obtaining
++* a copy of this software and associated documentation files (the
++* "Software"), to use this Software with Cadence processor cores only and
++* not with any other processors and platforms, subject to
++* the following conditions:
++*
++* The above copyright notice and this permission notice shall be included
++* in all copies or substantial portions of the Software.
++*
++* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
++* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
++* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
++* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
++* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
++* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
++* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
++
++******************************************************************************/
++#include "xa_type_def.h"
++#include "xa_nn_common.h"
++#include "xa_nnlib_kernels_api.h"
++#include "xa_nnlib_common_macros.h"
++#include "xa_nnlib_err_chk.h"
++#include "xa_nnlib_common.h"
++
++WORD32 xa_nn_split_v_8_8(WORD8 ** __restrict__ pp_outs
++                         ,const WORD32 *const *pp_outs_shape
++                         ,const WORD8 * __restrict__ p_inp
++                         ,const WORD32 *const p_inp_shape
++                         ,WORD32 num_out
++                         ,WORD32 num_out_dims
++                         ,WORD32 num_inp_dims
++                         ,WORD32 axis)
++{
++  XA_NNLIB_ARG_CHK_PTR(pp_outs, -1);
++  XA_NNLIB_ARG_CHK_PTR(pp_outs_shape, -1);
++  XA_NNLIB_ARG_CHK_PTR(p_inp, -1);
++  XA_NNLIB_ARG_CHK_PTR(p_inp_shape, -1);
++  /* Pointer alignment checks */
++  XA_NNLIB_ARG_CHK_ALIGN(p_inp_shape, sizeof(WORD32), -1);
++  XA_NNLIB_ARG_CHK_ALIGN(pp_outs, sizeof(WORD8 *), -1);
++  XA_NNLIB_ARG_CHK_ALIGN(pp_outs_shape, sizeof(WORD32 *), -1);
++  //Validate Arguments
++  XA_NNLIB_ARG_CHK_COND((num_out <= 0 || num_out > 10), -1);
++  XA_NNLIB_ARG_CHK_COND((num_out_dims <= 0 || num_out_dims > 6), -1);
++  XA_NNLIB_ARG_CHK_COND((num_inp_dims != num_out_dims), -1);
++  XA_NNLIB_ARG_CHK_COND((axis < -num_inp_dims || axis >= num_inp_dims), -1);
++
++  int i = 0, j = 0;
++  for(i = 0; i < num_inp_dims; i++)
++  {
++    XA_NNLIB_ARG_CHK_COND((p_inp_shape[i] <= 0), -1);
++  }
++
++  if(axis < 0)
++    axis = num_inp_dims + axis;
++
++  WORD32 concat_size = 0;
++  for (i = 0; i < num_out; i++)
++  {
++    XA_NNLIB_ARG_CHK_PTR(pp_outs[i], -1);
++    XA_NNLIB_ARG_CHK_PTR(pp_outs_shape[i], -1);
++    XA_NNLIB_ARG_CHK_ALIGN(pp_outs_shape[i], sizeof(WORD32), -1);
++#pragma loop_count min=1
++    for(j = 0; j < num_inp_dims; j++)
++    {
++      XA_NNLIB_ARG_CHK_COND((pp_outs_shape[i][j] != p_inp_shape[j] && j != axis), -1);
++    }
++    XA_NNLIB_ARG_CHK_COND((pp_outs_shape[i][axis] <= 0), -1);
++    concat_size += pp_outs_shape[i][axis];
++  }
++
++  XA_NNLIB_ARG_CHK_COND((p_inp_shape[axis] != concat_size), -1);
++
++  //Calculate outer and inner size for axis
++  WORD32 outer_size = 1;
++#pragma no_simd
++  for(int i = 0; i < axis; i++)
++  {
++    outer_size *= p_inp_shape[i];
++  }
++
++  WORD32 base_inner_size = 1;
++#pragma no_simd
++  for(int i = axis + 1; i < num_inp_dims; i++)
++  {
++    base_inner_size *= p_inp_shape[i];
++  }
++
++  const WORD8 *ptmp_inp = p_inp;
++  for(int i = 0; i < num_out; i++)
++  {
++    const WORD32 copy_size = pp_outs_shape[i][axis] * base_inner_size;
++    const WORD8 *input_ptr = ptmp_inp;
++    WORD8* output_ptr = pp_outs[i];
++
++    if(((copy_size & 1) == 0) && (((concat_size * base_inner_size) & 1) == 0)
++      && (((unsigned)input_ptr & 1) == 0) && (((unsigned)output_ptr & 1) == 0))
++    {
++      if(copy_size <= 8)
++      {
++        ae_int16 *pae_out = (ae_int16 *)output_ptr;
++        for(int k = 0; k < outer_size; k++)
++        {
++          const ae_int16 *pae_inp = (const ae_int16 *)input_ptr;
++#pragma concurrent
++#pragma no_simd
++          for(int ic = 0; ic < (copy_size >> 1); ic++)
++          {
++            *pae_out++ = *pae_inp++;
++          }
++          input_ptr += concat_size * base_inner_size;
++        }
++      }
++      else
++      {
++        for(int k = 0; k < outer_size; k++)
++        {
++          const ae_int16x4 *pae_inp = (const ae_int16x4 *)input_ptr;
++          ae_int16x4 *pae_out = (ae_int16x4 *)output_ptr;
++          ae_valign inp_a, out_a;
++          inp_a = AE_LA64_PP(pae_inp);
++          out_a = AE_ZALIGN64();
++          for(int ic = 0; ic < (copy_size >> 3); ic++)
++          {
++            ae_int16x4 d0;
++            AE_LA16X4_IP(d0, inp_a, pae_inp);
++            AE_SA16X4_IP(d0, out_a, pae_out);
++          }
++          AE_SA64POS_FP(out_a, pae_out);
++          const ae_int16 *puae_inp = (const ae_int16 *)pae_inp;
++          ae_int16 *puae_out = (ae_int16 *)pae_out;
++#pragma concurrent
++          for(int ic = 0; ic < ((copy_size >> 1) & 3); ic++)
++          {
++            puae_out[ic] = puae_inp[ic];
++          }
++          output_ptr += copy_size;
++          input_ptr += concat_size * base_inner_size;
++        }
++      }
++    }
++    else
++    {
++      if(copy_size <= 6)
++      {
++        for(int k = 0; k < outer_size; k++)
++        {
++#pragma concurrent
++#pragma no_unroll
++          for(int ic = 0; ic < copy_size; ic++)
++          {
++            *output_ptr++ = input_ptr[ic];
++          }
++          input_ptr += concat_size * base_inner_size;
++        }
++      }
++      else
++      {
++        for(int k = 0; k < outer_size; k++)
++        {
++          const ae_int24x2 *pae_inp = (const ae_int24x2 *)input_ptr;
++          ae_int24x2 *pae_out = (ae_int24x2 *)output_ptr;
++          ae_valign inp_a, out_a;
++          inp_a = AE_LA64_PP(pae_inp);
++          out_a = AE_ZALIGN64();
++
++          int copy_size_by6 = AE_MOVAD32_H(AE_MOVINT32X2_FROMINT64(AE_MUL32_LL(copy_size, 0x2AAAAAAB)));
++          int copy_size_rem_start = 6*copy_size_by6;
++#pragma concurrent
++          for(int ic = 0; ic < copy_size_by6; ic++)
++          {
++            ae_int24x2 d0;
++            AE_LA24X2_IP(d0, inp_a, pae_inp);
++            AE_SA24X2_IP(d0, out_a, pae_out);
++          }
++          AE_SA64POS_FP(out_a, pae_out);
++          for(int ic = copy_size_rem_start; ic < copy_size; ic++)
++          {
++            output_ptr[ic] = input_ptr[ic];
++          }
++          output_ptr += copy_size;
++          input_ptr += concat_size * base_inner_size;
++        }
++      }
++    }
++    ptmp_inp += copy_size;
 +  }
 +  return 0;
 +}
@@ -1408,10 +2300,87 @@ index 350ccb3..d7311c3 100644
      itr--;
      count--;
 diff --git a/include/nnlib/xa_nnlib_kernels_api.h b/include/nnlib/xa_nnlib_kernels_api.h
-index c8a0bbb..20f33ec 100644
+index c8a0bbb..569cc29 100644
 --- a/include/nnlib/xa_nnlib_kernels_api.h
 +++ b/include/nnlib/xa_nnlib_kernels_api.h
-@@ -1676,6 +1676,12 @@
+@@ -22,7 +22,6 @@
+ #ifndef __XA_NNLIB_KERNELS_API_H__
+ #define __XA_NNLIB_KERNELS_API_H__
+ 
+-
+ /**
+  * @file xa_nnlib_kernels_api.h
+  * @brief This file gives the API definition for the HiFi NNLIB
+@@ -128,6 +127,38 @@
+ {
+ #endif
+ 
++#ifdef ENABLE_SCRATCH_SIZE_API_ONLY
++
++#if defined(hifi5)
++#define get_softmax_scratch_size                get_softmax_scratch_size_hifi5
++#define xa_nn_avgpool_getsize                   xa_nn_avgpool_getsize_hifi5
++#define xa_nn_conv2d_depthwise_getsize          xa_nn_conv2d_depthwise_getsize_hifi5
++#define xa_nn_conv2d_getsize                    xa_nn_conv2d_getsize_hifi5
++#define xa_nn_conv2d_std_getsize                xa_nn_conv2d_std_getsize_hifi5
++#define xa_nn_conv2d_std_getsize_sym4s          xa_nn_conv2d_std_getsize_sym4s_hifi5
++#define xa_nn_dilated_conv2d_depthwise_getsize  xa_nn_dilated_conv2d_depthwise_getsize_hifi5
++#define xa_nn_dilated_conv2d_std_getsize        xa_nn_dilated_conv2d_std_getsize_hifi5
++#define xa_nn_maxpool_getsize                   xa_nn_maxpool_getsize_hifi5
++#define xa_nn_reduce_getsize_nhwc               xa_nn_reduce_getsize_nhwc_hifi5
++#define xa_nn_transpose_conv_getsize            xa_nn_transpose_conv_getsize_hifi5
++
++#elif defined(hifi4)
++#define get_softmax_scratch_size                get_softmax_scratch_size_hifi4
++#define xa_nn_avgpool_getsize                   xa_nn_avgpool_getsize_hifi4
++#define xa_nn_conv2d_depthwise_getsize          xa_nn_conv2d_depthwise_getsize_hifi4
++#define xa_nn_conv2d_getsize                    xa_nn_conv2d_getsize_hifi4
++#define xa_nn_conv2d_std_getsize                xa_nn_conv2d_std_getsize_hifi4
++#define xa_nn_conv2d_std_getsize_sym4s          xa_nn_conv2d_std_getsize_sym4s_hifi4
++#define xa_nn_dilated_conv2d_depthwise_getsize  xa_nn_dilated_conv2d_depthwise_getsize_hifi4
++#define xa_nn_dilated_conv2d_std_getsize        xa_nn_dilated_conv2d_std_getsize_hifi4
++#define xa_nn_maxpool_getsize                   xa_nn_maxpool_getsize_hifi4
++#define xa_nn_reduce_getsize_nhwc               xa_nn_reduce_getsize_nhwc_hifi4
++#define xa_nn_transpose_conv_getsize            xa_nn_transpose_conv_getsize_hifi4
++
++#endif
++
++#endif /* #ifdef ENABLE_SCRATCH_SIZE_API_ONLY */
++
+ 	WORD32 xa_nn_matXvec_16x16_16(
+ 			WORD16 * __restrict__ p_out,                /*!< [out] 16b result: rows x 1 */
+ 			WORD16 * __restrict__ p_mat1,               /*!< [in] 16b mat1: rows x cols1 */
+@@ -817,9 +848,9 @@
+ 			int filter_height, int filter_width,
+ 			int output_height, int output_width,
+ 			int num_elements,
+-      int input_offset, int output_offset,
++			int input_offset, int output_offset,
+ 			int *output_shift, int *output_multiplier,
+-			WORD32* scratch_buffer);
++			void* scratch_buffer);
+ 
+ 	WORD32 xa_nn_transpose_conv_sym8sxsym16s(
+ 			WORD16* output_data,
+@@ -834,7 +865,7 @@
+ 			int output_height, int output_width,
+ 			int num_elements,
+ 			int *output_shift, int *output_multiplier,
+-			WORD64* scratch_buffer);
++			void* scratch_buffer);
+ 
+     WORD32 xa_nn_transpose_conv_f32(
+             FLOAT32* output_data,
+@@ -848,7 +879,7 @@
+             int filter_height, int filter_width,
+             int output_height, int output_width,
+             int num_elements,
+-            FLOAT32* scratch_buffer);
++            void* scratch_buffer);
+ 
+ 	WORD32 xa_nn_conv1d_std_getsize(
+ 			WORD32 kernel_height,
+@@ -1676,6 +1707,12 @@
  			WORD32  vec_length,
  			pVOID   p_scratch);
  
@@ -1424,7 +2393,22 @@ index c8a0bbb..20f33ec 100644
  	WORD32 xa_nn_vec_sigmoid_asym8u_asym8u(UWORD8 *p_out,
  			const UWORD8 *p_vec,
  			WORD32 zero_point,
-@@ -3039,6 +3045,14 @@
+@@ -2571,6 +2608,14 @@
+             WORD32 clip,
+             WORD32 num_elms);
+ 
++  WORD32 xa_nn_elm_requantize_asym8u_asym8s(WORD8 * __restrict__ p_out,
++      const UWORD8 * __restrict__ p_inp,
++      WORD32 inp_zero_bias,
++      WORD32 out_zero_bias,
++      WORD32 out_shift,
++      WORD32 out_multiplier,
++      WORD32 num_elm);
++
+ 	WORD32 xa_nn_elm_requantize_asym16s_asym8s(WORD8 * __restrict__ p_out,
+ 			const WORD16 * __restrict__ p_inp,
+ 			WORD32  inp_zero_bias,
+@@ -3039,6 +3084,14 @@
                      ,WORD32 num_out_dims
                      ,WORD32 num_inp_dims);
  
@@ -1439,7 +2423,7 @@ index c8a0bbb..20f33ec 100644
    WORD32 xa_nn_batch_norm_3D_8_8(WORD8 * __restrict__ p_out
                      ,const WORD8 * __restrict__ p_inp
                      ,const WORD16 * __restrict__ p_alpha
-@@ -3083,6 +3097,44 @@ WORD32 xa_nn_resize_nearest_neighbour_8_8(pWORD8 __restrict__ p_out
+@@ -3083,6 +3136,23 @@ WORD32 xa_nn_resize_nearest_neighbour_8_8(pWORD8 __restrict__ p_out
                      ,FLOAT32 width_offset
                      ,WORD32  align_corners);
  
@@ -1452,35 +2436,14 @@ index c8a0bbb..20f33ec 100644
 +        ,WORD32 num_inp_dims
 +        ,WORD32 axis);
 +
-+#ifdef ENABLE_SCRATCH_SIZE_API_ONLY
-+
-+#if defined(hifi5)
-+#define get_softmax_scratch_size                get_softmax_scratch_size_hifi5
-+#define xa_nn_avgpool_getsize                   xa_nn_avgpool_getsize_hifi5
-+#define xa_nn_conv2d_depthwise_getsize          xa_nn_conv2d_depthwise_getsize_hifi5
-+#define xa_nn_conv2d_std_getsize                xa_nn_conv2d_std_getsize_hifi5
-+#define xa_nn_conv2d_std_getsize_sym4s          xa_nn_conv2d_std_getsize_sym4s_hifi5
-+#define xa_nn_dilated_conv2d_depthwise_getsize  xa_nn_dilated_conv2d_depthwise_getsize_hifi5
-+#define xa_nn_dilated_conv2d_std_getsize        xa_nn_dilated_conv2d_std_getsize_hifi5
-+#define xa_nn_maxpool_getsize                   xa_nn_maxpool_getsize_hifi5
-+#define xa_nn_reduce_getsize_nhwc               xa_nn_reduce_getsize_nhwc_hifi5
-+#define xa_nn_transpose_conv_getsize            xa_nn_transpose_conv_getsize_hifi5
-+
-+#elif defined(hifi4)
-+#define get_softmax_scratch_size                get_softmax_scratch_size_hifi4
-+#define xa_nn_avgpool_getsize                   xa_nn_avgpool_getsize_hifi4
-+#define xa_nn_conv2d_depthwise_getsize          xa_nn_conv2d_depthwise_getsize_hifi4
-+#define xa_nn_conv2d_std_getsize                xa_nn_conv2d_std_getsize_hifi4
-+#define xa_nn_conv2d_std_getsize_sym4s          xa_nn_conv2d_std_getsize_sym4s_hifi4
-+#define xa_nn_dilated_conv2d_depthwise_getsize  xa_nn_dilated_conv2d_depthwise_getsize_hifi4
-+#define xa_nn_dilated_conv2d_std_getsize        xa_nn_dilated_conv2d_std_getsize_hifi4
-+#define xa_nn_maxpool_getsize                   xa_nn_maxpool_getsize_hifi4
-+#define xa_nn_reduce_getsize_nhwc               xa_nn_reduce_getsize_nhwc_hifi4
-+#define xa_nn_transpose_conv_getsize            xa_nn_transpose_conv_getsize_hifi4
-+
-+#endif
-+
-+#endif /* #ifdef ENABLE_SCRATCH_SIZE_API_ONLY */
++WORD32 xa_nn_split_v_8_8(WORD8 ** __restrict__ pp_outs
++                        ,const WORD32 *const *pp_outs_shape
++                        ,const WORD8 *p_inp
++                        ,const WORD32 *const p_inp_shape
++                        ,WORD32 num_out
++                        ,WORD32 num_out_dims
++                        ,WORD32 num_inp_dims
++                        ,WORD32 axis);
  
  	/* Mapping the functions names from previous naming convension for backward compatibility */
  #define xa_nn_matXvec_asym8xasym8_asym8 xa_nn_matXvec_asym8uxasym8u_asym8u
