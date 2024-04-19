@@ -384,17 +384,39 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
                           0);
       }
 #else // #if defined(HIFI4) || defined(HIFI5)
-      reference_integer_ops::TransposeConv(
-          data.params, data.per_channel_output_multiplier,
-          data.per_channel_output_shift, tflite::micro::GetTensorShape(input),
-          tflite::micro::GetTensorData<int16_t>(input),
-          tflite::micro::GetTensorShape(filter),
-          tflite::micro::GetTensorData<int8_t>(filter),
-          tflite::micro::GetTensorShape(bias),
-          tflite::micro::GetOptionalTensorData<std::int64_t>(bias),
-          tflite::micro::GetTensorShape(output),
-          tflite::micro::GetTensorData<int16_t>(output),
-          tflite::micro::GetTensorShape(nullptr), nullptr, scratch_buffer);
+      // TODO(b/192090531): Remove this once all 8x16 transpose conv models use
+      // 64-bit biases.
+      if (bias != nullptr && bias->type == kTfLiteInt16) {
+        std::int64_t* bias_converted_buffer =
+            static_cast<int64_t*>(context->GetScratchBuffer(
+                context, data.bias_converted_buffer_index));
+        for (int i = 0; i < tflite::micro::GetTensorShape(bias).FlatSize();
+             i++) {
+          bias_converted_buffer[i] = bias->data.i16[i];
+        }
+        reference_integer_ops::TransposeConv(
+            data.params, data.per_channel_output_multiplier,
+            data.per_channel_output_shift, tflite::micro::GetTensorShape(input),
+            tflite::micro::GetTensorData<int16_t>(input),
+            tflite::micro::GetTensorShape(filter),
+            tflite::micro::GetTensorData<int8_t>(filter),
+            tflite::micro::GetTensorShape(bias), bias_converted_buffer,
+            tflite::micro::GetTensorShape(output),
+            tflite::micro::GetTensorData<int16_t>(output),
+            tflite::micro::GetTensorShape(nullptr), nullptr, scratch_buffer);
+      } else {
+        reference_integer_ops::TransposeConv(
+            data.params, data.per_channel_output_multiplier,
+            data.per_channel_output_shift, tflite::micro::GetTensorShape(input),
+            tflite::micro::GetTensorData<int16_t>(input),
+            tflite::micro::GetTensorShape(filter),
+            tflite::micro::GetTensorData<int8_t>(filter),
+            tflite::micro::GetTensorShape(bias),
+            tflite::micro::GetOptionalTensorData<std::int64_t>(bias),
+            tflite::micro::GetTensorShape(output),
+            tflite::micro::GetTensorData<int16_t>(output),
+            tflite::micro::GetTensorShape(nullptr), nullptr, scratch_buffer);
+      }
 #endif // #if defined(HIFI4) || defined(HIFI5)
       break;
     }
