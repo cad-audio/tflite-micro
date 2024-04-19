@@ -129,14 +129,6 @@ TfLiteStatus CalculateOpData(TfLiteContext* context, TfLiteNode* node,
                 context, GetTensorShape(bias).FlatSize() * sizeof(std::int64_t),
                 &(data->bias_converted_buffer_index)) == kTfLiteOk);
       }
-#if defined(HIFI4) || defined(HIFI5)
-      else if(!has_bias) {
-        TFLITE_DCHECK(
-            context->RequestScratchBufferInArena(
-                context, output_channels * sizeof(std::int64_t),
-                &(data->bias_converted_buffer_index)) == kTfLiteOk);
-      }
-#endif
     }
     micro_context->DeallocateTempTfLiteTensor(input);
     micro_context->DeallocateTempTfLiteTensor(output);
@@ -327,9 +319,74 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
     case kTfLiteInt16: {
       std::int64_t* scratch_buffer = static_cast<int64_t*>(
           context->GetScratchBuffer(context, data.scratch_buffer_index));
+#if defined(HIFI4) || defined(HIFI5)
+      const RuntimeShape& input_shape = tflite::micro::GetTensorShape(input);
+      const RuntimeShape& filter_shape =
+          tflite::micro::GetTensorShape(filter);
+      const RuntimeShape& output_shape =
+          tflite::micro::GetTensorShape(output);
+      const int stride_width = data.params.stride_width;
+      const int stride_height = data.params.stride_height;
+      const int pad_width = data.params.padding_values.width;
+      const int pad_height = data.params.padding_values.height;
+
+      const int batches = MatchingDim(input_shape, 0, output_shape, 0);
+      const int input_depth = MatchingDim(input_shape, 3, filter_shape, 3);
+      const int output_depth = MatchingDim(filter_shape, 0, output_shape, 3);
+
+      const int input_height = input_shape.Dims(1);
+      const int input_width = input_shape.Dims(2);
+      const int filter_height = filter_shape.Dims(1);
+      const int filter_width = filter_shape.Dims(2);
+      const int output_height = output_shape.Dims(1);
+      const int output_width = output_shape.Dims(2);
+      const int16_t* input_data =
+          tflite::micro::GetTensorData<int16_t>(input);
+      const int8_t* filter_data =
+          tflite::micro::GetTensorData<int8_t>(filter);
+      const int64_t* bias_data;
+      if(bias == NULL) {
+        bias_data = NULL;
+      } else if (bias->type == kTfLiteInt16) {
+        // TODO(b/192090531): Remove this once all 8x16 transpose conv models use
+        // 64-bit biases.
+        std::int64_t* bias_converted_buffer =
+            static_cast<int64_t*>(context->GetScratchBuffer(
+                context, data.bias_converted_buffer_index));
+        for (int i = 0; i < tflite::micro::GetTensorShape(bias).FlatSize();
+             i++) {
+          bias_converted_buffer[i] = bias->data.i16[i];
+        }
+        bias_data = (const int64_t*)bias_converted_buffer;
+      } else {
+          bias_data = tflite::micro::GetTensorData<int64_t>(bias); 
+      }
+      int16_t* output_data = tflite::micro::GetTensorData<int16_t>(output);
+
+      const int num_elements = output_shape.FlatSize();
+
+      for (int b = 0; b < batches; b++) {
+        xa_nn_transpose_conv_sym8sxsym16s(
+            &output_data[b * output_height * output_width * output_depth],
+            const_cast<WORD16*>(
+                &input_data[b * input_height * input_width * input_depth]),
+            const_cast<WORD8*>(filter_data), const_cast<WORD64*>(bias_data),
+            stride_width, stride_height, pad_width, pad_height, input_depth,
+            output_depth, input_height, input_width, filter_height,
+            filter_width, output_height, output_width, num_elements / batches,
+            data.per_channel_output_shift, data.per_channel_output_multiplier,
+            scratch_buffer);
+        int16_t* p_out_temp = &output_data[b * output_height * output_width * output_depth];
+        TF_LITE_ENSURE_EQ(context,     
+                          xa_nn_vec_activation_min_max_16_16(
+                              p_out_temp, p_out_temp, data.params.quantized_activation_min,
+                              data.params.quantized_activation_max, output_height * output_width * output_depth),
+                          0);
+      }
+#else // #if defined(HIFI4) || defined(HIFI5)
       // TODO(b/192090531): Remove this once all 8x16 transpose conv models use
       // 64-bit biases.
-      if ((bias != NULL) && bias->type == kTfLiteInt16) {
+      if (bias != nullptr && bias->type == kTfLiteInt16) {
         std::int64_t* bias_converted_buffer =
             static_cast<int64_t*>(context->GetScratchBuffer(
                 context, data.bias_converted_buffer_index));
@@ -348,64 +405,6 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
             tflite::micro::GetTensorData<int16_t>(output),
             tflite::micro::GetTensorShape(nullptr), nullptr, scratch_buffer);
       } else {
-#if defined(HIFI4) || defined(HIFI5)
-        const RuntimeShape& input_shape = tflite::micro::GetTensorShape(input);
-        const RuntimeShape& filter_shape =
-            tflite::micro::GetTensorShape(filter);
-        const RuntimeShape& output_shape =
-            tflite::micro::GetTensorShape(output);
-        const int stride_width = data.params.stride_width;
-        const int stride_height = data.params.stride_height;
-        const int pad_width = data.params.padding_values.width;
-        const int pad_height = data.params.padding_values.height;
-
-        const int batches = MatchingDim(input_shape, 0, output_shape, 0);
-        const int input_depth = MatchingDim(input_shape, 3, filter_shape, 3);
-        const int output_depth = MatchingDim(filter_shape, 0, output_shape, 3);
-
-        const int input_height = input_shape.Dims(1);
-        const int input_width = input_shape.Dims(2);
-        const int filter_height = filter_shape.Dims(1);
-        const int filter_width = filter_shape.Dims(2);
-        const int output_height = output_shape.Dims(1);
-        const int output_width = output_shape.Dims(2);
-        const int16_t* input_data =
-            tflite::micro::GetTensorData<int16_t>(input);
-        const int8_t* filter_data =
-            tflite::micro::GetTensorData<int8_t>(filter);
-        const int64_t* bias_data;
-        if(bias == NULL) {
-          bias_data =
-              static_cast<const int64_t*>(context->GetScratchBuffer(
-                  context, data.bias_converted_buffer_index));
-          memset((void *)bias_data, 0, output_depth*sizeof(bias_data[0]));
-        }
-        else {
-            bias_data = tflite::micro::GetTensorData<int64_t>(bias); 
-        }
-        int16_t* output_data = tflite::micro::GetTensorData<int16_t>(output);
-
-        const int num_elements = output_shape.FlatSize();
-
-        for (int b = 0; b < batches; b++) {
-          xa_nn_transpose_conv_sym8sxsym16s(
-              &output_data[b * output_height * output_width * output_depth],
-              const_cast<WORD16*>(
-                  &input_data[b * input_height * input_width * input_depth]),
-              const_cast<WORD8*>(filter_data), const_cast<WORD64*>(bias_data),
-              stride_width, stride_height, pad_width, pad_height, input_depth,
-              output_depth, input_height, input_width, filter_height,
-              filter_width, output_height, output_width, num_elements / batches,
-              data.per_channel_output_shift, data.per_channel_output_multiplier,
-              scratch_buffer);
-          int16_t* p_out_temp = &output_data[b * output_height * output_width * output_depth];
-          TF_LITE_ENSURE_EQ(context,     
-                            xa_nn_vec_activation_min_max_16_16(
-                                p_out_temp, p_out_temp, data.params.quantized_activation_min,
-                                data.params.quantized_activation_max, output_height * output_width * output_depth),
-                            0);
-        }
-#else // #if defined(HIFI4) || defined(HIFI5)
         reference_integer_ops::TransposeConv(
             data.params, data.per_channel_output_multiplier,
             data.per_channel_output_shift, tflite::micro::GetTensorShape(input),
@@ -417,8 +416,8 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
             tflite::micro::GetTensorShape(output),
             tflite::micro::GetTensorData<int16_t>(output),
             tflite::micro::GetTensorShape(nullptr), nullptr, scratch_buffer);
-#endif // #if defined(HIFI4) || defined(HIFI5)
       }
+#endif // #if defined(HIFI4) || defined(HIFI5)
       break;
     }
     default:
