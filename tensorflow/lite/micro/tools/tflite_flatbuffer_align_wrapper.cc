@@ -32,8 +32,7 @@ void dump_model_buffers(const char* tflite_file_name) {
   rewind(model_file);
  
   uint8_t *model_buf = (uint8_t *)malloc(model_size+63);
-  int offset = ((uintptr_t)model_buf) & 63;
-  uint8_t *aligned_model_buf = model_buf + offset;
+  uint8_t *aligned_model_buf = (uint8_t *)((uintptr_t)(model_buf+63) & ~(63));
   fread(aligned_model_buf, model_size, 1, model_file);
   
   const tflite::Model* model = tflite::GetModel(aligned_model_buf);
