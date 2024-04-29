@@ -146,6 +146,11 @@ class MicroMutableOpResolver : public MicroOpResolver {
     return AddBuiltin(BuiltinOperator_AVERAGE_POOL_2D, registration, ParsePool);
   }
 
+  TfLiteStatus AddBatchMatMul() {
+    return AddBuiltin(BuiltinOperator_BATCH_MATMUL, 
+                      Register_BATCH_MATMUL(), ParseBatchMatMul);
+  }
+
   TfLiteStatus AddBatchToSpaceNd() {
     return AddBuiltin(BuiltinOperator_BATCH_TO_SPACE_ND,
                       Register_BATCH_TO_SPACE_ND(), ParseBatchToSpaceNd);
