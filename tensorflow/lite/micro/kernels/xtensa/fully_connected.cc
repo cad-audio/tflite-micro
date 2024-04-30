@@ -69,8 +69,31 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
     case kTfLiteInt8: {
       switch (filter->type) {
         case kTfLiteInt8: {
-          return XtensaEvalFullyConnectedQuantizedInt8(
-              context, node, data, input, filter, bias, output);
+          switch (output->type) {
+            case kTfLiteInt8: {
+              return XtensaEvalFullyConnectedQuantizedInt8(
+                  context, node, data, input, filter, bias, output);
+              break;
+            }
+            case kTfLiteInt16: {
+              tflite::reference_integer_ops::FullyConnected(
+                  FullyConnectedParamsQuantized(data),
+                  tflite::micro::GetTensorShape(input),
+                  tflite::micro::GetTensorData<int8_t>(input),
+                  tflite::micro::GetTensorShape(filter),
+                  tflite::micro::GetTensorData<int8_t>(filter),
+                  tflite::micro::GetTensorShape(bias),
+                  tflite::micro::GetOptionalTensorData<int32_t>(bias),
+                  tflite::micro::GetTensorShape(output),
+                  tflite::micro::GetTensorData<int16_t>(output));
+              break;
+            }
+            default: {
+              MicroPrintf("Output type %s (%d) not supported.",
+                        TfLiteTypeGetName(output->type), input->type);
+              return kTfLiteError;
+            }
+          }
         }
         case kTfLiteInt4: {
           return XtensaEvalFullyConnectedQuantizedInt8(
