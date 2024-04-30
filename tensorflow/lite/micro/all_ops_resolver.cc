@@ -28,6 +28,7 @@ AllOpsResolver::AllOpsResolver() {
   AddArgMin();
   AddAssignVariable();
   AddAveragePool2D();
+  AddBatchMatMul();
   AddBatchToSpaceNd();
   AddBroadcastArgs();
   AddBroadcastTo();
