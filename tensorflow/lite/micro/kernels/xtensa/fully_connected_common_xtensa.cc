@@ -104,7 +104,8 @@ TfLiteStatus XtensaPrepareFullyConnected(TfLiteContext* context,
   TfLiteTensor* output = micro_context->AllocateTempOutputTensor(
       node, kFullyConnectedOutputTensor);
   TF_LITE_ENSURE(context, output != nullptr);
-  TF_LITE_ENSURE_TYPES_EQ(context, input->type, output->type);
+  // Disabling this check to support Int8 input, filter and Int16 output variant
+  // TF_LITE_ENSURE_TYPES_EQ(context, input->type, output->type);
 
   if (filter->type == kTfLiteInt4) {
 #if defined(HIFI5) && defined(NNLIB_HIFI5)
