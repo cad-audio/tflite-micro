@@ -111,7 +111,7 @@ TfLiteStatus CalculateOpData(TfLiteContext* context, TfLiteNode* node,
     int output_channels = filter->dims->data[kConvQuantizedDimension];
 
     TF_LITE_ENSURE_STATUS(tflite::PopulateConvolutionQuantizationParams(
-        context, input, filter, bias, output, kTfLiteActNone,
+        context, input, filter, bias, output, params->activation,
         &data->params.output_multiplier, &data->params.output_shift,
         &data->params.quantized_activation_min,
         &data->params.quantized_activation_max,
@@ -123,7 +123,7 @@ TfLiteStatus CalculateOpData(TfLiteContext* context, TfLiteNode* node,
     if (input->type == kTfLiteInt16) {
       TFLITE_DCHECK(filter->type == kTfLiteInt8);
       TFLITE_DCHECK(output->type == kTfLiteInt16);
-      if (bias->type == kTfLiteInt16) {
+      if (has_bias && bias->type == kTfLiteInt16) {
         TFLITE_DCHECK(
             context->RequestScratchBufferInArena(
                 context, GetTensorShape(bias).FlatSize() * sizeof(std::int64_t),
@@ -375,6 +375,12 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
               data.params.input_offset, data.params.output_offset,
               data.per_channel_output_shift, data.per_channel_output_multiplier,
               scratch_buffer);
+          int8_t* p_out_temp = &output_data[b * output_height * output_width * output_depth];
+          TF_LITE_ENSURE_EQ(context,     
+                            xa_nn_vec_activation_min_max_8_8(
+                                p_out_temp, p_out_temp, data.params.quantized_activation_min,
+                                data.params.quantized_activation_max, output_height * output_width * output_depth),
+                            0);
         }
       }
       else{
@@ -410,7 +416,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
           context->GetScratchBuffer(context, data.scratch_buffer_index));
       // TODO(b/192090531): Remove this once all 8x16 transpose conv models use
       // 64-bit biases.
-      if (bias->type == kTfLiteInt16) {
+      if (bias != nullptr && bias->type == kTfLiteInt16) {
         std::int64_t* bias_converted_buffer =
             static_cast<int64_t*>(context->GetScratchBuffer(
                 context, data.bias_converted_buffer_index));
