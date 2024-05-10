@@ -38,6 +38,7 @@ TfLiteRegistration_V1 Register_ARG_MAX();
 TfLiteRegistration_V1 Register_ARG_MIN();
 TfLiteRegistration_V1 Register_ASSIGN_VARIABLE();
 TfLiteRegistration_V1 Register_AVERAGE_POOL_2D();
+TfLiteRegistration_V1 Register_BATCH_MATMUL();
 TfLiteRegistration_V1 Register_BATCH_TO_SPACE_ND();
 TfLiteRegistration_V1 Register_BROADCAST_ARGS();
 TfLiteRegistration_V1 Register_BROADCAST_TO();
