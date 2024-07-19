@@ -98,20 +98,29 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       {
         const RuntimeShape& input_shape = tflite::micro::GetTensorShape(input);
         const RuntimeShape& output_shape = tflite::micro::GetTensorShape(output);
-        TF_LITE_ENSURE_EQ(
-            context,
-            xa_nn_space_to_batch_nd_8_8(
-                tflite::micro::GetTensorData<int8_t>(output),
-                output_shape.DimsData(),
-                tflite::micro::GetTensorData<int8_t>(input),
-                input_shape.DimsData(),
-                tflite::micro::GetTensorData<int32_t>(block_shape),
-                tflite::micro::GetTensorData<int32_t>(crops),
-                output_shape.DimensionsCount(),
-                input_shape.DimensionsCount(),
-                params.output_offset
-                ),
-            0);
+        int32_t ret = 0;
+        ret = xa_nn_space_to_batch_nd_8_8(
+                  tflite::micro::GetTensorData<int8_t>(output),
+                  output_shape.DimsData(),
+                  tflite::micro::GetTensorData<int8_t>(input),
+                  input_shape.DimsData(),
+                  tflite::micro::GetTensorData<int32_t>(block_shape),
+                  tflite::micro::GetTensorData<int32_t>(crops),
+                  output_shape.DimensionsCount(),
+                  input_shape.DimensionsCount(),
+                  params.output_offset);
+        if(ret != 0)
+        {
+          reference_ops::SpaceToBatchND(
+              params, tflite::micro::GetTensorShape(input),
+              tflite::micro::GetTensorData<int8_t>(input),
+              tflite::micro::GetTensorShape(block_shape),
+              tflite::micro::GetTensorData<int32_t>(block_shape),
+              tflite::micro::GetTensorShape(crops),
+              tflite::micro::GetTensorData<int32_t>(crops),
+              tflite::micro::GetTensorShape(output),
+              tflite::micro::GetTensorData<int8_t>(output));
+        }
       }
 #else
       reference_ops::SpaceToBatchND(
