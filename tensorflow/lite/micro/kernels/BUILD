@@ -264,6 +264,7 @@ tflm_kernel_cc_library(
         "quantize.cc",
         "quantize_common.cc",
         "read_variable.cc",
+        "reverse.cc",
         "reduce.cc",
         "reduce_common.cc",
         "reshape.cc",
@@ -1163,6 +1164,20 @@ cc_test(
     name = "resize_nearest_neighbor_test",
     srcs = [
         "resize_nearest_neighbor_test.cc",
+    ],
+    deps = [
+        ":kernel_runner",
+        "//tensorflow/lite/c:common",
+        "//tensorflow/lite/micro:op_resolvers",
+        "//tensorflow/lite/micro:test_helpers",
+        "//tensorflow/lite/micro/testing:micro_test",
+    ],
+)
+
+cc_test(
+    name = "reverse_test",
+    srcs = [
+        "reverse_test.cc",
     ],
     deps = [
         ":kernel_runner",
