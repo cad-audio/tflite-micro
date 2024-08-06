@@ -46,11 +46,11 @@ void TestReverse(int* input1_dims_data, const T* input1_data,
   int outputs_array_data[] = {1, 2};
   TfLiteIntArray* outputs_array = IntArrayFromInts(outputs_array_data);
 
-  TfLiteSelectParams builtin_data;
+  //TfLiteSelectParams builtin_data;
   const TFLMRegistration registration = tflite::Register_REVERSE_V2();
   micro::KernelRunner runner(registration, tensors, tensors_size, inputs_array,
                              outputs_array,
-                             reinterpret_cast<void*>(&builtin_data));
+                             /*reinterpret_cast<void*>(&builtin_data)*/ nullptr);
 
   TF_LITE_MICRO_EXPECT_EQ(kTfLiteOk, runner.InitAndPrepare());
   TF_LITE_MICRO_EXPECT_EQ(kTfLiteOk, runner.Invoke());
@@ -79,18 +79,60 @@ void ExpectNear(int* dims, const T* expected_data, const T* output_data) {
 
 TF_LITE_MICRO_TESTS_BEGIN
 
+TF_LITE_MICRO_TEST(ReverseUint8) {
+  int input_shape[] = {1, 9};
+  int axis_shape[] = {1, 1};
+  int output_shape[] = {1, 9};
+  const int8_t input[] = {1, 2, 3, 4,5, 6,7,8,9};
+  const int axis[] = {0};
+  int8_t expected_output[] = {9,8,7,6,5,4, 3, 2, 1};
+
+  int8_t output_data[9];
+
+  tflite::testing::TestReverse(input_shape, input, axis_shape, axis, output_shape, output_data);
+  tflite::testing::ExpectEqual(input_shape, expected_output, output_data);
+}
+
 TF_LITE_MICRO_TEST(ReverseInt8) {
   int input_shape[] = {1, 4};
   int axis_shape[] = {1, 1};
   int output_shape[] = {1, 4};
-  const int8_t input[] = {1, 2, 3, 4};
+  const int8_t input[] = {1, 2, -1, -2};
   const int axis[] = {0};
-  int8_t expected_output[] = {4, 3, 2, 1};
+  int8_t expected_output[] = {-2, -1, 2, 1};
 
   int8_t output_data[4];
 
   tflite::testing::TestReverse(input_shape, input, axis_shape, axis, output_shape, output_data);
   tflite::testing::ExpectEqual(input_shape, expected_output, output_data);
+}
+
+TF_LITE_MICRO_TEST(ReverseInt16) {
+  int input_shape[] = {1, 4};
+  int axis_shape[] = {1, 1};
+  int output_shape[] = {1, 4};
+  const int16_t input[] = {1, 2, -1, -2};
+  const int axis[] = {0};
+  int16_t expected_output[] = {-2, -1, 2, 1};
+
+  int16_t output_data[4];
+
+  tflite::testing::TestReverse(input_shape, input, axis_shape, axis, output_shape, output_data);
+  tflite::testing::ExpectEqual(input_shape, expected_output, output_data);
+}
+
+TF_LITE_MICRO_TEST(ReverseFloat32) {
+  int input_shape[] = {1, 4};
+  int axis_shape[] = {1, 1};
+  int output_shape[] = {1, 4};
+  const float input[] = {0.1, 0.2, 0.3, 0.4};
+  const int axis[] = {0};
+  float expected_output[] = {0.4, 0.3, 0.2, 0.1};
+
+  float output_data[4];
+
+  tflite::testing::TestReverse(input_shape, input, axis_shape, axis, output_shape, output_data);
+  tflite::testing::ExpectNear(input_shape, expected_output, output_data);
 }
 
 TF_LITE_MICRO_TESTS_END

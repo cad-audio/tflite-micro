@@ -35,43 +35,6 @@ constexpr int kInputTensor = 0;
 constexpr int kAxisTensor = 1;
 constexpr int kOutputTensor = 0;
 
-#if 0
-TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
-  TF_LITE_ENSURE_EQ(context, NumInputs(node), 2);
-  TF_LITE_ENSURE_EQ(context, NumOutputs(node), 1);
-
-  const TfLiteTensor* input;
-  TF_LITE_ENSURE_OK(context, GetInputSafe(context, node, kInputTensor, &input));
-  const TfLiteTensor* axis;
-  TF_LITE_ENSURE_OK(context, GetInputSafe(context, node, kAxisTensor, &axis));
-  TF_LITE_ENSURE_EQ(context, NumDimensions(axis), 1);
-  TF_LITE_ENSURE(context, NumDimensions(input) <= 8);
-  TF_LITE_ENSURE(context, NumDimensions(input) >= NumElements(axis));
-
-  if (input->type != kTfLiteInt32 && input->type != kTfLiteFloat32 &&
-      input->type != kTfLiteUInt8 && input->type != kTfLiteInt8 &&
-      input->type != kTfLiteInt16 && input->type != kTfLiteInt64 &&
-      input->type != kTfLiteBool) {
-    TF_LITE_KERNEL_LOG(context, "Type '%s' is not supported by reverse.",
-                       TfLiteTypeGetName(input->type));
-    return kTfLiteError;
-  }
-
-  if (axis->type != kTfLiteInt32) {
-    TF_LITE_KERNEL_LOG(context, "Axis Type '%s' is not supported by reverse.",
-                       TfLiteTypeGetName(axis->type));
-    return kTfLiteError;
-  }
-
-  TfLiteTensor* output;
-  TF_LITE_ENSURE_OK(context,
-                    GetOutputSafe(context, node, kOutputTensor, &output));
-  TfLiteIntArray* output_shape = TfLiteIntArrayCopy(input->dims);
-  TF_LITE_ENSURE_TYPES_EQ(context, output->type, input->type);
-
-  return context->ResizeTensor(context, output, output_shape);
-}
-#else
 
 TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
   TF_LITE_ENSURE_EQ(context, NumInputs(node), 2);
@@ -127,8 +90,6 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
   return kTfLiteOk;
   //return (TfLiteStatus) 1 ;
 }
-
-#endif
 
 TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
   //const TfLiteTensor* input;
