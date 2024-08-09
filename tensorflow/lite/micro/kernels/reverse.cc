@@ -88,7 +88,6 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
   micro_context->DeallocateTempTfLiteTensor(output);
 
   return kTfLiteOk;
-  //return (TfLiteStatus) 1 ;
 }
 
 TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
@@ -98,9 +97,9 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
   //TF_LITE_ENSURE_OK(context,
   //                  GetInputSafe(context, node, kAxisTensor, &axis_tensor));
   const TfLiteEvalTensor* input =
-      tflite::micro::GetEvalInput(context, node, 0);
+      tflite::micro::GetEvalInput(context, node, kInputTensor);
   const TfLiteEvalTensor* axis_tensor =
-      tflite::micro::GetEvalInput(context, node, 1);
+      tflite::micro::GetEvalInput(context, node, kAxisTensor);
   TF_LITE_ENSURE_EQ(context, axis_tensor->type, kTfLiteInt32);
   //const int num_axes = NumElements(axis_tensor);
 	const int num_axes = static_cast<int>(ElementCount(*axis_tensor->dims));
@@ -136,7 +135,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
   //TF_LITE_ENSURE_OK(context,
   //                  GetOutputSafe(context, node, kOutputTensor, &output));
   TfLiteEvalTensor* output =
-      tflite::micro::GetEvalOutput(context, node, 0);
+      tflite::micro::GetEvalOutput(context, node, kOutputTensor);
 
   switch (output->type) {
     case kTfLiteFloat32: {
