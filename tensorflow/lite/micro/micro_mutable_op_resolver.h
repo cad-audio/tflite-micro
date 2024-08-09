@@ -532,6 +532,11 @@ class MicroMutableOpResolver : public MicroOpResolver {
     return AddBuiltin(BuiltinOperator_RSQRT, Register_RSQRT(), ParseRsqrt);
   }
 
+  TfLiteStatus AddReverseV2() {
+    return AddBuiltin(BuiltinOperator_REVERSE_V2, Register_REVERSE_V2(),
+                      ParseReverseV2);
+  }
+
   TfLiteStatus AddSelectV2() {
     return AddBuiltin(BuiltinOperator_SELECT_V2, Register_SELECT_V2(),
                       ParseSelectV2);
