@@ -236,6 +236,8 @@ tflm_kernel_cc_library(
         "fully_connected_common.cc",
         "gather.cc",
         "gather_nd.cc",
+        "gelu.cc",
+        "gelu_common.cc",
         "hard_swish.cc",
         "hard_swish_common.cc",
         "if.cc",
@@ -848,6 +850,19 @@ cc_test(
         "//tensorflow/lite/c:common",
         "//tensorflow/lite/micro:micro_utils",
         "//tensorflow/lite/micro:op_resolvers",
+        "//tensorflow/lite/micro:test_helpers",
+        "//tensorflow/lite/micro/testing:micro_test",
+    ],
+)
+
+cc_test(
+    name = "gelu_test",
+    srcs = [
+        "gelu_test.cc",
+    ],
+    deps = [
+        ":kernel_runner",
+        "//tensorflow/lite/c:common",
         "//tensorflow/lite/micro:test_helpers",
         "//tensorflow/lite/micro/testing:micro_test",
     ],

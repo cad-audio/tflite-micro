@@ -770,6 +770,10 @@ struct DequantizationParams {
   int32_t zero_point;
 };
 
+struct GeluParams {
+  bool approximate;
+};
+
 struct PerChannelDequantizationParams {
   const float* scale;
   const int32_t* zero_point;

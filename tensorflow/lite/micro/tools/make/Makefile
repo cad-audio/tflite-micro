@@ -410,6 +410,8 @@ $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/fully_connected.cc \
 $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/fully_connected_common.cc \
 $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/gather.cc \
 $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/gather_nd.cc \
+$(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/gelu.cc \
+$(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/gelu_common.cc \
 $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/hard_swish.cc \
 $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/hard_swish_common.cc \
 $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/if.cc \

@@ -139,6 +139,7 @@ $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/floor_mod_test.cc \
 $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/fully_connected_test.cc \
 $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/gather_test.cc \
 $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/gather_nd_test.cc \
+$(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/gelu_test.cc \
 $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/hard_swish_test.cc \
 $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/l2norm_test.cc \
 $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/l2_pool_2d_test.cc \
