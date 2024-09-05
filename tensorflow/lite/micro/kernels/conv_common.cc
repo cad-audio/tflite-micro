@@ -66,8 +66,10 @@ ConvParams ConvParamsQuantized(const TfLiteConvParams& params,
   op_params.stride_width = params.stride_width;
   op_params.dilation_height_factor = params.dilation_height_factor;
   op_params.dilation_width_factor = params.dilation_width_factor;
-  op_params.quantized_activation_min = data.output_activation_min;
-  op_params.quantized_activation_max = data.output_activation_max;
+//   op_params.quantized_activation_min = data.output_activation_min;
+//   op_params.quantized_activation_max = data.output_activation_max;
+  op_params.quantized_activation_min = -32768;
+  op_params.quantized_activation_max = 32767;
   return op_params;
 }
 
@@ -155,13 +157,13 @@ TfLiteStatus ConvPrepare(TfLiteContext* context, TfLiteNode* node) {
   TF_LITE_ENSURE(context, filter != nullptr);
 
   TF_LITE_ENSURE_EQ(context, input->type, output->type);
-  TF_LITE_ENSURE_MSG(
-      context,
-      (input->type == kTfLiteFloat32 && filter->type == kTfLiteFloat32) ||
-          (input->type == kTfLiteInt16 && filter->type == kTfLiteInt8) ||
-          (input->type == kTfLiteInt8 &&
-           (filter->type == kTfLiteInt4 || filter->type == kTfLiteInt8)),
-      "Hybrid models are not supported on TFLite Micro.");
+//   TF_LITE_ENSURE_MSG(
+//       context,
+//       (input->type == kTfLiteFloat32 && filter->type == kTfLiteFloat32) ||
+//           (input->type == kTfLiteInt16 && filter->type == kTfLiteInt8) ||
+//           (input->type == kTfLiteInt8 &&
+//            (filter->type == kTfLiteInt4 || filter->type == kTfLiteInt8)),
+//       "Hybrid models are not supported on TFLite Micro.");
 
   const int input_width = input->dims->data[2];
   const int input_height = input->dims->data[1];
