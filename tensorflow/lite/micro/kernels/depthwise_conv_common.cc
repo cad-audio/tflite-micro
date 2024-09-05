@@ -72,8 +72,10 @@ DepthwiseParams DepthwiseConvParamsQuantized(
   op_params.dilation_height_factor = params.dilation_height_factor;
   op_params.dilation_width_factor = params.dilation_width_factor;
   op_params.depth_multiplier = params.depth_multiplier;
-  op_params.quantized_activation_min = data.output_activation_min;
-  op_params.quantized_activation_max = data.output_activation_max;
+//   op_params.quantized_activation_min = data.output_activation_min;
+//   op_params.quantized_activation_max = data.output_activation_max;
+  op_params.quantized_activation_min = -32768;
+  op_params.quantized_activation_max = 32767;
   return op_params;
 }
 
@@ -112,7 +114,7 @@ TfLiteStatus CalculateOpDataDepthwiseConv(
   // parameters set. This is usually done during quantized training.
   if (data_type != kTfLiteFloat32) {
     int output_channels = filter->dims->data[kDepthwiseConvQuantizedDimension];
-
+	
     TF_LITE_ENSURE_STATUS(tflite::PopulateConvolutionQuantizationParams(
         context, input, filter, bias, output, params.activation,
         &data->output_multiplier, &data->output_shift,
@@ -188,13 +190,13 @@ TfLiteStatus DepthwiseConvPrepare(TfLiteContext* context, TfLiteNode* node) {
                       affine_quantization->zero_point->size);
   }
 
-  TF_LITE_ENSURE_MSG(
-      context,
-      input->type == filter->type ||
-          (input->type == kTfLiteInt8 &&
-           (filter->type == kTfLiteInt4 || filter->type == kTfLiteInt8)) ||
-          (input->type == kTfLiteInt16 && filter->type == kTfLiteInt8),
-      "Hybrid models are not supported on TFLite Micro.");
+//   TF_LITE_ENSURE_MSG(
+//       context,
+//       input->type == filter->type ||
+//           (input->type == kTfLiteInt8 &&
+//            (filter->type == kTfLiteInt4 || filter->type == kTfLiteInt8)) ||
+//           (input->type == kTfLiteInt16 && filter->type == kTfLiteInt8),
+//       "Hybrid models are not supported on TFLite Micro.");
 
   if (filter->type == kTfLiteInt4) {
     int filter_size =

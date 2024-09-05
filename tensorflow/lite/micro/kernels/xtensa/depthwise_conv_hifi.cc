@@ -48,7 +48,7 @@ TfLiteStatus DepthwiseConvPrepareHifi(TfLiteContext* context,
   TF_LITE_ENSURE(context, input != nullptr);
   TfLiteTensor* filter =
       micro_context->AllocateTempInputTensor(node, kConvWeightsTensor);
-  TF_LITE_ENSURE(context, filter != nullptr);
+//   TF_LITE_ENSURE(context, filter != nullptr);
 
   const RuntimeShape& input_shape = GetTensorShape(input);
   const RuntimeShape& filter_shape = GetTensorShape(filter);

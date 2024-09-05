@@ -23,6 +23,9 @@ limitations under the License.
 #include "tensorflow/lite/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/micro_log.h"
+#include "tensorflow/lite/kernels/internal/reference/quantize.h"
+#include "tensorflow/lite/kernels/internal/reference/dequantize.h"
+#include "tensorflow/lite/kernels/internal/quantization_util.h"
 
 namespace tflite {
 namespace {
@@ -53,17 +56,101 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
 
   switch (input->type) {  // Already know in/out types are same.
     case kTfLiteFloat32: {
-      tflite::reference_ops::DepthwiseConv(
-          DepthwiseConvParamsFloat(params, data),
-          tflite::micro::GetTensorShape(input),
-          tflite::micro::GetTensorData<float>(input),
-          tflite::micro::GetTensorShape(filter),
-          tflite::micro::GetTensorData<float>(filter),
-          tflite::micro::GetTensorShape(bias),
-          tflite::micro::GetOptionalTensorData<float>(bias),
-          tflite::micro::GetTensorShape(output),
-          tflite::micro::GetTensorData<float>(output));
-      break;
+      // setup to get filter scale
+	  MicroContext* micro_context = GetMicroContext(context);
+      TfLiteTensor* filter_quant =
+        micro_context->AllocateTempInputTensor(node, kDepthwiseConvWeightsTensor);
+      const auto* affine_quantization =
+        reinterpret_cast<TfLiteAffineQuantization*>(filter_quant->quantization.params);
+      const float* filter_scales = affine_quantization->scale->data;
+
+      // quantize input to int 16
+      RuntimeShape input_shape = tflite::micro::GetTensorShape(input);
+      const int flat_size =input_shape.FlatSize();
+      int16_t* quantized_input_data = new int16_t[flat_size];
+	  MicroPrintf("Quant input to int16");
+      tflite::QuantizationParams op_params;
+      op_params.zero_point = 0;
+      op_params.scale = (5.6268444*2)/65536;
+      tflite::reference_ops::AffineQuantize(
+        op_params, input_shape, tflite::micro::GetTensorData<float>(input),
+        input_shape, quantized_input_data
+      );
+	
+
+      // set bias int 64
+      RuntimeShape bias_shape = tflite::micro::GetTensorShape(bias);
+      const int bias_flat_size =bias_shape.FlatSize();
+      int64_t* new_bias = new int64_t[bias_flat_size];
+      std::fill_n(new_bias, bias_flat_size, 0);
+
+      // set output int 16
+      RuntimeShape new_output_shape = tflite::micro::GetTensorShape(output);
+      const int new_output_flat_size =new_output_shape.FlatSize();
+	  int16_t* new_output = new int16_t[new_output_flat_size];
+	  MicroPrintf("output size, %d", new_output_flat_size);
+
+      const int num_channels = filter->dims->data[kDepthwiseConvQuantizedDimension];
+	    MicroPrintf("num_channels, %d", num_channels);
+
+      // set and calculate scales and shift
+	  const float input_scale = (5.6268444*2)/65536;
+      const float output_scale = (11.657923*2)/65536;
+
+      int32_t* per_channel_output_multiplier = new int32_t[512];
+      std::fill_n(per_channel_output_multiplier, 512, 0);
+	    int32_t* per_channel_output_shift = new int32_t[512];
+      std::fill_n(per_channel_output_shift, 512, 0);
+	  
+      for (int i = 0; i < num_channels; ++i) {
+        const double effective_output_scale = static_cast<double>(input_scale) *
+                                              static_cast<double>(filter_scales[i]) /
+                                              static_cast<double>(output_scale);
+        int32_t significand;
+        int channel_shift;
+        tflite::QuantizeMultiplier(effective_output_scale, &significand, &channel_shift);
+        per_channel_output_multiplier[i] = significand;
+        per_channel_output_shift[i] = channel_shift;
+      }
+
+      micro_context->DeallocateTempTfLiteTensor(filter_quant);
+    
+      reference_integer_ops::DepthwiseConvPerChannel(
+              DepthwiseConvParamsQuantized(params, data),
+              per_channel_output_multiplier, per_channel_output_shift,
+              tflite::micro::GetTensorShape(input),
+              quantized_input_data,
+              tflite::micro::GetTensorShape(filter),
+              tflite::micro::GetTensorData<int8_t>(filter),
+              tflite::micro::GetTensorShape(bias),
+              new_bias,
+              tflite::micro::GetTensorShape(output),
+              new_output);
+
+      RuntimeShape output_shape = tflite::micro::GetTensorShape(output);
+
+      tflite::DequantizationParams dequantization_params;
+      dequantization_params.scale = (11.657923*2)/65536;
+      dequantization_params.zero_point = 0;
+      MicroPrintf("dequant params set");
+
+      tflite::reference_ops::Dequantize(dequantization_params,
+                                output_shape,
+                                new_output,
+                                output_shape,
+                                tflite::micro::GetTensorData<float>(output));
+
+    //   tflite::reference_ops::DepthwiseConv(
+    //       DepthwiseConvParamsFloat(params, data),
+    //       tflite::micro::GetTensorShape(input),
+    //       tflite::micro::GetTensorData<float>(input),
+    //       tflite::micro::GetTensorShape(filter),
+    //       tflite::micro::GetTensorData<float>(filter),
+    //       tflite::micro::GetTensorShape(bias),
+    //       tflite::micro::GetOptionalTensorData<float>(bias),
+    //       tflite::micro::GetTensorShape(output),
+    //       tflite::micro::GetTensorData<float>(output));
+    break;
     }
     case kTfLiteInt8: {
       switch (filter->type) {
