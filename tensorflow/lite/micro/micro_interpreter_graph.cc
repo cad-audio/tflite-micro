@@ -23,7 +23,8 @@ limitations under the License.
 #include "tensorflow/lite/micro/micro_log.h"
 #include "tensorflow/lite/micro/micro_profiler.h"
 #include "tensorflow/lite/schema/schema_generated.h"
-
+#include "tensorflow/lite/micro/kernels/kernel_util.h"
+#include "tensorflow/lite/micro/tensor_dump.h"
 namespace tflite {
 namespace {
 
@@ -100,6 +101,8 @@ TfLiteStatus MicroInterpreterGraph::PrepareSubgraphs() {
                                                  .registration;
       if (registration->prepare != nullptr) {
         TfLiteStatus prepare_status = registration->prepare(context_, node);
+		MicroPrintf("Node %s (number %d) prepare status %d",
+                              OpNameFromRegistration(registration), i, prepare_status);
         if (prepare_status != kTfLiteOk) {
           MicroPrintf("Node %s (number %df) failed to prepare with status %d",
                       OpNameFromRegistration(registration), i, prepare_status);
@@ -180,7 +183,6 @@ TfLiteStatus MicroInterpreterGraph::InvokeSubgraph(int subgraph_idx) {
     const TFLMRegistration* registration = subgraph_allocations_[subgraph_idx]
                                                .node_and_registrations[i]
                                                .registration;
-
 // This ifdef is needed (even though ScopedMicroProfiler itself is a no-op with
 // -DTF_LITE_STRIP_ERROR_STRINGS) because the function OpNameFromRegistration is
 // only defined for builds with the error strings.
@@ -192,7 +194,15 @@ TfLiteStatus MicroInterpreterGraph::InvokeSubgraph(int subgraph_idx) {
 
     TFLITE_DCHECK(registration->invoke);
     TfLiteStatus invoke_status = registration->invoke(context_, node);
+	if(node->outputs != nullptr && (i==21 || i==27 || i ==33 || i==39 || i==45 || i==51 || i==77)){
+	// if(node->outputs != nullptr && (i==20)){
 
+		TfLiteEvalTensor* output = tflite::micro::GetEvalOutput(context_, node, 0);
+		MicroPrintf("Inside dump code with i = %d", i);
+		FILE_DUMP(output, i);
+	}
+	// MicroPrintf("Node %s (number %d) invoke status %d",
+    //                       OpNameFromRegistration(registration), i, invoke_status);
     // All TfLiteTensor structs used in the kernel are allocated from temp
     // memory in the allocator. This creates a chain of allocations in the
     // temp section. The call below resets the chain of allocations to
