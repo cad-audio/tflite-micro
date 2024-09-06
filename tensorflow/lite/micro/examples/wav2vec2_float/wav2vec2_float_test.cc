@@ -55,14 +55,6 @@ TF_LITE_MICRO_TEST(TestInvoke) {
   // An easier approach is to just use the AllOpsResolver, but this will
   // incur some penalty in code space for op implementations that are not
   // needed by this graph.
-    //   tflite::MicroMutableOpResolver<5> micro_op_resolver;
-    //   micro_op_resolver.AddAveragePool2D(tflite::Register_AVERAGE_POOL_2D_INT8());
-    //   micro_op_resolver.AddConv2D(tflite::Register_CONV_2D_INT8());
-    //   micro_op_resolver.AddDepthwiseConv2D(
-    //       tflite::Register_DEPTHWISE_CONV_2D_INT8());
-    //   micro_op_resolver.AddReshape();
-    //   micro_op_resolver.AddSoftmax(tflite::Register_SOFTMAX_INT8());
-//   tflite::AllOpsResolver resolver;
 	tflite::MicroMutableOpResolver<19> micro_op_resolver;
 	micro_op_resolver.AddAdd();
 	micro_op_resolver.AddAveragePool2D();
@@ -83,8 +75,6 @@ TF_LITE_MICRO_TEST(TestInvoke) {
 	micro_op_resolver.AddSquaredDifference();
 	micro_op_resolver.AddSub();
 	micro_op_resolver.AddTranspose();
-
-
 
   // Build an interpreter to run the model with.
   tflite::MicroInterpreter interpreter(model, micro_op_resolver, tensor_arena,
@@ -129,17 +119,13 @@ TF_LITE_MICRO_TEST(TestInvoke) {
     int max_index = 0;
     
     for (int j = 0; j < 32; ++j) {
-        float current_value = output_data[i*32 + j];
-        // MicroPrintf("%g", (double)current_value);
-        
+        float current_value = output_data[i*32 + j];   
         if (current_value > max_value) {
             max_value = current_value;
             max_index = j;
         }
     }
-    
     argmax[i] = max_index;
-    // MicroPrintf("\n");
 }
 
   MicroPrintf("Argmax values:\n");

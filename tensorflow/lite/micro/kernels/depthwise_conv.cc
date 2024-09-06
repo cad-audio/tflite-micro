@@ -133,17 +133,6 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
                                 new_output,
                                 output_shape,
                                 tflite::micro::GetTensorData<float>(output));
-
-    //   tflite::reference_ops::DepthwiseConv(
-    //       DepthwiseConvParamsFloat(params, data),
-    //       tflite::micro::GetTensorShape(input),
-    //       tflite::micro::GetTensorData<float>(input),
-    //       tflite::micro::GetTensorShape(filter),
-    //       tflite::micro::GetTensorData<float>(filter),
-    //       tflite::micro::GetTensorShape(bias),
-    //       tflite::micro::GetOptionalTensorData<float>(bias),
-    //       tflite::micro::GetTensorShape(output),
-    //       tflite::micro::GetTensorData<float>(output));
     break;
     }
     case kTfLiteInt8: {

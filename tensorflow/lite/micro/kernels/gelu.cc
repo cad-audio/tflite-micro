@@ -49,25 +49,9 @@ TfLiteStatus GeluEval(TfLiteContext* context, TfLiteNode* node) {
 		op_data.approximate,
 		tflite::micro::GetTensorShape(output),
 		tflite::micro::GetTensorData<float>(output));
-    //   GeluParams op_params = {};
-    //   const auto* params =
-    //       static_cast<TfLiteGeluParams*>(node->builtin_data);
-
-    //   op_params.alpha = params->alpha;
-    //   reference_ops::Gelu(op_params, tflite::micro::GetTensorShape(input),
-    //                            tflite::micro::GetTensorData<float>(input),
-    //                            tflite::micro::GetTensorShape(output),
-    //                            tflite::micro::GetTensorData<float>(output));
       return kTfLiteOk;
     } break;
-    // case kTfLiteInt8: {
-    //   QuantizeGelu<int8_t>(data, input, output);
-    //   return kTfLiteOk;
-    // } break;
-    // case kTfLiteInt16: {
-    //   QuantizeGelu<int16_t>(data, input, output);
-    //   return kTfLiteOk;
-    // } break;
+
     default:
       MicroPrintf("Only float32 is supported by GELU, got %s.",
                   TfLiteTypeGetName(input->type));
