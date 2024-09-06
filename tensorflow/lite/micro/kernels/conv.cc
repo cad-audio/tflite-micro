@@ -90,20 +90,16 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       RuntimeShape new_output_shape = tflite::micro::GetTensorShape(output);
       const int new_output_flat_size =new_output_shape.FlatSize();
       int16_t* new_output = new int16_t[new_output_flat_size];
-      MicroPrintf("output size, %d", new_output_flat_size);
 
       const int num_channels = filter->dims->data[kConvQuantizedDimension];
-	    MicroPrintf("num_channels, %d", num_channels);
 
       // set and calculate scales and shift
       const float output_scale = (554.2135*2)/65536;
-      // const float output_scale =0.00923244678;
 
-
-      int32_t* per_channel_output_multiplier = new int32_t[512];
-      std::fill_n(per_channel_output_multiplier, 512, 0);
-	    int32_t* per_channel_output_shift = new int32_t[512];
-      std::fill_n(per_channel_output_shift, 512, 0);
+      int32_t* per_channel_output_multiplier = new int32_t[num_channels];
+      std::fill_n(per_channel_output_multiplier, num_channels, 0);
+	    int32_t* per_channel_output_shift = new int32_t[num_channels];
+      std::fill_n(per_channel_output_shift, num_channels, 0);
 	  
       for (int i = 0; i < num_channels; ++i) {
         const double effective_output_scale = static_cast<double>(input_scale) *
@@ -131,11 +127,9 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
         new_output);
 
       RuntimeShape output_shape = tflite::micro::GetTensorShape(output);
-
       tflite::DequantizationParams dequantization_params;
       dequantization_params.scale = output_scale;
       dequantization_params.zero_point = 0;
-      MicroPrintf("dequant params set");
 
       tflite::reference_ops::Dequantize(dequantization_params,
                                 output_shape,
