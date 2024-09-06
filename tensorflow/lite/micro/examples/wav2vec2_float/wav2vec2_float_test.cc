@@ -18,7 +18,6 @@ limitations under the License.
 
 #include "tensorflow/lite/micro/examples/wav2vec2_float/model_settings.h"
 #include "tensorflow/lite/micro/examples/wav2vec2_float/tensor_input.h"
-// #include "tensorflow/lite/micro/examples/person_detection/testdata/person_image_data.h"
 #include "tensorflow/lite/micro/micro_interpreter.h"
 #include "tensorflow/lite/micro/micro_log.h"
 #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
@@ -30,8 +29,6 @@ extern unsigned int wav2vec2_dynamic_tflite_len;
 #if defined(XTENSA) && defined(VISION_P6)
 constexpr int tensor_arena_size =4* 352000*1024;
 #else
-// constexpr int tensor_arena_size =4*35200*400;
-// constexpr long long tensor_arena_size = 1195853630LL;
 constexpr int tensor_arena_size = 150000000;
 
 #endif  // defined(XTENSA) && defined(VISION_P6)

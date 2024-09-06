@@ -66,8 +66,6 @@ inline void Gelu(const RuntimeShape& input_shape, const T* input_data,
 	}
 }
 
-
-
 }  // namespace reference_ops
 }  // namespace tflite
 
