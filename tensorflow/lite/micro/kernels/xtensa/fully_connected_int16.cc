@@ -50,34 +50,30 @@ TfLiteStatus XtensaEvalFullyConnectedQuantizedInt16(
   if(num_batches == 1) {
       TF_LITE_ENSURE_EQ(
           context,
-          xa_nn_fully_connected_sym8sxsym16s_sym16s(
+          xa_nn_fully_connected_v2_sym8sxsym16s_sym16s(
               tflite::micro::GetTensorData<int16_t>(output),
               tflite::micro::GetTensorData<int8_t>(filter),
               tflite::micro::GetTensorData<int16_t>(input),
               bias_data, accum_depth, output_depth,
-              op_params.output_multiplier, op_params.output_shift),
+              op_params.output_multiplier, op_params.output_shift,
+              data.output_activation_min, data.output_activation_max, NULL),
           0);
   }
   else{
       TF_LITE_ENSURE_EQ(
           context,
-          xa_nn_matmul_sym8sxsym16s_sym16s(
+          xa_nn_matmul_v2_sym8sxsym16s_sym16s(
               tflite::micro::GetTensorData<int16_t>(output),
               tflite::micro::GetTensorData<int8_t>(filter),
               tflite::micro::GetTensorData<int16_t>(input),
               bias_data, output_depth, accum_depth, accum_depth,
               num_batches, accum_depth, output_depth, 1,
               op_params.input_offset, op_params.output_multiplier, 
-              op_params.output_shift, op_params.output_offset),
+              op_params.output_shift, op_params.output_offset,
+              data.output_activation_min, data.output_activation_max, NULL),
           0);    
   }
 
-  int16_t* output_arr = tflite::micro::GetTensorData<int16_t>(output);
-  TF_LITE_ENSURE_EQ(context,
-                    xa_nn_vec_activation_min_max_16_16(
-                        output_arr, output_arr, data.output_activation_min,
-                        data.output_activation_max, num_batches * output_depth),
-                    0);
 #else
   reference_integer_ops::FullyConnected(
       FullyConnectedParamsQuantized(data), tflite::micro::GetTensorShape(input),

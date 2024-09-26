@@ -90,18 +90,25 @@ TfLiteStatus XtensaEvalFullyConnectedQuantizedInt8(
                 op_params.weights_offset, op_params.output_multiplier,
                 op_params.output_shift, op_params.output_offset, p_scratch),
             0);
+    int8_t* output_arr = tflite::micro::GetTensorData<int8_t>(output);
+    TF_LITE_ENSURE_EQ(context,
+                    xa_nn_vec_activation_min_max_8_8(
+                        output_arr, output_arr, data.output_activation_min,
+                        data.output_activation_max, output_depth),
+                    0);
     }
     else{
 #endif        
         TF_LITE_ENSURE_EQ(
             context,
-            xa_nn_fully_connected_asym8sxasym8s_asym8s(
+            xa_nn_fully_connected_v2_asym8sxasym8s_asym8s(
                 tflite::micro::GetTensorData<int8_t>(output),
                 filter_data,
                 tflite::micro::GetTensorData<int8_t>(input),
                 bias_data, accum_depth, output_depth, op_params.input_offset,
                 op_params.weights_offset, op_params.output_multiplier,
-                op_params.output_shift, op_params.output_offset),
+                op_params.output_shift, op_params.output_offset,
+                data.output_activation_min, data.output_activation_max, NULL),
             0);
 #if defined(HIFI5) && defined(NNLIB_HIFI5)        
     }
@@ -126,12 +133,18 @@ TfLiteStatus XtensaEvalFullyConnectedQuantizedInt8(
             op_params.output_shift, op_params.output_offset, p_scratch),
         0);
       }        
+      int8_t* output_arr = tflite::micro::GetTensorData<int8_t>(output);
+      TF_LITE_ENSURE_EQ(context,
+                    xa_nn_vec_activation_min_max_8_8(
+                        output_arr, output_arr, data.output_activation_min,
+                        data.output_activation_max, num_batches * output_depth),
+                    0);
     }
     else{
 #endif        
         TF_LITE_ENSURE_EQ(
             context,
-            xa_nn_matmul_asym8sxasym8s_asym8s(
+            xa_nn_matmul_v2_asym8sxasym8s_asym8s(
                 tflite::micro::GetTensorData<int8_t>(output),
                 filter_data,
                 tflite::micro::GetTensorData<int8_t>(input),
@@ -139,19 +152,14 @@ TfLiteStatus XtensaEvalFullyConnectedQuantizedInt8(
                 num_batches, accum_depth, output_depth, 1,
                 op_params.weights_offset, op_params.input_offset,
                 op_params.output_multiplier, op_params.output_shift,
-                op_params.output_offset),
+                op_params.output_offset, 
+                data.output_activation_min, data.output_activation_max, NULL),
             0);
 #if defined(HIFI5) && defined(NNLIB_HIFI5)            
     }
 #endif    
   }
 
-  int8_t* output_arr = tflite::micro::GetTensorData<int8_t>(output);
-  TF_LITE_ENSURE_EQ(context,
-                    xa_nn_vec_activation_min_max_8_8(
-                        output_arr, output_arr, data.output_activation_min,
-                        data.output_activation_max, num_batches * output_depth),
-                    0);
 #elif defined(VISION_P6)
   const auto& params =
       *(reinterpret_cast<TfLiteConvParams*>(node->builtin_data));
