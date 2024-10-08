@@ -86,7 +86,8 @@ TfLiteStatus ConvPrepareHifi(TfLiteContext* context, TfLiteNode* node) {
 
   int required_scratch = 0;
   // Dilation is currently not supported for kTfLiteInt16 datatype.
-  if( ((params->dilation_height_factor > 1) || (params->dilation_width_factor > 1)) && input->type == kTfLiteInt8 && (input_depth == filter_depth)) {
+  if( ((params->dilation_height_factor > 1) || (params->dilation_width_factor > 1)) 
+      && ((input->type == kTfLiteInt8) || (input->type == kTfLiteInt16)) && (input_depth == filter_depth)) {
     // For HiFi5, with nnlib-hifi5 versions 1.7.0 onwards and for HiFi4 with nnlib-hifi4 versions 2.5.0 onwards, 
     // we use the below dilated_conv2d_std getsize() API. For the earlier versions, "output_channels" argument is not needed.
 #if defined(HIFI5) || defined(HIFI4)
@@ -249,7 +250,7 @@ TfLiteStatus ConvEvalHifiInt16(TfLiteContext* context, TfLiteNode* node,
 
         TF_LITE_ENSURE_EQ(
             context,
-            xa_nn_conv2d_pointwise_per_chan_sym8sxsym16s(
+            xa_nn_conv2d_pointwise_v2_per_chan_sym8sxsym16s(
                 p_out_temp, const_cast<WORD8*>(filter_data),
                 const_cast<WORD16*>(&input_data[batch * input_height *
                                                 input_width * input_depth]),
@@ -257,14 +258,8 @@ TfLiteStatus ConvEvalHifiInt16(TfLiteContext* context, TfLiteNode* node,
                 input_depth, output_depth, 0,
                 data.reference_op_data.per_channel_output_multiplier,
                 data.reference_op_data.per_channel_output_shift, 0,
-                output_data_format),
+                output_data_format, output_activation_min, output_activation_max, NULL),
           0);
-
-        TF_LITE_ENSURE_EQ(context,
-                          xa_nn_vec_activation_min_max_16_16(
-                              p_out_temp, p_out_temp, output_activation_min,
-                              output_activation_max, out_length),
-                          0);
       }
     } else {
       void* p_scratch = static_cast<void*>(
@@ -278,7 +273,7 @@ TfLiteStatus ConvEvalHifiInt16(TfLiteContext* context, TfLiteNode* node,
           if(filter_depth == input_depth){
           TF_LITE_ENSURE_EQ(
               context,
-              xa_nn_conv2d_std_per_chan_sym8sxsym16s(
+              xa_nn_conv2d_std_v2_per_chan_sym8sxsym16s(
                   p_out_temp,
                   &input_data[batch * input_height * input_width * input_depth],
                   const_cast<int8_t*>(filter_data),  // filter_data,
@@ -288,13 +283,14 @@ TfLiteStatus ConvEvalHifiInt16(TfLiteContext* context, TfLiteNode* node,
                   output_width, 0,
                   data.reference_op_data.per_channel_output_multiplier,
                   data.reference_op_data.per_channel_output_shift, 0,
-                  output_data_format, static_cast<void*>(p_scratch)),
+                  output_data_format, static_cast<void*>(p_scratch),
+                  output_activation_min, output_activation_max, NULL),
               0);
           }
           else{
             TF_LITE_ENSURE_EQ(
               context,
-                xa_nn_conv2d_per_chan_sym8sxsym16s(
+                xa_nn_conv2d_v2_per_chan_sym8sxsym16s(
                     p_out_temp,
                     &input_data[batch * input_height * input_width * input_depth],
                     const_cast<int8_t*>(filter_data),  // filter_data,
@@ -305,19 +301,40 @@ TfLiteStatus ConvEvalHifiInt16(TfLiteContext* context, TfLiteNode* node,
                     data.reference_op_data.per_channel_output_multiplier,
                     data.reference_op_data.per_channel_output_shift,
                     0, output_data_format,
-                    static_cast<void*>(p_scratch)),
-                0);              
+                    static_cast<void*>(p_scratch),
+                    output_activation_min, output_activation_max, NULL),
+                0);
           }
         }
-        TF_LITE_ENSURE_EQ(context,
-                          xa_nn_vec_activation_min_max_16_16(
-                              p_out_temp, p_out_temp, output_activation_min,
-                              output_activation_max, out_length),
-                          0);
       }
     }
-  }
-  else{
+  } else if (filter_depth == input_depth) {
+   /* dilated convolution available only for filter_depth = input_depth */
+    void* p_scratch = static_cast<void*>(
+        context->GetScratchBuffer(context, data.scratch_tensor_index));
+
+    for (int batch = 0; batch < batches; ++batch) {
+      int16_t* p_out_temp;
+      p_out_temp = &output_data[batch * out_length];
+
+      TF_LITE_ENSURE_EQ(
+          context,
+          xa_nn_dilated_conv2d_std_v2_per_chan_sym8sxsym16s(
+              p_out_temp,
+              &input_data[batch * input_height * input_width * input_depth],
+              const_cast<int8_t*>(filter_data),  // filter_data,
+              bias_data, input_height, input_width, input_depth,
+              filter_height, filter_width, output_depth, stride_width,
+              stride_height, pad_width, pad_height, output_height,
+              output_width, 0,
+              data.reference_op_data.per_channel_output_multiplier,
+              data.reference_op_data.per_channel_output_shift, 0,
+              output_data_format, static_cast<void*>(p_scratch),
+              params.dilation_height_factor, params.dilation_width_factor,
+              output_activation_min, output_activation_max, NULL),
+          0);
+    }
+  } else {
     reference_integer_ops::ConvPerChannel(
         ConvParamsQuantized(params, data.reference_op_data),
         data.reference_op_data.per_channel_output_multiplier,
@@ -383,7 +400,7 @@ TfLiteStatus ConvEvalHifiInt8(TfLiteContext* context, TfLiteNode* node,
 
       TF_LITE_ENSURE_EQ(
           context,
-          xa_nn_conv2d_pointwise_per_chan_sym8sxasym8s(
+          xa_nn_conv2d_pointwise_v2_per_chan_sym8sxasym8s(
               p_out_temp, const_cast<WORD8*>(filter_data),
               const_cast<WORD8*>(&input_data[batch * input_height *
                                              input_width * input_depth]),
@@ -391,14 +408,9 @@ TfLiteStatus ConvEvalHifiInt8(TfLiteContext* context, TfLiteNode* node,
               input_depth, output_depth, input_offset,
               data.reference_op_data.per_channel_output_multiplier,
               data.reference_op_data.per_channel_output_shift, output_offset,
-              output_data_format),
+              output_data_format,
+              output_activation_min, output_activation_max, NULL),
           0);
-
-      TF_LITE_ENSURE_EQ(context,
-                        xa_nn_vec_activation_min_max_8_8(
-                            p_out_temp, p_out_temp, output_activation_min,
-                            output_activation_max, out_length),
-                        0);
     }
   } else {
     void* p_scratch = static_cast<void*>(
@@ -432,7 +444,7 @@ TfLiteStatus ConvEvalHifiInt8(TfLiteContext* context, TfLiteNode* node,
       {
         TF_LITE_ENSURE_EQ(
             context,
-            xa_nn_dilated_conv2d_std_per_chan_sym8sxasym8s(p_out_temp,
+            xa_nn_dilated_conv2d_std_v2_per_chan_sym8sxasym8s(p_out_temp,
               &input_data[batch * input_height * input_width * input_depth],
               const_cast<int8_t*>(filter_data),  // filter_data,
               bias_data, input_height, input_width, input_depth, filter_height,
@@ -440,7 +452,8 @@ TfLiteStatus ConvEvalHifiInt8(TfLiteContext* context, TfLiteNode* node,
               pad_height, output_height, output_width, input_offset,
               data.reference_op_data.per_channel_output_multiplier, data.reference_op_data.per_channel_output_shift,
               output_offset, output_data_format,
-              static_cast<void*>(p_scratch), params.dilation_height_factor, params.dilation_width_factor),
+              static_cast<void*>(p_scratch), params.dilation_height_factor, params.dilation_width_factor,
+              output_activation_min, output_activation_max, NULL),
             0);
       }
       else
@@ -448,7 +461,7 @@ TfLiteStatus ConvEvalHifiInt8(TfLiteContext* context, TfLiteNode* node,
         if(filter_depth == input_depth){
           TF_LITE_ENSURE_EQ(
               context,
-              xa_nn_conv2d_std_per_chan_sym8sxasym8s(
+              xa_nn_conv2d_std_v2_per_chan_sym8sxasym8s(
                   p_out_temp,
                   &input_data[batch * input_height * input_width * input_depth],
                   const_cast<int8_t*>(filter_data),
@@ -459,13 +472,14 @@ TfLiteStatus ConvEvalHifiInt8(TfLiteContext* context, TfLiteNode* node,
                   data.reference_op_data.per_channel_output_multiplier,
                   data.reference_op_data.per_channel_output_shift,
                   output_offset, output_data_format,
-                  static_cast<void*>(p_scratch)),
+                  static_cast<void*>(p_scratch),
+                  output_activation_min, output_activation_max, NULL),
               0);
         }
         else{
           TF_LITE_ENSURE_EQ(
             context,
-              xa_nn_conv2d_per_chan_sym8sxasym8s(
+              xa_nn_conv2d_v2_per_chan_sym8sxasym8s(
                   p_out_temp,
                   &input_data[batch * input_height * input_width * input_depth],
                   const_cast<int8_t*>(filter_data),  // filter_data,
@@ -476,16 +490,11 @@ TfLiteStatus ConvEvalHifiInt8(TfLiteContext* context, TfLiteNode* node,
                   data.reference_op_data.per_channel_output_multiplier,
                   data.reference_op_data.per_channel_output_shift,
                   output_offset, output_data_format,
-                  static_cast<void*>(p_scratch)),
+                  static_cast<void*>(p_scratch),
+                  output_activation_min, output_activation_max, NULL),
               0);              
         }
       }
-
-      TF_LITE_ENSURE_EQ(context,
-                        xa_nn_vec_activation_min_max_8_8(
-                            p_out_temp, p_out_temp, output_activation_min,
-                            output_activation_max, out_length),
-                        0);
     }
   }
 

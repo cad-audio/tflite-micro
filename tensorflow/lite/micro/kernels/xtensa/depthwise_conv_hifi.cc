@@ -182,7 +182,7 @@ TfLiteStatus DepthwiseConvEvalInt8Hifi(TfLiteContext* context, TfLiteNode* node,
     for (int i = 0; i < batches; i++) {
       TF_LITE_ENSURE_EQ(
           context,
-          xa_nn_conv2d_depthwise_per_chan_sym8sxasym8s(
+          xa_nn_conv2d_depthwise_v2_per_chan_sym8sxasym8s(
               &output_data[i * output_height * output_width * output_depth],
               filter_data,
               &input_data[i * input_height * input_width * input_depth],
@@ -193,16 +193,10 @@ TfLiteStatus DepthwiseConvEvalInt8Hifi(TfLiteContext* context, TfLiteNode* node,
               data.reference_op_data.per_channel_output_multiplier,
               data.reference_op_data.per_channel_output_shift,
               data.reference_op_data.output_zero_point, input_data_format,
-              output_data_format, p_scratch),
+              output_data_format, p_scratch,
+              output_activation_min, output_activation_max, NULL),
           0);
     }
-
-    int out_length = batches * output_height * output_width * output_depth;
-    TF_LITE_ENSURE_EQ(context,
-                      xa_nn_vec_activation_min_max_8_8(
-                          output_data, output_data, output_activation_min,
-                          output_activation_max, out_length),
-                      0);
 
     return kTfLiteOk;
   }
@@ -254,7 +248,7 @@ TfLiteStatus DepthwiseConvEvalInt8Hifi(TfLiteContext* context, TfLiteNode* node,
     for (int i = 0; i < batches; i++) {
       TF_LITE_ENSURE_EQ(
           context,
-          xa_nn_dilated_conv2d_depthwise_per_chan_sym8sxasym8s(
+          xa_nn_dilated_conv2d_depthwise_v2_per_chan_sym8sxasym8s(
               &output_data[i * output_height * output_width * output_depth],
               filter_data,
               &input_data[i * input_height * input_width * input_depth],
@@ -265,16 +259,10 @@ TfLiteStatus DepthwiseConvEvalInt8Hifi(TfLiteContext* context, TfLiteNode* node,
               data.reference_op_data.per_channel_output_multiplier,
               data.reference_op_data.per_channel_output_shift,
               data.reference_op_data.output_zero_point, input_data_format,
-              output_data_format, p_scratch),
+              output_data_format, p_scratch,
+              output_activation_min, output_activation_max, NULL),
           0);
     }
-
-    int out_length = batches * output_height * output_width * output_depth;
-    TF_LITE_ENSURE_EQ(context,
-                      xa_nn_vec_activation_min_max_8_8(
-                          output_data, output_data, output_activation_min,
-                          output_activation_max, out_length),
-                      0);
 
     return kTfLiteOk;     
   }
@@ -336,7 +324,7 @@ TfLiteStatus DepthwiseConvEvalInt16Hifi(TfLiteContext* context, TfLiteNode* node
     for (int i = 0; i < batches; i++) {
       TF_LITE_ENSURE_EQ(
           context,
-          xa_nn_conv2d_depthwise_per_chan_sym8sxsym16s(
+          xa_nn_conv2d_depthwise_v2_per_chan_sym8sxsym16s(
               &output_data[i * output_height * output_width * output_depth],
               filter_data,
               &input_data[i * input_height * input_width * input_depth],
@@ -347,16 +335,10 @@ TfLiteStatus DepthwiseConvEvalInt16Hifi(TfLiteContext* context, TfLiteNode* node
               data.reference_op_data.per_channel_output_multiplier,
               data.reference_op_data.per_channel_output_shift,
               data.reference_op_data.output_zero_point, input_data_format,
-              output_data_format, p_scratch),
+              output_data_format, p_scratch,
+              output_activation_min, output_activation_max, NULL),
           0);
     }
-
-    int out_length = batches * output_height * output_width * output_depth;
-    TF_LITE_ENSURE_EQ(context,
-                      xa_nn_vec_activation_min_max_16_16(
-                          output_data, output_data, output_activation_min,
-                          output_activation_max, out_length),
-                      0);
 
     return kTfLiteOk;
   }
