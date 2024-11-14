@@ -85,6 +85,7 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
 }
 
 TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
+  int err;
   const TfLiteEvalTensor* input =
       tflite::micro::GetEvalInput(context, node, kInputTensor);
   const TfLiteEvalTensor* begin =
@@ -158,12 +159,14 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
                 : start[i] + op_params.size[op_params.size_count - padded_i];
       }
 
-      xa_nn_strided_slice_int8(
-          output_data, input_data, start[0], stop[0], start[1],
-          stop[1], start[2], stop[2], start[3], stop[3],
-          start[4], stop[4], unit_stride, unit_stride, unit_stride, unit_stride, unit_stride,
-          extended_input_shape.Dims(1), extended_input_shape.Dims(2), extended_input_shape.Dims(3),
-          extended_input_shape.Dims(4));
+      err = xa_nn_strided_slice_int8(
+        output_data, input_data, start[0], stop[0], start[1],
+        stop[1], start[2], stop[2], start[3], stop[3],
+        start[4], stop[4], unit_stride, unit_stride, unit_stride, unit_stride, unit_stride,
+        extended_input_shape.Dims(1), extended_input_shape.Dims(2), extended_input_shape.Dims(3),
+        extended_input_shape.Dims(4)
+      );
+      TF_LITE_ENSURE(context, err == 0);
 #else
       reference_ops::Slice<int8_t>(
           op_params, tflite::micro::GetTensorShape(input),
@@ -202,12 +205,14 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
                 : start[i] + op_params.size[op_params.size_count - padded_i];
       }
 
-      xa_nn_strided_slice_int16(
-          output_data, input_data, start[0], stop[0], start[1],
-          stop[1], start[2], stop[2], start[3], stop[3],
-          start[4], stop[4], unit_stride, unit_stride, unit_stride, unit_stride, unit_stride,
-          extended_input_shape.Dims(1), extended_input_shape.Dims(2), extended_input_shape.Dims(3),
-          extended_input_shape.Dims(4));
+      err = xa_nn_strided_slice_int16(
+        output_data, input_data, start[0], stop[0], start[1],
+        stop[1], start[2], stop[2], start[3], stop[3],
+        start[4], stop[4], unit_stride, unit_stride, unit_stride, unit_stride, unit_stride,
+        extended_input_shape.Dims(1), extended_input_shape.Dims(2), extended_input_shape.Dims(3),
+        extended_input_shape.Dims(4)
+      );
+      TF_LITE_ENSURE(context, err == 0);
 #else // defined(HIFI4) || defined(HIFI5)
       reference_ops::Slice<int16_t>(
           op_params, tflite::micro::GetTensorShape(input),

@@ -55,7 +55,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
   switch (input->type) {
     case kTfLiteFloat32: {
 #if defined(INCLUDE_FLOAT_OPT)
-      ConvEvalHifiFloat32(context, node, params, op_data, input, filter,
+      return ConvEvalHifiFloat32(context, node, params, op_data, input, filter,
                    bias, output);
 #else    
       return ConvReferenceEvalFloat32(context, node);
@@ -66,12 +66,12 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       switch (filter->type) {
         case kTfLiteInt4: {
 #if defined(HIFI5) && defined(NNLIB_HIFI5)
-          ConvEvalHifiInt4(context, node, params, op_data, input, filter,
+          return ConvEvalHifiInt4(context, node, params, op_data, input, filter,
                        bias, output);
 #elif defined(HIFI4)
           TfLiteEvalTensor filter_int8 = tflite::micro::MakeUnpackedInt4Tensor(
               context, op_data.reference_op_data.filter_buffer_index, filter);
-          ConvEvalHifiInt8(context, node, params, op_data, input, &filter_int8,
+          return ConvEvalHifiInt8(context, node, params, op_data, input, &filter_int8,
                            bias, output);
 #else
           return ConvReferenceEvalInt8(context, node);
@@ -80,7 +80,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
         } 
         case kTfLiteInt8: {
 #if defined(HIFI4) || defined(HIFI5)
-          ConvEvalHifiInt8(context, node, params, op_data, input, filter,
+          return ConvEvalHifiInt8(context, node, params, op_data, input, filter,
                            bias, output);
 #elif defined(VISION_P6)
           // At this time the optimized implementation is failing the unit tests in
@@ -109,7 +109,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
     case kTfLiteInt16: {
 #if defined(HIFI4) || defined(HIFI5)
       if (bias->type == kTfLiteInt64) {
-        ConvEvalHifiInt16(context, node, params, op_data, input, filter, bias,
+        return ConvEvalHifiInt16(context, node, params, op_data, input, filter, bias,
                           output);
       }
       else if (bias->type == kTfLiteInt32) {

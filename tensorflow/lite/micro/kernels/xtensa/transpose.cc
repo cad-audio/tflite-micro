@@ -74,6 +74,7 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
 }
 
 TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
+  int err;
   const TfLiteEvalTensor* perm_tensor =
       tflite::micro::GetEvalInput(context, node, kPermTensor);
   const int32_t* perm_data = perm_tensor->data.i32;
@@ -100,13 +101,16 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       break;
     case kTfLiteInt8 : {
 #if defined(HIFI4) || defined(HIFI5)
-    xa_nn_transpose_8_8(tflite::micro::GetTensorData<int8_t>(output),
-                        tflite::micro::GetTensorShape(output).DimsData(),
-                        tflite::micro::GetTensorData<int8_t>(input),
-                        tflite::micro::GetTensorShape(input).DimsData(),
-                        params.perm,
-                        tflite::micro::GetTensorShape(output).DimensionsCount(),
-                        tflite::micro::GetTensorShape(input).DimensionsCount());
+      err = xa_nn_transpose_8_8(
+        tflite::micro::GetTensorData<int8_t>(output),
+        tflite::micro::GetTensorShape(output).DimsData(),
+        tflite::micro::GetTensorData<int8_t>(input),
+        tflite::micro::GetTensorShape(input).DimsData(),
+        params.perm,
+        tflite::micro::GetTensorShape(output).DimensionsCount(),
+        tflite::micro::GetTensorShape(input).DimensionsCount()
+      );
+      TF_LITE_ENSURE(context, err == 0);
 #else    
       reference_ops::Transpose(params, tflite::micro::GetTensorShape(input),
                                tflite::micro::GetTensorData<int8_t>(input),
@@ -117,13 +121,16 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       break;
     case kTfLiteInt16:
 #if defined(HIFI4) || defined(HIFI5)
-    xa_nn_transpose_16_16(tflite::micro::GetTensorData<int16_t>(output),
-                          tflite::micro::GetTensorShape(output).DimsData(),
-                          tflite::micro::GetTensorData<int16_t>(input),
-                          tflite::micro::GetTensorShape(input).DimsData(),
-                          params.perm,
-                          tflite::micro::GetTensorShape(output).DimensionsCount(),
-                          tflite::micro::GetTensorShape(input).DimensionsCount());
+      err = xa_nn_transpose_16_16(
+        tflite::micro::GetTensorData<int16_t>(output),
+        tflite::micro::GetTensorShape(output).DimsData(),
+        tflite::micro::GetTensorData<int16_t>(input),
+        tflite::micro::GetTensorShape(input).DimsData(),
+        params.perm,
+        tflite::micro::GetTensorShape(output).DimensionsCount(),
+        tflite::micro::GetTensorShape(input).DimensionsCount()
+      );
+      TF_LITE_ENSURE(context, err == 0);
 #else    
       reference_ops::Transpose(params, tflite::micro::GetTensorShape(input),
                                tflite::micro::GetTensorData<int16_t>(input),

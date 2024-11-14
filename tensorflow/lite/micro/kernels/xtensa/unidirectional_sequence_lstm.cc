@@ -110,8 +110,7 @@ TfLiteStatus UnidirectionalSequenceLstmEval(TfLiteContext* context,
     case kTfLiteFloat32: {
       LSTMBuffers<float> buffers =
           CreateLSTMBuffers<float>(context, op_data.buffer_indices);
-      EvalLstm<float, float, float, float>(op_data, kernel_content, buffers);
-      break;
+      return EvalLstm<float, float, float, float>(op_data, kernel_content, buffers);
     }
     case kTfLiteInt8: {
       switch (weight_type) {
@@ -119,9 +118,8 @@ TfLiteStatus UnidirectionalSequenceLstmEval(TfLiteContext* context,
           // 8(activation)x8(weight)->16(cell) LSTM with 32 bits bias
           LSTMBuffers<int16_t> buffers =
               CreateLSTMBuffers<int16_t>(context, op_data.buffer_indices);
-          EvalLstm<int8_t, int8_t, int16_t, int32_t>(op_data, kernel_content,
-                                                     buffers);
-          break;
+          return EvalLstm<int8_t, int8_t, int16_t, int32_t>(op_data, kernel_content,
+                                                            buffers);
         }
         default: {
           MicroPrintf("Filter type %s (%d) not supported.",
@@ -137,9 +135,8 @@ TfLiteStatus UnidirectionalSequenceLstmEval(TfLiteContext* context,
           // 16(activation)x8(weight)->16(cell) LSTM with 64 bits bias
           LSTMBuffers<int16_t> buffers =
               CreateLSTMBuffers<int16_t>(context, op_data.buffer_indices);
-          EvalLstm<int16_t, int8_t, int16_t, int64_t>(op_data, kernel_content,
-                                                      buffers);
-          break;
+          return EvalLstm<int16_t, int8_t, int16_t, int64_t>(op_data, kernel_content,
+                                                             buffers);
         }
         default: {
           MicroPrintf("Filter type %s (%d) not supported.",
