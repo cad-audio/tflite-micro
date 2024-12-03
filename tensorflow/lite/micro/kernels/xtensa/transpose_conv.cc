@@ -184,32 +184,24 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
   if (input->type == kTfLiteInt8) {
     TFLITE_DCHECK(context->RequestScratchBufferInArena != nullptr);
 #if defined(HIFI4) || defined(HIFI5)
-    if(NumInputs(node) == 4){
-      const int stride_width = params->stride_width;
-      const int stride_height = params->stride_height;
+    const int stride_width = params->stride_width;
+    const int stride_height = params->stride_height;
 
-      const int input_height = SizeOfDimension(input, 1);
-      const int input_width = SizeOfDimension(input, 2);
-      const int input_depth = SizeOfDimension(input, 3);
-      const int output_height = height;
-      const int output_width = width;
-      int32_t scratch_buffer_size = 0;
-      scratch_buffer_size = xa_nn_transpose_conv_getsize(input_height,
-                                input_width, input_depth, filter_height,
-                                filter_width, stride_width, stride_height,
-                                output_height, output_width, num_channels,
-                                PREC_SYM8S, PREC_ASYM8S);
-      TFLITE_DCHECK(context->RequestScratchBufferInArena(
-                        context,
-                        scratch_buffer_size,
-                        &(data->scratch_buffer_index)) == kTfLiteOk);
-    }
-    else{
-      TFLITE_DCHECK(context->RequestScratchBufferInArena(
-                        context,
-                        GetTensorShape(output).FlatSize() * sizeof(int32_t),
-                        &(data->scratch_buffer_index)) == kTfLiteOk);
-    }
+    const int input_height = SizeOfDimension(input, 1);
+    const int input_width = SizeOfDimension(input, 2);
+    const int input_depth = SizeOfDimension(input, 3);
+    const int output_height = height;
+    const int output_width = width;
+    int32_t scratch_buffer_size = 0;
+    scratch_buffer_size = xa_nn_transpose_conv_getsize(input_height,
+                              input_width, input_depth, filter_height,
+                              filter_width, stride_width, stride_height,
+                              output_height, output_width, num_channels,
+                              PREC_SYM8S, PREC_ASYM8S);
+    TFLITE_DCHECK(context->RequestScratchBufferInArena(
+                      context,
+                      scratch_buffer_size,
+                      &(data->scratch_buffer_index)) == kTfLiteOk);
 #else // #if defined(HIFI4) || defined(HIFI5)    
     TFLITE_DCHECK(context->RequestScratchBufferInArena(
                       context,
@@ -333,7 +325,6 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       int32_t* scratch_buffer = static_cast<int32_t*>(
           context->GetScratchBuffer(context, data.scratch_buffer_index));
 #if defined(HIFI4) || defined(HIFI5)
-      if((bias != NULL) && (bias->type == kTfLiteInt32)){
         const RuntimeShape& input_shape = tflite::micro::GetTensorShape(input);
         const RuntimeShape& filter_shape =
             tflite::micro::GetTensorShape(filter);
@@ -382,20 +373,6 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
                                 data.params.quantized_activation_max, output_height * output_width * output_depth),
                             0);
         }
-      }
-      else{
-        reference_integer_ops::TransposeConv(
-            data.params, data.per_channel_output_multiplier,
-            data.per_channel_output_shift, tflite::micro::GetTensorShape(input),
-            tflite::micro::GetTensorData<int8_t>(input),
-            tflite::micro::GetTensorShape(filter),
-            tflite::micro::GetTensorData<int8_t>(filter),
-            tflite::micro::GetTensorShape(bias),
-            tflite::micro::GetOptionalTensorData<int32_t>(bias),
-            tflite::micro::GetTensorShape(output),
-            tflite::micro::GetTensorData<int8_t>(output),
-            tflite::micro::GetTensorShape(nullptr), nullptr, scratch_buffer);          
-      }
 #else
       reference_integer_ops::TransposeConv(
           data.params, data.per_channel_output_multiplier,
