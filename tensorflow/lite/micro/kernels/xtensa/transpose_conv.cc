@@ -171,6 +171,9 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
   const int filter_width = SizeOfDimension(filter, 2);
   const int filter_height = SizeOfDimension(filter, 1);
 
+  /* TFLM checks if input_depth == filter_depth. So groups will always be 1*/
+  int num_groups = 1;
+
   // Dynamically allocate per-channel quantization parameters.
   const int num_channels = filter->dims->data[kConvQuantizedDimension];
   data->per_channel_output_multiplier =
@@ -197,7 +200,7 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
                               input_width, input_depth, filter_height,
                               filter_width, stride_width, stride_height,
                               output_height, output_width, num_channels,
-                              PREC_SYM8S, PREC_ASYM8S);
+                              num_groups, PREC_SYM8S, PREC_ASYM8S);
     TFLITE_DCHECK(context->RequestScratchBufferInArena(
                       context,
                       scratch_buffer_size,
@@ -227,7 +230,7 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
                               input_width, input_depth, filter_height,
                               filter_width, stride_width, stride_height,
                               output_height, output_width, num_channels,
-                              PREC_SYM8S, PREC_SYM16S);
+                              num_groups, PREC_SYM8S, PREC_SYM16S);
     TFLITE_DCHECK(context->RequestScratchBufferInArena(
                       context,
                       scratch_buffer_size,
@@ -256,7 +259,7 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
                               input_width, input_depth, filter_height,
                               filter_width, stride_width, stride_height,
                               output_height, output_width, num_channels,
-                              PREC_F32, PREC_F32);
+                              num_groups, PREC_F32, PREC_F32);
     TFLITE_DCHECK(context->RequestScratchBufferInArena(
                       context,
                       scratch_buffer_size,
@@ -350,6 +353,9 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       const int input_depth = MatchingDim(input_shape, 3, filter_shape, 3);
       const int output_depth = MatchingDim(filter_shape, 0, output_shape, 3);
 
+      /* TFLM checks if input_depth == filter_depth. So groups will always be 1*/
+      int num_groups = 1;
+
       const int input_height = input_shape.Dims(1);
       const int input_width = input_shape.Dims(2);
       const int filter_height = filter_shape.Dims(1);
@@ -374,7 +380,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
             stride_width, stride_height, pad_width, pad_height, input_depth,
             output_depth, input_height, input_width, filter_height,
             filter_width, output_height, output_width, num_elements / batches,
-            scratch_buffer);
+            num_groups, scratch_buffer);
       }
       xa_nn_vec_activation_min_max_f32_f32(output_data, output_data, op_params.float_activation_min,
                                       op_params.float_activation_max , (batches*output_height*output_width*output_depth));      
@@ -410,6 +416,9 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       const int input_depth = MatchingDim(input_shape, 3, filter_shape, 3);
       const int output_depth = MatchingDim(filter_shape, 0, output_shape, 3);
 
+      /* TFLM checks if input_depth == filter_depth. So groups will always be 1*/
+      int num_groups = 1;
+
       const int input_height = input_shape.Dims(1);
       const int input_width = input_shape.Dims(2);
       const int filter_height = filter_shape.Dims(1);
@@ -434,7 +443,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
             stride_width, stride_height, pad_width, pad_height, input_depth,
             output_depth, input_height, input_width, filter_height,
             filter_width, output_height, output_width, num_elements / batches,
-            data.params.input_offset, data.params.output_offset,
+            num_groups, data.params.input_offset, data.params.output_offset,
             data.per_channel_output_shift, data.per_channel_output_multiplier,
             scratch_buffer);
       }
@@ -492,6 +501,9 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
         const int input_depth = MatchingDim(input_shape, 3, filter_shape, 3);
         const int output_depth = MatchingDim(filter_shape, 0, output_shape, 3);
 
+        /* TFLM checks if input_depth == filter_depth. So groups will always be 1*/
+        int num_groups = 1;
+
         const int input_height = input_shape.Dims(1);
         const int input_width = input_shape.Dims(2);
         const int filter_height = filter_shape.Dims(1);
@@ -516,7 +528,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
               stride_width, stride_height, pad_width, pad_height, input_depth,
               output_depth, input_height, input_width, filter_height,
               filter_width, output_height, output_width, num_elements / batches,
-              data.per_channel_output_shift, data.per_channel_output_multiplier,
+              num_groups, data.per_channel_output_shift, data.per_channel_output_multiplier,
               scratch_buffer);
         }
 #else // #if defined(HIFI4) || defined(HIFI5)
