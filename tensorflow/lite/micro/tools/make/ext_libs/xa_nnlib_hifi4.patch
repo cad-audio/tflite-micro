@@ -1,0 +1,39 @@
+diff --git a/algo/kernels/basic/hifi4/xa_nn_elm_quantize.c b/algo/kernels/basic/hifi4/xa_nn_elm_quantize.c
+index 589e97e..a9e6bf3 100644
+--- a/algo/kernels/basic/hifi4/xa_nn_elm_quantize.c
++++ b/algo/kernels/basic/hifi4/xa_nn_elm_quantize.c
+@@ -450,14 +450,14 @@ WORD32 xa_nn_elm_requantize_asym8s_asym32s(WORD32 * __restrict__ p_out,
+   for(i = 0; i < (num_elm & 7); i++)
+   {
+     ae_int16x4 d_inp0 = (WORD16)*p_i;
+-    ae_int32x2 d_inp32_0 = 0;
++    ae_int32x2 d_inp32_0 = 0, d_inp32_1 = 0;
+ 
+     d_inp0 = AE_SUB16(d_inp0, d_inp_zero_bias);
+ 
+ #if XCHAL_HAVE_HIFI1
+     d_inp32_0 = AE_SEXT32X2D16_32(d_inp0);
+ #else
+-    AE_MUL16X4(d_inp32_0, d_inp32_0, d_inp0, ONE); 
++    AE_MUL16X4(d_inp32_0, d_inp32_1, d_inp0, ONE);
+ #endif
+ 
+     MPY_BY_QUANT_MULT_SLS_X2_OUT32(d_inp32_0, d_inp32_0, d_out_multiplier, left_shift, right_shift);
+@@ -1058,7 +1058,7 @@ WORD32 xa_nn_elm_requantize_asym8s_asym8u(UWORD8 * __restrict__ p_out,
+   {   
+     ae_int16x4 d_inp0 = (WORD16)*p_i;
+     d_inp0 = AE_SUB16(d_inp0, d_inp_zero_bias);
+-    AE_MUL16X4(d_inp32_0 , d_inp32_0 , d_inp0 , ONE);
++    AE_MUL16X4(d_inp32_0 , d_inp32_1 , d_inp0 , ONE);
+     MPY_BY_QUANT_MULT_SLS_X2_OUT32(d_out0_32, d_inp32_0, out_multiplier, left_shift, right_shift);
+     d_out0_32 = AE_ADD32S(d_out0_32, AE_MOVDA32(out_zero_bias));
+     CLAMP_VAL(d_out0_32, d_out0_32, d_min, AE_MOVDA32(255))
+@@ -1177,7 +1177,7 @@ WORD32 xa_nn_elm_requantize_asym8s_asym8u(UWORD8 * __restrict__ p_out,
+   {   
+     ae_int16x4 d_inp0 = (WORD16)*p_i;
+     d_inp0 = AE_SUB16(d_inp0, d_inp_zero_bias);
+-    AE_MUL16X4(d_inp32_0 , d_inp32_0 , d_inp0 , ONE);
++    AE_MUL16X4(d_inp32_0 , d_inp32_1 , d_inp0 , ONE);
+     MPY_BY_QUANT_MULT_SLS_X2_OUT32(d_out0_32, d_inp32_0, out_multiplier, left_shift, right_shift);
+     d_out0_32 = AE_ADD32S(d_out0_32, AE_MOVDA32(out_zero_bias));
+     CLAMP_VAL(d_out0_32, d_out0_32, d_min, AE_MOVDA32(255))
