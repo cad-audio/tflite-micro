@@ -1,3 +1,16 @@
+diff --git a/algo/kernels/activations/hifi5/xa_nn_softmax_sym16s_16.c b/algo/kernels/activations/hifi5/xa_nn_softmax_sym16s_16.c
+index 4d0645b..553f31f 100644
+--- a/algo/kernels/activations/hifi5/xa_nn_softmax_sym16s_16.c
++++ b/algo/kernels/activations/hifi5/xa_nn_softmax_sym16s_16.c
+@@ -294,7 +294,7 @@ WORD32 xa_nn_vec_softmax_sym16s_16( WORD16 * __restrict__ p_out,
+       m0 = AE_MAX16(m0, m2);
+     }
+ 
+-    ae_valign align_input64 = AE_LA64_PP(p_vec);
++    ae_valign align_input64 = AE_LA64_PP(p_inp);
+     for(i = 0; i < ((vec_length & 7) >> 2); i++)
+     {
+       AE_LA16X4_IP(m1, align_input64, (ae_int16x4 *)p_inp);
 diff --git a/algo/common/include/xa_nnlib_common_macros_hifi5.h b/algo/common/include/xa_nnlib_common_macros_hifi5.h
 index 9ad396d..f75781c 100644
 --- a/algo/common/include/xa_nnlib_common_macros_hifi5.h
