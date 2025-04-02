@@ -102,13 +102,13 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       switch (filter_int8.type) {
         case kTfLiteInt8: {
 #if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
-          DepthwiseConvEvalInt8Hifi(context, node, params, op_data, input,
+          return DepthwiseConvEvalInt8Hifi(context, node, params, op_data, input,
                                 &filter_int8, bias, output);
 #elif defined(VISION_P6)
-          DepthwiseConvEvalVision(context, node, params, op_data, input,
+          return DepthwiseConvEvalVision(context, node, params, op_data, input,
                                   &filter_int8, bias, output);
 #else
-          DepthwiseConvReferenceEvalInt8(context, node);
+          return DepthwiseConvReferenceEvalInt8(context, node);
 #endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
           break;
         }
@@ -123,10 +123,10 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       switch (filter->type) {
         case kTfLiteInt8: {
 #if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
-          DepthwiseConvEvalInt16Hifi(context, node, params, op_data, input,
+          return DepthwiseConvEvalInt16Hifi(context, node, params, op_data, input,
                                 &filter_int8, bias, output);
 #else          
-          DepthwiseConvReferenceEvalInt16(context, node);
+          return DepthwiseConvReferenceEvalInt16(context, node);
 #endif              
           break;
         }
@@ -140,10 +140,10 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
     }
     case kTfLiteFloat32: {
 #if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI3) || defined(HIFI4) || defined(HIFI5))
-      DepthwiseConvEvalFloat32Hifi(context, node, params, op_data, input,
+      return DepthwiseConvEvalFloat32Hifi(context, node, params, op_data, input,
                                 &filter_int8, bias, output);
 #else       
-      DepthwiseConvReferenceEvalFloat32(context, node);
+      return DepthwiseConvReferenceEvalFloat32(context, node);
 #endif          
       break;      
     }

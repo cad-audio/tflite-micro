@@ -306,6 +306,7 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
 }
 
 TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
+  int err;
   const TfLiteEvalTensor* input =
       tflite::micro::GetEvalInput(context, node, kInputTensor);
   const TfLiteEvalTensor* filter =
@@ -372,18 +373,27 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       const int num_elements = output_shape.FlatSize();
 
       for (int b = 0; b < batches; b++) {
-        xa_nn_transpose_conv_f32(
-            &output_data[b * output_height * output_width * output_depth],
-            const_cast<FLOAT32*>(
-                &input_data[b * input_height * input_width * input_depth]),
-            const_cast<FLOAT32*>(filter_data), const_cast<FLOAT32*>(bias_data),
-            stride_width, stride_height, pad_width, pad_height, input_depth,
-            output_depth, input_height, input_width, filter_height,
-            filter_width, output_height, output_width, num_elements / batches,
-            num_groups, scratch_buffer);
+        err = xa_nn_transpose_conv_f32(
+          &output_data[b * output_height * output_width * output_depth],
+          const_cast<FLOAT32*>(
+              &input_data[b * input_height * input_width * input_depth]),
+          const_cast<FLOAT32*>(filter_data), const_cast<FLOAT32*>(bias_data),
+          stride_width, stride_height, pad_width, pad_height, input_depth,
+          output_depth, input_height, input_width, filter_height,
+          filter_width, output_height, output_width, num_elements / batches,
+          scratch_buffer
+        );
+        TF_LITE_ENSURE(context, err == 0);
       }
-      xa_nn_vec_activation_min_max_f32_f32(output_data, output_data, op_params.float_activation_min,
-                                      op_params.float_activation_max , (batches*output_height*output_width*output_depth));      
+      
+      err = xa_nn_vec_activation_min_max_f32_f32(
+        output_data,
+        output_data,
+        op_params.float_activation_min,
+        op_params.float_activation_max,
+        (batches * output_height * output_width * output_depth)
+      );
+      TF_LITE_ENSURE(context, err == 0);
 #else
       reference_ops::TransposeConv(
           op_params, tflite::micro::GetTensorShape(input),
@@ -435,17 +445,19 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       const int num_elements = output_shape.FlatSize();
 
       for (int b = 0; b < batches; b++) {
-        xa_nn_transpose_conv_sym8sxasym8s(
-            &output_data[b * output_height * output_width * output_depth],
-            const_cast<WORD8*>(
-                &input_data[b * input_height * input_width * input_depth]),
-            const_cast<WORD8*>(filter_data), const_cast<WORD32*>(bias_data),
-            stride_width, stride_height, pad_width, pad_height, input_depth,
-            output_depth, input_height, input_width, filter_height,
-            filter_width, output_height, output_width, num_elements / batches,
-            num_groups, data.params.input_offset, data.params.output_offset,
-            data.per_channel_output_shift, data.per_channel_output_multiplier,
-            scratch_buffer);
+        err = xa_nn_transpose_conv_sym8sxasym8s(
+          &output_data[b * output_height * output_width * output_depth],
+          const_cast<WORD8*>(
+              &input_data[b * input_height * input_width * input_depth]),
+          const_cast<WORD8*>(filter_data), const_cast<WORD32*>(bias_data),
+          stride_width, stride_height, pad_width, pad_height, input_depth,
+          output_depth, input_height, input_width, filter_height,
+          filter_width, output_height, output_width, num_elements / batches,
+          data.params.input_offset, data.params.output_offset,
+          data.per_channel_output_shift, data.per_channel_output_multiplier,
+          scratch_buffer
+        );
+        TF_LITE_ENSURE(context, err == 0);
       }
 #else
       reference_integer_ops::TransposeConv(
@@ -520,16 +532,18 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
         const int num_elements = output_shape.FlatSize();
 
         for (int b = 0; b < batches; b++) {
-          xa_nn_transpose_conv_sym8sxsym16s(
-              &output_data[b * output_height * output_width * output_depth],
-              const_cast<WORD16*>(
-                  &input_data[b * input_height * input_width * input_depth]),
-              const_cast<WORD8*>(filter_data), const_cast<WORD64*>(bias_data),
-              stride_width, stride_height, pad_width, pad_height, input_depth,
-              output_depth, input_height, input_width, filter_height,
-              filter_width, output_height, output_width, num_elements / batches,
-              num_groups, data.per_channel_output_shift, data.per_channel_output_multiplier,
-              scratch_buffer);
+          err = xa_nn_transpose_conv_sym8sxsym16s(
+            &output_data[b * output_height * output_width * output_depth],
+            const_cast<WORD16*>(
+                &input_data[b * input_height * input_width * input_depth]),
+            const_cast<WORD8*>(filter_data), const_cast<WORD64*>(bias_data),
+            stride_width, stride_height, pad_width, pad_height, input_depth,
+            output_depth, input_height, input_width, filter_height,
+            filter_width, output_height, output_width, num_elements / batches,
+            data.per_channel_output_shift, data.per_channel_output_multiplier,
+            scratch_buffer
+          );
+          TF_LITE_ENSURE(context, err == 0);
         }
 #else // #if defined(HIFI4) || defined(HIFI5)
         reference_integer_ops::TransposeConv(
