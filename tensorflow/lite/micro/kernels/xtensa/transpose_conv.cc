@@ -381,7 +381,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
           stride_width, stride_height, pad_width, pad_height, input_depth,
           output_depth, input_height, input_width, filter_height,
           filter_width, output_height, output_width, num_elements / batches,
-          scratch_buffer
+          num_groups, scratch_buffer
         );
         TF_LITE_ENSURE(context, err == 0);
       }
@@ -453,7 +453,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
           stride_width, stride_height, pad_width, pad_height, input_depth,
           output_depth, input_height, input_width, filter_height,
           filter_width, output_height, output_width, num_elements / batches,
-          data.params.input_offset, data.params.output_offset,
+          num_groups, data.params.input_offset, data.params.output_offset,
           data.per_channel_output_shift, data.per_channel_output_multiplier,
           scratch_buffer
         );
@@ -540,7 +540,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
             stride_width, stride_height, pad_width, pad_height, input_depth,
             output_depth, input_height, input_width, filter_height,
             filter_width, output_height, output_width, num_elements / batches,
-            data.per_channel_output_shift, data.per_channel_output_multiplier,
+            num_groups, data.per_channel_output_shift, data.per_channel_output_multiplier,
             scratch_buffer
           );
           TF_LITE_ENSURE(context, err == 0);
