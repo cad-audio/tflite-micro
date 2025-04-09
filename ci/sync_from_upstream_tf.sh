@@ -47,6 +47,7 @@ done
 git checkout tensorflow/lite/kernels/internal/optimized/neon_check.h
 # http://b/149862813
 git checkout tensorflow/lite/kernels/internal/runtime_shape.h
+git checkout tensorflow/lite/kernels/internal/runtime_shape.cc
 # http://b/187728891
 git checkout tensorflow/lite/kernels/op_macros.h
 # http://b/242077843
@@ -57,8 +58,8 @@ git checkout tensorflow/lite/kernels/internal/tensor_utils.cc
 bazel build tensorflow/lite/python:schema_py
 /bin/cp bazel-bin/tensorflow/lite/python/schema_py_generated.py tensorflow/lite/python/schema_py_generated.py
 
-bazel build tensorflow/lite/schema:schema_fbs_srcs
-/bin/cp ./bazel-bin/tensorflow/lite/schema/schema_generated.h tensorflow/lite/schema/schema_generated.h
+bazel build tensorflow/compiler/mlir/lite/schema:schema_fbs_srcs
+/bin/cp ./bazel-bin/tensorflow/compiler/mlir/lite/schema/schema_generated.h tensorflow/lite/schema/schema_generated.h
 
 # Must clean the bazel directories out after building as we don't check these in.
 bazel clean

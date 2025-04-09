@@ -33,12 +33,18 @@ load("@hedron_compile_commands//:workspace_setup.bzl", "hedron_compile_commands_
 
 hedron_compile_commands_setup()
 
+_rules_python_version = "0.26.0"
+
 http_archive(
     name = "rules_python",
-    sha256 = "0a8003b044294d7840ac7d9d73eef05d6ceb682d7516781a4ec62eeb34702578",
-    strip_prefix = "rules_python-0.24.0",
-    url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.24.0.tar.gz",
+    sha256 = "9d04041ac92a0985e344235f5d946f71ac543f1b1565f2cdbc9a2aaee8adf55b",
+    strip_prefix = "rules_python-{}".format(_rules_python_version),
+    url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/{}.tar.gz".format(_rules_python_version),
 )
+
+load("@rules_python//python:repositories.bzl", "py_repositories")
+
+py_repositories()
 
 # Read the Python package dependencies of the build environment. To modify
 # them, see //third_party:python_requirements.in.
@@ -80,7 +86,7 @@ load("//python:py_pkg_cc_deps.bzl", "py_pkg_cc_deps")
 
 py_pkg_cc_deps(
     name = "numpy_cc_deps",
-    includes = ["numpy/core/include"],
+    includes = ["numpy/_core/include"],
     pkg = requirement("numpy"),
 )
 
@@ -88,13 +94,14 @@ py_pkg_cc_deps(
     name = "tensorflow_cc_deps",
     includes = ["tensorflow/include"],
     libs = ["tensorflow/libtensorflow_framework.so.2"],
-    pkg = requirement("tensorflow-cpu"),
+    pkg = requirement("tensorflow"),
 )
 
 # Optimized kernel deps
 http_archive(
     name = "nnlib_hifi4",
     build_file = "@tflite_micro//third_party/xtensa/nnlib_hifi4:nnlib_hifi4.BUILD",
+    integrity = "sha256-ulZ+uY4dRsbDUMZbZtD972eghclWQrqYRb0Y4Znfyyc=",
     strip_prefix = "nnlib-hifi4-34f5f995f28d298ae2b6e2ba6e76c32a5cb34989",
     urls = ["https://github.com/foss-xtensa/nnlib-hifi4/archive/34f5f995f28d298ae2b6e2ba6e76c32a5cb34989.zip"],
 )

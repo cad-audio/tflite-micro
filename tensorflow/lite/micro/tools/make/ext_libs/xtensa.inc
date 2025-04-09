@@ -83,7 +83,8 @@ else ifeq ($(TARGET_ARCH), hifi5)
     $(shell find $(NDSPLIB_PATH)/library/fft/fft -name "*.c") \
     $(shell find $(NDSPLIB_PATH)/library/fft/fft_ie -name "*.c") \
     $(shell find $(NDSPLIB_PATH)/library/fft/fft_ief -name "*.c") \
-    $(shell find $(NDSPLIB_PATH)/library/twiddles -name "*.c")
+    $(shell find $(NDSPLIB_PATH)/library/twiddles -name "*.c") \
+    $(shell find $(NDSPLIB_PATH)/library -name "version.c")
 
   EXCLUDED_NNLIB_SRCS = \
     $(NNLIB_PATH)/algo/layers/cnn/src/xa_nn_cnn_api.c \
@@ -148,7 +149,8 @@ else ifeq ($(TARGET_ARCH), $(filter $(TARGET_ARCH), hifi4 hifi4_internal hifi3 h
     $(shell find $(NDSPLIB_PATH)/library/fft/fft -name "*.c") \
     $(shell find $(NDSPLIB_PATH)/library/fft/fft_ie -name "*.c") \
     $(shell find $(NDSPLIB_PATH)/library/fft/fft_ief -name "*.c") \
-    $(shell find $(NDSPLIB_PATH)/library/twiddles -name "*.c")
+    $(shell find $(NDSPLIB_PATH)/library/twiddles -name "*.c") \
+    $(shell find $(NDSPLIB_PATH)/library -name "version.c")
 
   EXCLUDED_NNLIB_SRCS = \
     $(NNLIB_PATH)/algo/layers/cnn/src/xa_nn_cnn_api.c \
@@ -161,6 +163,11 @@ else ifeq ($(TARGET_ARCH), $(filter $(TARGET_ARCH), hifi4 hifi4_internal hifi3 h
       $(NNLIB_PATH)/algo/ndsp/hifi4/src/scl_tanhf_hifi4.c \
       $(NNLIB_PATH)/algo/ndsp/hifi4/src/vec_tanhf_hifi4.c \
       $(NNLIB_PATH)/algo/ndsp/hifi4/src/tanhf_tbl.c
+  endif
+  
+  ifeq ($(TARGET_ARCH), hifi4)
+    EXCLUDED_NNLIB_SRCS += \
+      $(NNLIB_PATH)/algo/kernels/activations/hifi4/xa_nn_activations_asym8_asym8.c
   endif
 
   THIRD_PARTY_KERNEL_CC_SRCS := $(filter-out $(EXCLUDED_NNLIB_SRCS), $(THIRD_PARTY_KERNEL_CC_SRCS))

@@ -1,4 +1,4 @@
-/* Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2025 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -286,6 +286,19 @@ TfLiteStatus GreaterEval(TfLiteContext* context, TfLiteNode* node) {
                 tflite::micro::GetTensorData<int8_t>(input2), output_shape,
                 output_data);
       break;
+    case kTfLiteInt16:
+      requires_broadcast
+          ? reference_ops::Broadcast4DSlowGreaterWithScaling(
+                data->params, input1_shape,
+                tflite::micro::GetTensorData<int16_t>(input1), input2_shape,
+                tflite::micro::GetTensorData<int16_t>(input2), output_shape,
+                output_data)
+          : reference_ops::GreaterWithScaling(
+                data->params, input1_shape,
+                tflite::micro::GetTensorData<int16_t>(input1), input2_shape,
+                tflite::micro::GetTensorData<int16_t>(input2), output_shape,
+                output_data);
+      break;
     default:
       MicroPrintf("Type %s (%d) not supported.",
                   TfLiteTypeGetName(input1->type), input1->type);
@@ -533,7 +546,7 @@ void* Init(TfLiteContext* context, const char* buffer, size_t length) {
   return context->AllocatePersistentBuffer(context, sizeof(OpData));
 }
 
-TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
+TfLiteStatus ComparisonsPrepare(TfLiteContext* context, TfLiteNode* node) {
   TFLITE_DCHECK(node->user_data != nullptr);
   OpData* data = static_cast<OpData*>(node->user_data);
 
@@ -580,27 +593,27 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
 }  // namespace
 
 TFLMRegistration Register_EQUAL() {
-  return tflite::micro::RegisterOp(Init, Prepare, EqualEval);
+  return tflite::micro::RegisterOp(Init, ComparisonsPrepare, EqualEval);
 }
 
 TFLMRegistration Register_NOT_EQUAL() {
-  return tflite::micro::RegisterOp(Init, Prepare, NotEqualEval);
+  return tflite::micro::RegisterOp(Init, ComparisonsPrepare, NotEqualEval);
 }
 
 TFLMRegistration Register_GREATER() {
-  return tflite::micro::RegisterOp(Init, Prepare, GreaterEval);
+  return tflite::micro::RegisterOp(Init, ComparisonsPrepare, GreaterEval);
 }
 
 TFLMRegistration Register_GREATER_EQUAL() {
-  return tflite::micro::RegisterOp(Init, Prepare, GreaterEqualEval);
+  return tflite::micro::RegisterOp(Init, ComparisonsPrepare, GreaterEqualEval);
 }
 
 TFLMRegistration Register_LESS() {
-  return tflite::micro::RegisterOp(Init, Prepare, LessEval);
+  return tflite::micro::RegisterOp(Init, ComparisonsPrepare, LessEval);
 }
 
 TFLMRegistration Register_LESS_EQUAL() {
-  return tflite::micro::RegisterOp(Init, Prepare, LessEqualEval);
+  return tflite::micro::RegisterOp(Init, ComparisonsPrepare, LessEqualEval);
 }
 
 }  // namespace tflite

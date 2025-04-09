@@ -48,12 +48,11 @@ endif
 THIRD_PARTY_KERNEL_OPTIMIZATION_LEVEL := -O3 -LNO:simd
 
 PLATFORM_FLAGS = \
+  -stdlib=libc++ \
   -DTF_LITE_MCU_DEBUG_LOG \
   -DTF_LITE_USE_CTIME \
   --xtensa-core=$(XTENSA_CORE) \
   -mcoproc \
-  -DMAX_RFFT_PWR=9 \
-  -DMIN_RFFT_PWR=MAX_RFFT_PWR \
   $(TARGET_ARCH_DEFINES) \
   -mlongcalls
 
@@ -85,7 +84,6 @@ CXXFLAGS += $(XTENSA_EXTRA_CFLAGS)
 
 TEST_SCRIPT := $(TENSORFLOW_ROOT)tensorflow/lite/micro/testing/test_xtensa_binary.sh
 SIZE_SCRIPT := $(TENSORFLOW_ROOT)tensorflow/lite/micro/testing/size_xtensa_binary.sh
-RUN_COMMAND := xt-run
 
 # TODO(b/158651472): Fix the memory_arena_threshold_test
 # TODO(b/174707181): Fix the micro_interpreter_test
@@ -111,4 +109,10 @@ ifeq ($(OPTIMIZED_KERNEL_DIR), xtensa)
   MICROLITE_CC_KERNEL_SRCS := $(MICROLITE_CC_KERNEL_SRCS) \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/lstm_eval.cc \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/unidirectional_sequence_lstm.cc
+
+  # override KERNEL_OPTIMIZATION_LEVEL to enable higher performance
+  # Xtensa intrinsics.
+$(KERNEL_OBJDIR)$(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/decompress.o: $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/decompress.cc
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -O3 -LNO:simd $(INCLUDES) -c $< -o $@
 endif

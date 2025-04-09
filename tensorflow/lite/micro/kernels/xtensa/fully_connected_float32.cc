@@ -73,14 +73,35 @@ TfLiteStatus XtensaEvalFullyConnectedQuantizedFloat32(
   const auto* params =
       static_cast<const TfLiteFullyConnectedParams*>(node->builtin_data);
 
+#ifdef USE_TFLM_COMPRESSION
+
+  MicroContext* micro_context = GetMicroContext(context);
+
+  const CompressionTensorData* weights_comp_td =
+      micro_context->GetTensorCompressionData(node,
+                                              kFullyConnectedWeightsTensor);
+  const CompressionTensorData* bias_comp_td =
+      micro_context->GetTensorCompressionData(node, kFullyConnectedBiasTensor);
+
+#endif  // USE_TFLM_COMPRESSION
+
   tflite::reference_ops::FullyConnected(
       FullyConnectedParamsFloat(params->activation),
       tflite::micro::GetTensorShape(input),
       tflite::micro::GetTensorData<float>(input),
       tflite::micro::GetTensorShape(filter),
+#ifdef USE_TFLM_COMPRESSION
+      tflite::micro::GetTensorData<float>(micro_context, filter,
+                                          weights_comp_td,
+                                          data.weights_scratch_index),
+      tflite::micro::GetTensorShape(bias),
+      tflite::micro::GetOptionalTensorData<float>(
+          micro_context, bias, bias_comp_td, data.bias_scratch_index),
+#else   // USE_TFLM_COMPRESSION
       tflite::micro::GetTensorData<float>(filter),
       tflite::micro::GetTensorShape(bias),
       tflite::micro::GetOptionalTensorData<float>(bias),
+#endif  // USE_TFLM_COMPRESSION
       tflite::micro::GetTensorShape(output),
       tflite::micro::GetTensorData<float>(output));
 #endif  // defined(HIFI4) || defined(HIFI5)
