@@ -363,6 +363,7 @@ TfLiteStatus DepthwiseConvEvalInt16Hifi(TfLiteContext* context, TfLiteNode* node
 #else   // USE_TFLM_COMPRESSION
     const int8_t* filter_data = tflite::micro::GetTensorData<int8_t>(filter);
     const int64_t* bias_data = tflite::micro::GetTensorData<int64_t>(bias);
+#endif   // USE_TFLM_COMPRESSION
     int16_t* output_data = tflite::micro::GetTensorData<int16_t>(output);
 
     int32_t input_data_format = 0;

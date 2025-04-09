@@ -63,7 +63,6 @@ TfLiteStatus XtensaEvalFullyConnectedQuantizedInt8(
 
   // P6 Vision will handle INT4 filters as a reference operation.
   // For all other architectures, unpack INT4 here.
-  const int8_t* filter_data = tflite::micro::GetTensorData<int8_t>(filter);
 #if defined(HIFI5) && defined(NNLIB_HIFI5)  
   void* p_scratch = (void *)0;
 #endif  
