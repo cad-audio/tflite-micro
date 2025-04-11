@@ -164,11 +164,6 @@ else ifeq ($(TARGET_ARCH), $(filter $(TARGET_ARCH), hifi4 hifi4_internal hifi3 h
       $(NNLIB_PATH)/algo/ndsp/hifi4/src/vec_tanhf_hifi4.c \
       $(NNLIB_PATH)/algo/ndsp/hifi4/src/tanhf_tbl.c
   endif
-  
-  ifeq ($(TARGET_ARCH), hifi4)
-    EXCLUDED_NNLIB_SRCS += \
-      $(NNLIB_PATH)/algo/kernels/activations/hifi4/xa_nn_activations_asym8_asym8.c
-  endif
 
   THIRD_PARTY_KERNEL_CC_SRCS := $(filter-out $(EXCLUDED_NNLIB_SRCS), $(THIRD_PARTY_KERNEL_CC_SRCS))
 
