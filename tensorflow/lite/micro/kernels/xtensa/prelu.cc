@@ -24,12 +24,19 @@ limitations under the License.
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/kernels/prelu.h"
 #include "tensorflow/lite/micro/kernels/xtensa/xtensa.h"
+#if defined(HIFI5) || defined(HIFI4) 
+#include "tensorflow/lite/micro/kernels/xtensa/xtensa_prelu.h"
+#endif
 
 namespace tflite {
 
 void* PreluInit(TfLiteContext* context, const char* buffer, size_t length) {
   TFLITE_DCHECK(context->AllocatePersistentBuffer != nullptr);
+#if defined(HIFI5) || defined(HIFI4)   
+  return context->AllocatePersistentBuffer(context, sizeof(XtensaPreluData));
+#else
   return context->AllocatePersistentBuffer(context, sizeof(PreluParams));
+#endif  
 }
 
 TfLiteStatus PreluEval(TfLiteContext* context, TfLiteNode* node) {
@@ -56,14 +63,25 @@ TfLiteStatus PreluEval(TfLiteContext* context, TfLiteNode* node) {
       const RuntimeShape& input_shape = tflite::micro::GetTensorShape(input);
       const RuntimeShape& alpha_shape = tflite::micro::GetTensorShape(alpha);
       const RuntimeShape& output_shape = tflite::micro::GetTensorShape(output);
-      if(input_shape == alpha_shape && input_shape == output_shape)
+      const RuntimeShape extended_alpha_shape = RuntimeShape::ExtendedShape(output_shape.DimensionsCount(), alpha_shape);
+      
+      XtensaPreluData* data = static_cast<XtensaPreluData*>(node->user_data);
+      const int8_t *alpha_data = tflite::micro::GetTensorData<int8_t>(alpha);
+      int8_t *alpha_broadcasted;
+      if(!(alpha_shape == output_shape) && input_shape == output_shape){
+        alpha_broadcasted = (int8_t *)context->GetScratchBuffer(context, data->scratch_tensor_index);
+        xa_nn_broadcast_8_8(alpha_broadcasted, output_shape.DimsData(), tflite::micro::GetTensorData<int8_t>(alpha), extended_alpha_shape.DimsData(), extended_alpha_shape.DimensionsCount());
+        alpha_data = alpha_broadcasted;
+      } 
+
+      if(input_shape == output_shape)
       {
         int err = 0;
         const int flat_size = MatchingFlatSize(input_shape, output_shape);
         err = xa_nn_vec_prelu_asym8s_asym8s(
           tflite::micro::GetTensorData<int8_t>(output),
           tflite::micro::GetTensorData<int8_t>(input),
-          tflite::micro::GetTensorData<int8_t>(alpha),
+          alpha_data,
           params.input_offset,
           params.alpha_offset,
           params.output_multiplier_2,

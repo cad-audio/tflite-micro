@@ -10,6 +10,7 @@
 
 TARGET_ARCH :=
 XTENSA_USE_LIBC :=
+XTENSA_INCLUDE_FLOAT_OPT := 1
 
 # Allow additional flags on the command line for debugging.
 XTENSA_EXTRA_CFLAGS :=
@@ -30,6 +31,11 @@ ifeq ($(TARGET_ARCH), )
   $(error TARGET_ARCH must be specified on the command line)
 endif
 
+ifeq ($(XTENSA_INCLUDE_FLOAT_OPT), 1)
+  CXXFLAGS += -DFLOAT_OPT_FLAG=1
+  CCFLAGS += -DFLOAT_OPT_FLAG=1
+endif
+
 # Create a cflag based on the specified TARGET_ARCH. For example:
 #   TARGET_ARCH=hifi4 --> -DHIFI4
 #  For TARGET_ARCH=hifi3/3z or fusion_f1, cflag should be -DHIFI4.
@@ -46,12 +52,11 @@ else
 endif
 
 PLATFORM_FLAGS = \
+  -stdlib=libc++ \
   -DTF_LITE_MCU_DEBUG_LOG \
   -DTF_LITE_USE_CTIME \
   --xtensa-core=$(XTENSA_CORE) \
   -mcoproc \
-  -DMAX_RFFT_PWR=9 \
-  -DMIN_RFFT_PWR=MAX_RFFT_PWR \
   $(TARGET_ARCH_DEFINES) \
   -mlongcalls
 
@@ -83,7 +88,6 @@ CXXFLAGS += $(XTENSA_EXTRA_CFLAGS)
 
 TEST_SCRIPT := $(TENSORFLOW_ROOT)tensorflow/lite/micro/testing/test_xtensa_binary.sh
 SIZE_SCRIPT := $(TENSORFLOW_ROOT)tensorflow/lite/micro/testing/size_xtensa_binary.sh
-RUN_COMMAND := xt-run
 
 # TODO(b/158651472): Fix the memory_arena_threshold_test
 # TODO(b/174707181): Fix the micro_interpreter_test
@@ -109,4 +113,10 @@ ifeq ($(OPTIMIZED_KERNEL_DIR), xtensa)
   MICROLITE_CC_KERNEL_SRCS := $(MICROLITE_CC_KERNEL_SRCS) \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/lstm_eval.cc \
   $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/unidirectional_sequence_lstm.cc
+
+  # override KERNEL_OPTIMIZATION_LEVEL to enable higher performance
+  # Xtensa intrinsics.
+$(KERNEL_OBJDIR)$(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/decompress.o: $(TENSORFLOW_ROOT)tensorflow/lite/micro/kernels/xtensa/decompress.cc
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -O3 -LNO:simd $(INCLUDES) -c $< -o $@
 endif

@@ -1,4 +1,4 @@
-# Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2024 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,12 +30,22 @@ endif
 ETHOSU_DEFAULT_DOWNLOAD_DRIVER_PATH := $(MAKEFILE_DIR)/downloads/ethos_u_core_driver
 ETHOSU_DRIVER_PATH := $(ETHOSU_DEFAULT_DOWNLOAD_DRIVER_PATH)
 ifeq ($(ETHOSU_DRIVER_PATH), $(ETHOSU_DEFAULT_DOWNLOAD_DRIVER_PATH))
-  $(call $(or $(shell $(DOWNLOAD_SCRIPT) $(ETHOSU_URL) $(ETHOSU_MD5) $(ETHOSU_DRIVER_PATH) >&2 && echo SUCCESS), $(error $(DOWNLOAD_SCRIPT) failed)))
+DOWNLOAD_RESULT := $(shell $(MAKEFILE_DIR)/ethos_u_core_driver_download.sh $(DOWNLOADS_DIR) $(TENSORFLOW_ROOT))
+  ifneq ($(DOWNLOAD_RESULT), SUCCESS)
+    $(error $(DOWNLOAD_SCRIPT) failed)
+  endif
 endif
 
 THIRD_PARTY_CC_HDRS += $(shell find $(ETHOSU_DRIVER_PATH)/include -name "*.h")
 ifeq (,$(ETHOSU_DRIVER_LIBS))
-    THIRD_PARTY_CC_SRCS += $(shell find $(ETHOSU_DRIVER_PATH)/src -name "*.c")
+    THIRD_PARTY_CC_SRCS += $(ETHOSU_DRIVER_PATH)/src/ethosu_pmu.c \
+                           $(ETHOSU_DRIVER_PATH)/src/ethosu_driver.c
+    # Add the Ethos-U device-specific driver source.
+    ifeq ($(ETHOSU_ARCH), u85)
+      THIRD_PARTY_CC_SRCS += $(ETHOSU_DRIVER_PATH)/src/ethosu_device_u85.c
+    else
+      THIRD_PARTY_CC_SRCS += $(ETHOSU_DRIVER_PATH)/src/ethosu_device_u55_u65.c
+    endif
 else
     MICROLITE_LIBS += $(ETHOSU_DRIVER_LIBS)
 endif
@@ -64,11 +74,15 @@ else ifeq ($(ETHOSU_ARCH), u65)
   ETHOSU_FLAGS += \
     -DETHOSU_ARCH=u65 \
     -DETHOSU65
+else ifeq ($(ETHOSU_ARCH), u85)
+  ETHOSU_FLAGS += \
+    -DETHOSU_ARCH=u85 \
+    -DETHOSU85
 else
   $(error "ETHOSU_ARCH=$(ETHOSU_ARCH) is not supported")
 endif
-CCFLAGS += ${ETHOSU_FLAGS}
-CXXFLAGS += ${ETHOSU_FLAGS}
+CCFLAGS += ${ETHOSU_FLAGS} ${ETHOSU_EXTRA_FLAGS}
+CXXFLAGS += ${ETHOSU_FLAGS} ${ETHOSU_EXTRA_FLAGS}
 
 # Convert downloaded person detect int8 model.
 $(GENERATED_SRCS_DIR)tensorflow/lite/micro/models/person_detect_model_data_vela.cc:

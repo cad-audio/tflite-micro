@@ -24,8 +24,8 @@ limitations under the License.
 #include "tensorflow/lite/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/kernels/dequantize.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
-#include "tensorflow/lite/micro/micro_log.h"
 #include "tensorflow/lite/micro/kernels/xtensa/xtensa.h"
+#include "tensorflow/lite/micro/micro_log.h"
 
 namespace tflite {
 
@@ -42,75 +42,69 @@ TfLiteStatus DequantizeEval(TfLiteContext* context, TfLiteNode* node) {
   const TfLiteEvalTensor* input = tflite::micro::GetEvalInput(context, node, 0);
   TfLiteEvalTensor* output = tflite::micro::GetEvalOutput(context, node, 0);
 
-  if (output->type == kTfLiteFloat32) {
-    switch (input->type) {
-      case kTfLiteInt8 : {
-#if HIFI_VFPU && (defined(HIFI5) || defined(HIFI4))
-        int err;
-        const int8_t *input_data_ptr;
-        float *output_data_ptr;
-        const int flat_size = MatchingFlatSize(tflite::micro::GetTensorShape(input), tflite::micro::GetTensorShape(output));
-        input_data_ptr  = tflite::micro::GetTensorData<int8_t>(input);
-        output_data_ptr = tflite::micro::GetTensorData<float>(output);
+  // Output type ensured to be kTfLiteFloat32 at the Prepare stage
+  TFLITE_DCHECK(output->type == kTfLiteFloat32);
 
-        err = xa_nn_elm_dequantize_asym8s_f32(output_data_ptr,
-                                              input_data_ptr,
-                                              data->quantization_params.zero_point,
-                                              data->quantization_params.scale,
-                                              flat_size);
-				TF_LITE_ENSURE(context, (err==0) );
-#else
-        reference_ops::Dequantize(data->quantization_params,
-                                  tflite::micro::GetTensorShape(input),
-                                  tflite::micro::GetTensorData<int8_t>(input),
-                                  tflite::micro::GetTensorShape(output),
-                                  tflite::micro::GetTensorData<float>(output));
-#endif // HAVE_VFPU && (defined(HIFI5) || defined(HIFI4))
-        break;
-      }
-      case kTfLiteInt16 : {
-#if HIFI_VFPU && (defined(HIFI5) || defined(HIFI4))
-        int err;
-        const int16_t *input_data_ptr;
-        float *output_data_ptr;
-        const RuntimeShape& input_shape = tflite::micro::GetTensorShape(input);
-        const RuntimeShape& output_shape = tflite::micro::GetTensorShape(output);
-        const int flat_size = MatchingFlatSize(input_shape, output_shape);
-        input_data_ptr  = tflite::micro::GetTensorData<int16_t>(input);
-        output_data_ptr = tflite::micro::GetTensorData<float>(output);
-        err = xa_nn_elm_dequantize_asym16s_f32(output_data_ptr,
-                                              input_data_ptr,
-                                              data->quantization_params.zero_point,
-                                              data->quantization_params.scale,
-                                              flat_size);
-                                TF_LITE_ENSURE(context, (err==0) );
-#else
-        reference_ops::Dequantize(data->quantization_params,
-                                  tflite::micro::GetTensorShape(input),
-                                  tflite::micro::GetTensorData<int16_t>(input),
-                                  tflite::micro::GetTensorShape(output),
-                                  tflite::micro::GetTensorData<float>(output));
-#endif                                  
-        break;
-      }
-      case kTfLiteUInt8:
-        reference_ops::Dequantize(data->quantization_params,
-                                  tflite::micro::GetTensorShape(input),
-                                  tflite::micro::GetTensorData<uint8_t>(input),
-                                  tflite::micro::GetTensorShape(output),
-                                  tflite::micro::GetTensorData<float>(output));
-        break;
-      default:
-        MicroPrintf("Input %s, output %s not supported.",
-                    TfLiteTypeGetName(input->type),
-                    TfLiteTypeGetName(output->type));
-        return kTfLiteError;
+  switch (input->type) {
+    case kTfLiteInt8: {
+#if HIFI_VFPU && (defined(HIFI5) || defined(HIFI4) || defined(HIFI3))
+      int err;
+      const int8_t* input_data_ptr;
+      float* output_data_ptr;
+      const int flat_size =
+          MatchingFlatSize(tflite::micro::GetTensorShape(input),
+                           tflite::micro::GetTensorShape(output));
+      input_data_ptr = tflite::micro::GetTensorData<int8_t>(input);
+      output_data_ptr = tflite::micro::GetTensorData<float>(output);
+
+      err = xa_nn_elm_dequantize_asym8s_f32(
+          output_data_ptr, input_data_ptr, data->quantization_params.zero_point,
+          data->quantization_params.scale, flat_size);
+      TF_LITE_ENSURE(context, (err == 0));
+#else   //  HIFI_VFPU && (defined(HIFI5) || defined(HIFI4) || defined(HIFI3))
+      reference_ops::Dequantize(data->quantization_params,
+                                tflite::micro::GetTensorShape(input),
+                                tflite::micro::GetTensorData<int8_t>(input),
+                                tflite::micro::GetTensorShape(output),
+                                tflite::micro::GetTensorData<float>(output));
+#endif  //  HIFI_VFPU && (defined(HIFI5) || defined(HIFI4) || defined(HIFI3))
+      break;
     }
-  } else {
-    MicroPrintf("Input %s, output %s not supported.",
-                TfLiteTypeGetName(input->type),
-                TfLiteTypeGetName(output->type));
-    return kTfLiteError;
+    case kTfLiteInt16: {
+#if HIFI_VFPU && (defined(HIFI5) || defined(HIFI4) || defined(HIFI3))
+      int err;
+      const int16_t* input_data_ptr;
+      float* output_data_ptr;
+      const RuntimeShape& input_shape = tflite::micro::GetTensorShape(input);
+      const RuntimeShape& output_shape = tflite::micro::GetTensorShape(output);
+      const int flat_size = MatchingFlatSize(input_shape, output_shape);
+      input_data_ptr = tflite::micro::GetTensorData<int16_t>(input);
+      output_data_ptr = tflite::micro::GetTensorData<float>(output);
+      err = xa_nn_elm_dequantize_asym16s_f32(
+          output_data_ptr, input_data_ptr, data->quantization_params.zero_point,
+          data->quantization_params.scale, flat_size);
+      TF_LITE_ENSURE(context, (err == 0));
+#else   // HIFI_VFPU && (defined(HIFI5) || defined(HIFI4) || defined(HIFI3))
+      reference_ops::Dequantize(data->quantization_params,
+                                tflite::micro::GetTensorShape(input),
+                                tflite::micro::GetTensorData<int16_t>(input),
+                                tflite::micro::GetTensorShape(output),
+                                tflite::micro::GetTensorData<float>(output));
+#endif  // HIFI_VFPU && (defined(HIFI5) || defined(HIFI4) || defined(HIFI3))
+      break;
+    }
+    case kTfLiteUInt8:
+      reference_ops::Dequantize(data->quantization_params,
+                                tflite::micro::GetTensorShape(input),
+                                tflite::micro::GetTensorData<uint8_t>(input),
+                                tflite::micro::GetTensorShape(output),
+                                tflite::micro::GetTensorData<float>(output));
+      break;
+    default:
+      MicroPrintf("Input %s, output %s not supported.",
+                  TfLiteTypeGetName(input->type),
+                  TfLiteTypeGetName(output->type));
+      return kTfLiteError;
   }
 
   return kTfLiteOk;

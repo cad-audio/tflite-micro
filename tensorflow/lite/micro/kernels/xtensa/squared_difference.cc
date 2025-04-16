@@ -216,7 +216,7 @@ void EvalQuantizedSquaredDifferenceInt16Hifi(TfLiteContext* context,
       extended_input2_shape.DimsData(),
       params.input2_shift, params.input2_multiplier,
       params.left_shift);
-  (void)err;
+  (void)err;    
 }
 #endif // #if !(defined(HIFI4) || defined(HIFI5))
 

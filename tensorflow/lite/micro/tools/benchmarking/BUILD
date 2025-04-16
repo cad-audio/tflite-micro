@@ -1,40 +1,40 @@
-cc_library(
+load(
+    "//tensorflow/lite/micro:build_def.bzl",
+    "tflm_cc_binary",
+    "tflm_cc_library",
+    "tflm_defines",
+)
+
+tflm_cc_library(
     name = "op_resolver",
     hdrs = ["op_resolver.h"],
     visibility = ["//tensorflow/lite/micro/tools:__subpackages__"],
     deps = ["//tensorflow/lite/micro:op_resolvers"],
 )
 
-cc_library(
+tflm_cc_library(
     name = "metrics",
     srcs = ["metrics.cc"],
     hdrs = ["metrics.h"],
     deps = [
-        ":log_utils",
+        "//tensorflow/lite/kernels/internal:compatibility",
+        "//tensorflow/lite/micro:micro_log",
         "//tensorflow/lite/micro:micro_profiler",
         "//tensorflow/lite/micro:recording_allocators",
-        "//tensorflow/lite/micro/arena_allocator:recording_simple_memory_allocator",
     ],
 )
 
-cc_library(
-    name = "log_utils",
-    srcs = ["log_utils.cc"],
-    hdrs = ["log_utils.h"],
-    deps = [
-        "//tensorflow/lite/micro:micro_log",
-    ],
-)
-
-cc_library(
+tflm_cc_library(
     name = "generic_benchmark_lib",
     srcs = ["generic_model_benchmark.cc"],
+    hdrs = ["show_meta_data.h"],
+    defines = tflm_defines() + ["GENERIC_BENCHMARK_NO_META_DATA"],
     deps = [
-        ":log_utils",
         ":metrics",
         ":op_resolver",
         "//tensorflow/lite/c:c_api_types",
         "//tensorflow/lite/c:common",
+        "//tensorflow/lite/micro:micro_context",
         "//tensorflow/lite/micro:micro_log",
         "//tensorflow/lite/micro:micro_profiler",
         "//tensorflow/lite/micro:op_resolvers",
@@ -44,7 +44,7 @@ cc_library(
     ],
 )
 
-cc_binary(
+tflm_cc_binary(
     name = "tflm_benchmark",
     deps = [":generic_benchmark_lib"],
 )

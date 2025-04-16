@@ -75,15 +75,32 @@ inline void GetShapesPointers(const RuntimeShape* shapes, size_t num,
 constexpr int kMaxDims = 6;  // Maximum number of dimensions
 
 // Gets Dims from a list of tensors, equivalent to Int8, for higher
-// datatypes multiply last dimension by bytes_per_element
-// Also gets all input tensor data pointers
-inline void GetAllInputTensorDimsDataInt8(const TfLiteContext* context,
-                                          const TfLiteNode* node,
-                                          const int8_t* all_data[kMaxInputNum],
-                                          int32_t all_shapes[kMaxInputNum][kMaxDims],
-                                          int32_t bytes_per_element) {
+// datatypes multiply last dimension by a factor (ie. 2 for Int16)
+inline void GetAllInputTensorDimsInt8(const TfLiteContext* context,
+                                      const TfLiteNode* node,
+                                      int32_t all_shapes[kMaxInputNum][kMaxDims]) {
   TFLITE_DCHECK(context != nullptr);
   TFLITE_DCHECK(node != nullptr);
+  int32_t bytes_per_element = 1;
+  const TfLiteEvalTensor* t0 = tflite::micro::GetEvalInput(context, node, 0);
+  switch (t0->type) {
+    case kTfLiteInt8:
+      bytes_per_element = 1;
+      break;
+    case kTfLiteInt16:
+      bytes_per_element = 2;
+      break;
+    case kTfLiteFloat32:
+    case kTfLiteInt32:
+      bytes_per_element = 4;
+      break;
+    case kTfLiteInt64:
+      bytes_per_element = 8;
+      break;
+    default:
+      bytes_per_element = 0;
+      break;
+  }
   for (int i = 0; i < node->inputs->size; ++i) {
     const TfLiteEvalTensor* t = tflite::micro::GetEvalInput(context, node, i);
     int num_dims = t->dims->size;
@@ -91,7 +108,6 @@ inline void GetAllInputTensorDimsDataInt8(const TfLiteContext* context,
       all_shapes[i][j] = t->dims->data[j];
     }
     all_shapes[i][num_dims - 1] = t->dims->data[num_dims - 1] * bytes_per_element;
-    all_data[i] = tflite::micro::GetTensorData<int8_t>(t);
   }
 }
 
@@ -145,12 +161,18 @@ TfLiteStatus EvalUnquantizedHifi(TfLiteContext* context, TfLiteNode* node) {
   const WORD8* inputs_data[kMaxInputNum];
   const WORD32* inputs_dims_ptr[kMaxInputNum];
   WORD32 output_shape[kMaxDims];
+  GetAllInputTensorDimsInt8(context, node, inputs_shape);
+  GetAllInputDimsPointers(inputs_shape, node->inputs->size, inputs_dims_ptr);
+  GetAllInputTensorData(context, node, inputs_data);
 
   TfLiteEvalTensor* output =
       tflite::micro::GetEvalOutput(context, node, kOutputTensor);
 
   TFLITE_DCHECK(node->user_data != nullptr);
   const OpData* data = static_cast<const OpData*>(node->user_data);
+
+  for(int i = 0; i < output->dims->size; i++)
+    output_shape[i] = output->dims->data[i];
 
   int32_t bytes_per_element = 1;
   switch (output->type) {
@@ -171,23 +193,17 @@ TfLiteStatus EvalUnquantizedHifi(TfLiteContext* context, TfLiteNode* node) {
       return kTfLiteError;
       break;
   }
-  for(int i = 0; i < output->dims->size; i++)
-    output_shape[i] = output->dims->data[i];
-
   output_shape[output->dims->size - 1] *= bytes_per_element;
-  GetAllInputTensorDimsDataInt8(context, node, inputs_data, inputs_shape,
-                                bytes_per_element);
-  GetAllInputDimsPointers(inputs_shape, node->inputs->size, inputs_dims_ptr);
 
   int32_t ret = 0;
   ret = xa_nn_concat_8_8(tflite::micro::GetTensorData<int8_t>(output),
-                         output_shape,
-                         inputs_data,
-                         (const int32_t *const *)inputs_dims_ptr,
-                         output->dims->size,
-                         node->inputs->size,
-                         output->dims->size,
-                         data->params.axis);
+                           output_shape,
+                           inputs_data,
+                           (const int32_t *const *)inputs_dims_ptr,
+                           output->dims->size,
+                           node->inputs->size,
+                           output->dims->size,
+                           data->params.axis);
   TF_LITE_ENSURE_EQ(context, ret, 0);
   return kTfLiteOk;
 }

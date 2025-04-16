@@ -100,8 +100,8 @@ The optimized kernel architecture is composed of the following three modules:
 
 This library uses knowledge of the hardware and compiler to implement the
 underlying operations. Examples of this are
-[CMSIS-NN](https://github.com/ARM-software/CMSIS_5/tree/develop/CMSIS/NN) from
-ARM and [NNLib](https://github.com/foss-xtensa/nnlib-hifi4) from Cadence.
+[CMSIS-NN](https://github.com/ARM-software/CMSIS-NN) from Arm and
+[NNLib](https://github.com/foss-xtensa/nnlib-hifi4) from Cadence.
 
 The benefits of having this API separation are:
 
@@ -169,6 +169,12 @@ support:
     *   Build a static libtensorflow-microlite.a using the TFLM makefile with:
         `make -f tensorflow/lite/micro/tools/make/Makefile TARGET=<target>
         OPTIMIZED_KERNEL_DIR=<optimize_dir> microlite`
+    *   Optionally build for size or speed. Translated to a valid make command it will be any of these two:
+        `make -f tensorflow/lite/micro/tools/make/Makefile TARGET=<target>
+        OPTIMIZED_KERNEL_DIR=<optimize_dir> OPTIMIZE_KERNELS_FOR=KERNELS_OPTIMIZED_FOR_SIZE microlite`
+        `make -f tensorflow/lite/micro/tools/make/Makefile TARGET=<target>
+        OPTIMIZED_KERNEL_DIR=<optimize_dir> OPTIMIZE_KERNELS_FOR=KERNELS_OPTIMIZED_FOR_SPEED microlite`
+        Check relevant README for given optimization library if this is applicable.
     *   Use the static library and any TFLM headers as part of the overall
         application (with its own build system).
 
