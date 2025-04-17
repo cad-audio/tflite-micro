@@ -26,10 +26,12 @@
 # is sensitive to the Python environment (interpreter version, etc.) in which
 # it is run.
 
-tensorflow-cpu
+bitarray
+tensorflow
 twine
 numpy
 mako
 pillow
 yapf
 protobuf
+pyyaml

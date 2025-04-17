@@ -3,7 +3,10 @@ load("//python/tflite_micro/signal:tflm_signal.bzl", "py_tflm_signal_library")
 load("//tensorflow:extra_rules.bzl", "tflm_signal_friends")
 load("@tflm_pip_deps//:requirements.bzl", "requirement")
 
-package(licenses = ["notice"])
+package(
+    default_visibility = [":__subpackages__"],
+    licenses = ["notice"],
+)
 
 package_group(
     name = "signal_friends",
@@ -54,6 +57,9 @@ py_tflm_signal_library(
     cc_op_kernels = [
         "//signal/tensorflow_core/kernels:delay_kernel",
     ],
+    deps = [
+        "//python/tflite_micro/signal/utils:util",
+    ],
 )
 
 py_test(
@@ -62,11 +68,15 @@ py_test(
     srcs = ["ops/delay_op_test.py"],
     python_version = "PY3",
     srcs_version = "PY3",
+    tags = [
+        "noasan",
+        "nomsan",
+        "noubsan",
+    ],
     deps = [
         ":delay_op",
         requirement("numpy"),
-        requirement("tensorflow-cpu"),
-        "//python/tflite_micro/signal/utils:util",
+        requirement("tensorflow"),
     ],
 )
 
@@ -76,6 +86,9 @@ py_tflm_signal_library(
     cc_op_defs = ["//signal/tensorflow_core/ops:energy_op"],
     cc_op_kernels = [
         "//signal/tensorflow_core/kernels:energy_kernel",
+    ],
+    deps = [
+        "//python/tflite_micro/signal/utils:util",
     ],
 )
 
@@ -88,11 +101,15 @@ py_test(
     ],
     python_version = "PY3",
     srcs_version = "PY3",
+    tags = [
+        "noasan",
+        "nomsan",
+        "noubsan",
+    ],
     deps = [
         ":energy_op",
         requirement("numpy"),
-        requirement("tensorflow-cpu"),
-        "//python/tflite_micro/signal/utils:util",
+        requirement("tensorflow"),
     ],
 )
 
@@ -102,6 +119,9 @@ py_tflm_signal_library(
     cc_op_defs = ["//signal/tensorflow_core/ops:fft_ops"],
     cc_op_kernels = [
         "//signal/tensorflow_core/kernels:fft_kernel",
+    ],
+    deps = [
+        "//python/tflite_micro/signal/utils:util",
     ],
 )
 
@@ -114,11 +134,15 @@ py_test(
     ],
     python_version = "PY3",
     srcs_version = "PY3",
+    tags = [
+        "noasan",
+        "nomsan",
+        "noubsan",
+    ],
     deps = [
         ":fft_ops",
         requirement("numpy"),
-        requirement("tensorflow-cpu"),
-        "//python/tflite_micro/signal/utils:util",
+        requirement("tensorflow"),
     ],
 )
 
@@ -131,6 +155,7 @@ py_tflm_signal_library(
     ],
     deps = [
         "//python/tflite_micro/signal/utils:freq_to_mel",
+        "//python/tflite_micro/signal/utils:util",
     ],
 )
 
@@ -148,11 +173,15 @@ py_test(
     ],
     python_version = "PY3",
     srcs_version = "PY3",
+    tags = [
+        "noasan",
+        "nomsan",
+        "noubsan",
+    ],
     deps = [
         ":filter_bank_ops",
         requirement("numpy"),
-        requirement("tensorflow-cpu"),
-        "//python/tflite_micro/signal/utils:util",
+        requirement("tensorflow"),
     ],
 )
 
@@ -162,6 +191,9 @@ py_tflm_signal_library(
     cc_op_defs = ["//signal/tensorflow_core/ops:framer_op"],
     cc_op_kernels = [
         "//signal/tensorflow_core/kernels:framer_kernel",
+    ],
+    deps = [
+        "//python/tflite_micro/signal/utils:util",
     ],
 )
 
@@ -174,11 +206,15 @@ py_test(
     ],
     python_version = "PY3",
     srcs_version = "PY3",
+    tags = [
+        "noasan",
+        "nomsan",
+        "noubsan",
+    ],
     deps = [
         ":framer_op",
         requirement("numpy"),
-        requirement("tensorflow-cpu"),
-        "//python/tflite_micro/signal/utils:util",
+        requirement("tensorflow"),
     ],
 )
 
@@ -189,6 +225,9 @@ py_tflm_signal_library(
     cc_op_kernels = [
         "//signal/tensorflow_core/kernels:overlap_add_kernel",
     ],
+    deps = [
+        "//python/tflite_micro/signal/utils:util",
+    ],
 )
 
 py_test(
@@ -197,12 +236,16 @@ py_test(
     srcs = ["ops/overlap_add_op_test.py"],
     python_version = "PY3",
     srcs_version = "PY3",
+    tags = [
+        "noasan",
+        "nomsan",
+        "noubsan",
+    ],
     deps = [
         ":overlap_add_op",
         "@absl_py//absl/testing:parameterized",
         requirement("numpy"),
-        requirement("tensorflow-cpu"),
-        "//python/tflite_micro/signal/utils:util",
+        requirement("tensorflow"),
     ],
 )
 
@@ -214,6 +257,7 @@ py_tflm_signal_library(
         "//signal/tensorflow_core/kernels:pcan_kernel",
     ],
     deps = [
+        "//python/tflite_micro/signal/utils:util",
         "//python/tflite_micro/signal/utils:wide_dynamic_func_lut",
     ],
 )
@@ -234,8 +278,7 @@ py_test(
     deps = [
         ":pcan_op",
         requirement("numpy"),
-        requirement("tensorflow-cpu"),
-        "//python/tflite_micro/signal/utils:util",
+        requirement("tensorflow"),
     ],
 )
 
@@ -245,6 +288,9 @@ py_tflm_signal_library(
     cc_op_defs = ["//signal/tensorflow_core/ops:stacker_op"],
     cc_op_kernels = [
         "//signal/tensorflow_core/kernels:stacker_kernel",
+    ],
+    deps = [
+        "//python/tflite_micro/signal/utils:util",
     ],
 )
 
@@ -257,11 +303,15 @@ py_test(
     ],
     python_version = "PY3",
     srcs_version = "PY3",
+    tags = [
+        "noasan",
+        "nomsan",
+        "noubsan",
+    ],
     deps = [
         ":stacker_op",
         requirement("numpy"),
-        requirement("tensorflow-cpu"),
-        "//python/tflite_micro/signal/utils:util",
+        requirement("tensorflow"),
     ],
 )
 
@@ -271,6 +321,9 @@ py_tflm_signal_library(
     cc_op_defs = ["//signal/tensorflow_core/ops:window_op"],
     cc_op_kernels = [
         "//signal/tensorflow_core/kernels:window_kernel",
+    ],
+    deps = [
+        "//python/tflite_micro/signal/utils:util",
     ],
 )
 
@@ -282,10 +335,14 @@ py_test(
     ],
     python_version = "PY3",
     srcs_version = "PY3",
+    tags = [
+        "noasan",
+        "nomsan",
+        "noubsan",
+    ],
     deps = [
         ":window_op",
         requirement("numpy"),
-        requirement("tensorflow-cpu"),
-        "//python/tflite_micro/signal/utils:util",
+        requirement("tensorflow"),
     ],
 )

@@ -1,4 +1,4 @@
-/* Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2024 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -54,52 +54,33 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
 
   switch (input->type) {
     case kTfLiteFloat32: {
-      tflite::reference_ops::Conv(
-          ConvParamsFloat(params, op_data.reference_op_data),
-          tflite::micro::GetTensorShape(input),
-          tflite::micro::GetTensorData<float>(input),
-          tflite::micro::GetTensorShape(filter),
-          tflite::micro::GetTensorData<float>(filter),
-          tflite::micro::GetTensorShape(bias),
-          tflite::micro::GetOptionalTensorData<float>(bias),
-          tflite::micro::GetTensorShape(output),
-          tflite::micro::GetTensorData<float>(output),
-          tflite::micro::GetTensorShape(nullptr), nullptr);
+#if defined(INCLUDE_FLOAT_OPT)
+      return ConvEvalHifiFloat32(context, node, params, op_data, input, filter,
+                   bias, output);
+#else    
+      return ConvReferenceEvalFloat32(context, node);
+#endif          
       break;
     }
     case kTfLiteInt8: {
       switch (filter->type) {
         case kTfLiteInt4: {
 #if defined(HIFI5) && defined(NNLIB_HIFI5)
-          ConvEvalHifiInt4(context, node, params, op_data, input, filter,
+          return ConvEvalHifiInt4(context, node, params, op_data, input, filter,
                        bias, output);
-#else // defined(HIFI5) && defined(NNLIB_HIFI5)   
+#elif defined(HIFI4)
           TfLiteEvalTensor filter_int8 = tflite::micro::MakeUnpackedInt4Tensor(
               context, op_data.reference_op_data.filter_buffer_index, filter);
-#if defined(HIFI4)
-          ConvEvalHifiInt8(context, node, params, op_data, input, &filter_int8,
+          return ConvEvalHifiInt8(context, node, params, op_data, input, &filter_int8,
                            bias, output);
 #else
-          reference_integer_ops::ConvPerChannel(
-              ConvParamsQuantized(params, op_data.reference_op_data),
-              op_data.reference_op_data.per_channel_output_multiplier,
-              op_data.reference_op_data.per_channel_output_shift,
-              tflite::micro::GetTensorShape(input),
-              tflite::micro::GetTensorData<int8_t>(input),
-              tflite::micro::GetTensorShape(filter),
-              tflite::micro::GetTensorData<int8_t>(&filter_int8),
-              tflite::micro::GetTensorShape(bias),
-              tflite::micro::GetOptionalTensorData<int32_t>(bias),
-              tflite::micro::GetTensorShape(output),
-              tflite::micro::GetTensorData<int8_t>(output));
-          return kTfLiteOk;
-#endif // defined(HIFI4)     
-#endif // defined(HIFI5) && defined(NNLIB_HIFI5)   
-          break;
+          return ConvReferenceEvalInt8(context, node);
+#endif        
+          break;  
         } 
         case kTfLiteInt8: {
 #if defined(HIFI4) || defined(HIFI5)
-          ConvEvalHifiInt8(context, node, params, op_data, input, filter,
+          return ConvEvalHifiInt8(context, node, params, op_data, input, filter,
                            bias, output);
 #elif defined(VISION_P6)
           // At this time the optimized implementation is failing the unit tests in
@@ -126,16 +107,16 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       break;
     }
     case kTfLiteInt16: {
-      if (bias == nullptr || bias->type == kTfLiteInt32) {
-        return ConvReferenceEvalInt16(context, node);
-      }
-      else if (bias->type == kTfLiteInt64) {
 #if defined(HIFI4) || defined(HIFI5)
-        ConvEvalHifiInt16(context, node, params, op_data, input, filter, bias,
+      if (bias->type == kTfLiteInt64) {
+        return ConvEvalHifiInt16(context, node, params, op_data, input, filter, bias,
                           output);
+      }
+      else if (bias->type == kTfLiteInt32) {
 #else  // defined(HIFI4) || defined(HIFI5)
-        return ConvReferenceEvalInt16(context, node);
+      if (bias->type == kTfLiteInt64 || bias->type == kTfLiteInt32) {
 #endif  // defined(HIFI4) || defined(HIFI5)
+        return ConvReferenceEvalInt16(context, node);
       }
       else {
         MicroPrintf("Bias type %s (%d) not supported.",

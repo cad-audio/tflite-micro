@@ -1,4 +1,4 @@
-# Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2025 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,8 +16,20 @@
 # Generic Makefile target for ARM Cortex M builds.
 # For more info see: tensorflow/lite/micro/cortex_m_generic/README.md
 
+# Needed in case running without OPTIMIZED_KERNEL_DIR=cmsis_nn.
+CMSIS_DEFAULT_DOWNLOAD_PATH := $(DOWNLOADS_DIR)/cmsis
+CMSIS_PATH := $(CMSIS_DEFAULT_DOWNLOAD_PATH)
+CORTEX_DFP_PATH := $(CMSIS_PATH)/Cortex_DFP
+ifeq ($(CMSIS_PATH), $(CMSIS_DEFAULT_DOWNLOAD_PATH))
+  DOWNLOAD_RESULT := $(shell $(MAKEFILE_DIR)/ext_libs/cmsis_download.sh $(DOWNLOADS_DIR) $(TENSORFLOW_ROOT))
+  ifneq ($(DOWNLOAD_RESULT), SUCCESS)
+    $(error Something went wrong with the CMSIS download: $(DOWNLOAD_RESULT))
+  endif
+endif
+
 FLOAT := soft
 GCC_TARGET_ARCH := $(TARGET_ARCH)
+SIGNED_CHAR := false
 
 # Explicitly set this to true to include the kissfft symbols.
 INCLUDE_MICRO_SPEECH := false
@@ -37,7 +49,6 @@ else ifeq ($(TARGET_ARCH), cortex-m3)
 else ifeq ($(TARGET_ARCH), cortex-m33)
   CORE=M33
   ARM_LDFLAGS := -Wl,--cpu=Cortex-M33
-  CMSIS_ARM_FEATURES := _DSP_FP
   FLOAT=hard
 
 else ifeq ($(TARGET_ARCH), cortex-m33+nodsp)
@@ -52,14 +63,12 @@ else ifeq ($(TARGET_ARCH), cortex-m4)
 else ifeq ($(TARGET_ARCH), cortex-m4+fp)
   CORE=M4
   ARM_LDFLAGS := -Wl,--cpu=Cortex-M4
-  CMSIS_ARM_FEATURES := _FP
   FLOAT=hard
   GCC_TARGET_ARCH := cortex-m4
 
 else ifeq ($(TARGET_ARCH), cortex-m4+sfp)
   CORE=M4
   ARM_LDFLAGS := -Wl,--cpu=Cortex-M4
-  CMSIS_ARM_FEATURES := _FP
   FLOAT=softfp
   GCC_TARGET_ARCH := cortex-m4
 
@@ -86,14 +95,11 @@ else ifeq ($(TARGET_ARCH), cortex-m7+fp)
   ARM_LDFLAGS := -Wl,--cpu=Cortex-M7
   FLOAT=hard
   GCC_TARGET_ARCH := cortex-m7
-  CMSIS_ARM_FEATURES := _DP
 
 else ifeq ($(TARGET_ARCH), cortex-m85)
   CORE=M85
   ARM_LDFLAGS := -Wl,--cpu=8.1-M.Main.mve.fp
   FLOAT=hard
-  # GCC does not yet support cortex-m85 option hence go with cortex-m55 for now.
-  GCC_TARGET_ARCH := cortex-m55
 
 else ifeq ($(TARGET_ARCH), project_generation)
   # No flags needed here as project_generation does not build anything.
@@ -103,10 +109,8 @@ endif
 
 # Dependency to CMSIS-Device for DWT/PMU counters.
 ARM_CPU := "ARMC$(CORE)"
-CMSIS_DEFAULT_DOWNLOAD_PATH := $(MAKEFILE_DIR)/downloads/cmsis
-CMSIS_PATH := $(CMSIS_DEFAULT_DOWNLOAD_PATH)
 INCLUDES += \
-  -I$(CMSIS_PATH)/Device/ARM/$(ARM_CPU)/Include \
+  -I$(CORTEX_DFP_PATH)/Device/$(ARM_CPU)/Include \
   -I$(CMSIS_PATH)/CMSIS/Core/Include
 
 ifneq ($(filter cortex-m55%,$(TARGET_ARCH)),)
@@ -170,7 +174,6 @@ PLATFORM_FLAGS = \
   -DTF_LITE_MCU_DEBUG_LOG \
   -mthumb \
   -mfloat-abi=$(FLOAT) \
-  -funsigned-char \
   -mlittle-endian \
   -Wno-type-limits \
   -Wno-unused-private-field \
@@ -178,8 +181,14 @@ PLATFORM_FLAGS = \
   -MD \
   -DCPU_$(CORE)=1
 
+ifeq ($(SIGNED_CHAR), false)
+  PLATFORM_FLAGS += -funsigned-char
+else
+  PLATFORM_FLAGS += -fsigned-char
+endif
+
 # For DWT/PMU counters. Header file name is depending on target architecture.
-PLATFORM_FLAGS += -DCMSIS_DEVICE_ARM_CORTEX_M_XX_HEADER_FILE=\"$(ARM_CPU)$(CMSIS_ARM_FEATURES).h\"
+PLATFORM_FLAGS += -DCMSIS_DEVICE_ARM_CORTEX_M_XX_HEADER_FILE=\"$(ARM_CPU).h\"
 PLATFORM_FLAGS += -D$(ARM_CPU)
 
 # Arm Cortex-M55 and Cortex-M85 use PMU counters.

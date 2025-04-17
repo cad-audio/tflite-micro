@@ -23,6 +23,8 @@ limitations under the License.
 #include "tensorflow/lite/kernels/kernel_util.h"
 #include "tensorflow/lite/kernels/op_macros.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
+#include "tensorflow/lite/micro/kernels/maximum_minimum.h"
+#include "tensorflow/lite/micro/micro_log.h"
 #include "tensorflow/lite/micro/kernels/xtensa/xtensa.h"
 
 namespace tflite {
@@ -33,35 +35,6 @@ namespace {
 enum KernelType {
   kHiFi5,
   kReference,
-};
-
-constexpr int kInputTensor1 = 0;
-constexpr int kInputTensor2 = 1;
-constexpr int kOutputTensor = 0;
-
-struct OpContext {
-  OpContext(TfLiteContext* context, TfLiteNode* node) {
-    input1 = tflite::micro::GetEvalInput(context, node, kInputTensor1);
-    input2 = tflite::micro::GetEvalInput(context, node, kInputTensor2);
-    output = tflite::micro::GetEvalOutput(context, node, kOutputTensor);
-  }
-  const TfLiteEvalTensor* input1;
-  const TfLiteEvalTensor* input2;
-  TfLiteEvalTensor* output;
-};
-
-struct MaximumOp {
-  template <typename data_type>
-  static data_type op(data_type el1, data_type el2) {
-    return el1 > el2 ? el1 : el2;
-  }
-};
-
-struct MinimumOp {
-  template <typename data_type>
-  static data_type op(data_type el1, data_type el2) {
-    return el1 < el2 ? el1 : el2;
-  }
 };
 
 #if defined(HIFI5) || defined(HIFI4)
@@ -118,22 +91,7 @@ int hifi::ExecElemKernel( hifi::basic_op elem_op, data_type *out_data,
 
   return err;
 }
-#endif // defined(HIFI5) || defined(HIFI4)
 
-template <typename data_type, typename op_type>
-void TFLiteOperation(TfLiteContext* context, TfLiteNode* node,
-                     const OpContext& op_context) {
-  reference_ops::MaximumMinimumBroadcastSlow(
-      tflite::micro::GetTensorShape(op_context.input1),
-      tflite::micro::GetTensorData<data_type>(op_context.input1),
-      tflite::micro::GetTensorShape(op_context.input2),
-      tflite::micro::GetTensorData<data_type>(op_context.input2),
-      tflite::micro::GetTensorShape(op_context.output),
-      tflite::micro::GetTensorData<data_type>(op_context.output),
-      op_type::template op<data_type>);
-}
-
-#if defined(HIFI5) || defined(HIFI4)
 /*
  * Invoke element-wise kernels if the shapes match, else,
  * call hifi::MaximumMinimumBroadcast(...)
@@ -286,6 +244,9 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
         TFLiteOperation<int8_t, OpType>(context, node, op_context);
 #endif
         break;
+      case kTfLiteInt16:
+        TFLiteOperation<int16_t, OpType>(context, node, op_context);
+        break;
       case kTfLiteInt32:
         TFLiteOperation<int32_t, OpType>(context, node, op_context);
         break;
@@ -293,15 +254,13 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
         TFLiteOperation<int64_t, OpType>(context, node, op_context);
         break;
       default:
-        TF_LITE_KERNEL_LOG(context,
-                           "Type %s (%d) is not supported by Maximum/Minimum.",
-                           TfLiteTypeGetName(op_context.output->type),
-                           op_context.output->type);
+        MicroPrintf("Type %s (%d) is not supported by Maximum/Minimum.",
+                    TfLiteTypeGetName(op_context.output->type),
+                    op_context.output->type);
         return kTfLiteError;
     }
   } else {
-    TF_LITE_KERNEL_LOG(context,
-                       "Kernel type not supported by Maximum/Minimum.");
+    MicroPrintf("Kernel type not supported by Maximum/Minimum.");
     return kTfLiteError;
   }
   return kTfLiteOk;

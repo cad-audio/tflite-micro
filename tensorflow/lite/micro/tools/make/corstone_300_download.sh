@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2024 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 # Called with following arguments:
 # 1 - Path to the downloads folder which is typically
 #     tensorflow/lite/micro/tools/make/downloads
+# 2 - (optional) TENSORFLOW_ROOT: path to root of the TFLM tree (relative to directory from where the script is called).
 #
 # This script is called from the Makefile and uses the following convention to
 # enable determination of sucess/failure:
@@ -31,11 +32,8 @@
 
 set -e
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR=${SCRIPT_DIR}/../../../../..
-cd "${ROOT_DIR}"
-
-source tensorflow/lite/micro/tools/make/bash_helpers.sh
+TENSORFLOW_ROOT=${2}
+source ${TENSORFLOW_ROOT}tensorflow/lite/micro/tools/make/bash_helpers.sh
 
 DOWNLOADS_DIR=${1}
 if [ ! -d ${DOWNLOADS_DIR} ]; then
@@ -48,10 +46,19 @@ DOWNLOADED_CORSTONE_PATH=${DOWNLOADS_DIR}/corstone300
 if [ -d ${DOWNLOADED_CORSTONE_PATH} ]; then
   echo >&2 "${DOWNLOADED_CORSTONE_PATH} already exists, skipping the download."
 else
-  UNAME_S=`uname -s`
+  UNAME_S=$(uname -s)
+  UNAME_M=$(uname -m)
   if [ ${UNAME_S} == Linux ]; then
-    CORSTONE_URL=https://developer.arm.com/-/media/Arm%20Developer%20Community/Downloads/OSS/FVP/Corstone-300/FVP_Corstone_SSE-300_11.16_26.tgz
-    EXPECTED_MD5=29d9208127b24a0d83356efb8343162d
+    if [ ${UNAME_M} == x86_64 ]; then
+      CORSTONE_URL=https://developer.arm.com/-/media/Arm%20Developer%20Community/Downloads/OSS/FVP/Corstone-300/FVP_Corstone_SSE-300_11.24_13_Linux64.tgz
+      EXPECTED_MD5=42500e49a4b9e8e0f633d1bad9b7c052
+    elif [ ${UNAME_M} == aarch64 ]; then
+      CORSTONE_URL=https://developer.arm.com/-/media/Arm%20Developer%20Community/Downloads/OSS/FVP/Corstone-300/FVP_Corstone_SSE-300_11.24_13_Linux64_armv8l.tgz
+      EXPECTED_MD5=89904e875c863235635e1570c4f6459e
+    else
+          echo "Cpu type ${UNAME_M} with OS type ${UNAME_S} not supported."
+          exit 1
+    fi
   else
     echo "OS type ${UNAME_S} not supported."
     exit 1

@@ -1,5 +1,5 @@
 
-/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2024 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -54,11 +54,13 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
   TF_LITE_ENSURE(context, input != nullptr);
 
   // For int16 input, only fallback to the reference kernel is used
-  // so there is no need to prepare the Hifi/Vision kernel.
+  // so there is no need to prepare the Vision kernel.
+#if defined(VISION_P6)  
   if (input->type == kTfLiteInt16) {
     micro_context->DeallocateTempTfLiteTensor(input);
     return kTfLiteOk;
   }
+#endif
   micro_context->DeallocateTempTfLiteTensor(input);
 
 #if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
@@ -72,24 +74,26 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
 }
 
 TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
-  TFLITE_DCHECK(node->user_data != nullptr);
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)    
   TFLITE_DCHECK(node->builtin_data != nullptr);
   const auto& params =
       *(reinterpret_cast<TfLiteDepthwiseConvParams*>(node->builtin_data));
-  const auto& op_data =
-      *(reinterpret_cast<XtensaDepthwiseConvOpData*>(node->user_data));
 
   TfLiteEvalTensor* output =
       tflite::micro::GetEvalOutput(context, node, kDepthwiseConvOutputTensor);
+  const TfLiteEvalTensor* bias =
+      (NumInputs(node) == 3)
+          ? tflite::micro::GetEvalInput(context, node, kDepthwiseConvBiasTensor)
+          : nullptr;      
+#endif      
   const TfLiteEvalTensor* input =
       tflite::micro::GetEvalInput(context, node, kDepthwiseConvInputTensor);
   const TfLiteEvalTensor* filter =
       tflite::micro::GetEvalInput(context, node, kDepthwiseConvWeightsTensor);
-  const TfLiteEvalTensor* bias =
-      (NumInputs(node) == 3)
-          ? tflite::micro::GetEvalInput(context, node, kDepthwiseConvBiasTensor)
-          : nullptr;
 
+  TFLITE_DCHECK(node->user_data != nullptr);
+  const auto& op_data =
+      *(reinterpret_cast<XtensaDepthwiseConvOpData*>(node->user_data));
   TfLiteEvalTensor filter_int8 = tflite::micro::MakeUnpackedInt4Tensor(
       context, op_data.reference_op_data.filter_buffer_index, filter);
 
@@ -98,24 +102,13 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       switch (filter_int8.type) {
         case kTfLiteInt8: {
 #if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
-          DepthwiseConvEvalHifi(context, node, params, op_data, input,
+          return DepthwiseConvEvalInt8Hifi(context, node, params, op_data, input,
                                 &filter_int8, bias, output);
 #elif defined(VISION_P6)
-          DepthwiseConvEvalVision(context, node, params, op_data, input,
+          return DepthwiseConvEvalVision(context, node, params, op_data, input,
                                   &filter_int8, bias, output);
 #else
-          reference_integer_ops::DepthwiseConvPerChannel(
-              DepthwiseConvParamsQuantized(params, op_data.reference_op_data),
-              op_data.reference_op_data.per_channel_output_multiplier,
-              op_data.reference_op_data.per_channel_output_shift,
-              tflite::micro::GetTensorShape(input),
-              tflite::micro::GetTensorData<int8_t>(input),
-              tflite::micro::GetTensorShape(filter),
-              tflite::micro::GetTensorData<int8_t>(&filter_int8),
-              tflite::micro::GetTensorShape(bias),
-              tflite::micro::GetOptionalTensorData<int32_t>(bias),
-              tflite::micro::GetTensorShape(output),
-              tflite::micro::GetTensorData<int8_t>(output));
+          return DepthwiseConvReferenceEvalInt8(context, node);
 #endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
           break;
         }
@@ -129,18 +122,12 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
     case kTfLiteInt16: {
       switch (filter->type) {
         case kTfLiteInt8: {
-          reference_integer_ops::DepthwiseConvPerChannel(
-              DepthwiseConvParamsQuantized(params, op_data.reference_op_data),
-              op_data.reference_op_data.per_channel_output_multiplier,
-              op_data.reference_op_data.per_channel_output_shift,
-              tflite::micro::GetTensorShape(input),
-              tflite::micro::GetTensorData<int16_t>(input),
-              tflite::micro::GetTensorShape(filter),
-              tflite::micro::GetTensorData<int8_t>(&filter_int8),
-              tflite::micro::GetTensorShape(bias),
-              tflite::micro::GetOptionalTensorData<int64_t>(bias),
-              tflite::micro::GetTensorShape(output),
-              tflite::micro::GetTensorData<int16_t>(output));
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+          return DepthwiseConvEvalInt16Hifi(context, node, params, op_data, input,
+                                &filter_int8, bias, output);
+#else          
+          return DepthwiseConvReferenceEvalInt16(context, node);
+#endif              
           break;
         }
         default:
@@ -150,6 +137,15 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
           return kTfLiteError;
       }
       break;
+    }
+    case kTfLiteFloat32: {
+#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI3) || defined(HIFI4) || defined(HIFI5))
+      return DepthwiseConvEvalFloat32Hifi(context, node, params, op_data, input,
+                                &filter_int8, bias, output);
+#else       
+      return DepthwiseConvReferenceEvalFloat32(context, node);
+#endif          
+      break;      
     }
     default:
       MicroPrintf("Type %s (%d) not supported.", TfLiteTypeGetName(input->type),
