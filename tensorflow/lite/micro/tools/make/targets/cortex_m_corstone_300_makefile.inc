@@ -1,4 +1,4 @@
-# Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2025 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,23 +16,30 @@
 # ARM Cortex M makefile targeted for a FVP based on Arm Corstone-300 software.
 # For more info see: tensorflow/lite/micro/cortex_m_corstone_300/README.md
 
-export PATH := $(MAKEFILE_DIR)/downloads/corstone300/models/Linux64_GCC-6.4:$(PATH)
-DOWNLOAD_RESULT := $(shell $(MAKEFILE_DIR)/corstone_300_download.sh ${MAKEFILE_DIR}/downloads)
+UNAME_M := $(shell uname -m)
+ifeq ($(UNAME_M), aarch64)
+  export PATH := $(DOWNLOADS_DIR)/corstone300/models/Linux64_armv8l_GCC-9.3:$(PATH)
+else
+  export PATH := $(DOWNLOADS_DIR)/corstone300/models/Linux64_GCC-9.3:$(PATH)
+endif
+
+DOWNLOAD_RESULT := $(shell $(MAKEFILE_DIR)/corstone_300_download.sh $(DOWNLOADS_DIR) $(TENSORFLOW_ROOT))
 ifneq ($(DOWNLOAD_RESULT), SUCCESS)
   $(error Something went wrong with the Arm Corstone-300 software download: $(DOWNLOAD_RESULT))
 endif
 
-ETHOS_U_CORE_PLATFORM := ${PWD}/$(MAKEFILE_DIR)/downloads/ethos_u_core_platform/targets/corstone-300
-DOWNLOAD_RESULT := $(shell $(MAKEFILE_DIR)/ethos_u_core_platform_download.sh ${MAKEFILE_DIR}/downloads)
+ETHOS_U_CORE_PLATFORM := $(DOWNLOADS_DIR)/ethos_u_core_platform/targets/corstone-300
+DOWNLOAD_RESULT := $(shell $(MAKEFILE_DIR)/ethos_u_core_platform_download.sh $(DOWNLOADS_DIR) $(TENSORFLOW_ROOT))
 ifneq ($(DOWNLOAD_RESULT), SUCCESS)
   $(error Something went wrong with the Ethos-U Core Platform software download: $(DOWNLOAD_RESULT))
 endif
 
 # This target has dependencies to CMSIS-Device so just in case running without OPTIMIZED_KERNEL_DIR=cmsis_nn.
-CMSIS_DEFAULT_DOWNLOAD_PATH := $(MAKEFILE_DIR)/downloads/cmsis
+CMSIS_DEFAULT_DOWNLOAD_PATH := $(DOWNLOADS_DIR)/cmsis
 CMSIS_PATH := $(CMSIS_DEFAULT_DOWNLOAD_PATH)
+CORTEX_DFP_PATH := $(CMSIS_PATH)/Cortex_DFP
 ifeq ($(CMSIS_PATH), $(CMSIS_DEFAULT_DOWNLOAD_PATH))
-  DOWNLOAD_RESULT := $(shell $(MAKEFILE_DIR)/ext_libs/cmsis_download.sh ${MAKEFILE_DIR}/downloads)
+  DOWNLOAD_RESULT := $(shell $(MAKEFILE_DIR)/ext_libs/cmsis_download.sh $(DOWNLOADS_DIR) $(TENSORFLOW_ROOT))
   ifneq ($(DOWNLOAD_RESULT), SUCCESS)
     $(error Something went wrong with the CMSIS download: $(DOWNLOAD_RESULT))
   endif
@@ -57,7 +64,6 @@ else ifeq ($(TARGET_ARCH), cortex-m4+fp)
   ARMC6_LDFLAGS += -Wl,--cpu=Cortex-M4
   FLOAT=hard
   MCPU_OPTION := cortex-m4
-  CMSIS_ARM_FEATURES := _FP
 
 else ifeq ($(TARGET_ARCH), cortex-m55)
   ARMC6_LDFLAGS += -Wl,--cpu=8.1-M.Main.mve.fp
@@ -71,7 +77,6 @@ else ifeq ($(TARGET_ARCH), cortex-m7+fp)
   ARMC6_LDFLAGS += -Wl,--cpu=Cortex-M7
   FLOAT=hard
   MCPU_OPTION := cortex-m7
-  CMSIS_ARM_FEATURES := _DP
 
 else
   $(error "TARGET_ARCH=$(TARGET_ARCH) is not supported")
@@ -97,15 +102,14 @@ ifeq ($(TOOLCHAIN), armclang)
   FLAGS_ARMC = \
     --target=arm-arm-none-eabi \
     -Wno-unused-private-field \
-    -mcpu=$(MCPU_OPTION) \
-    -ffp-mode=full
+    -mcpu=$(MCPU_OPTION)
 
   # Pass comma separated linker options to armlink
   ARMC6_LDFLAGS += -Wl,--strict,--summary_stderr,--info,summarysizes,--map
   ARMC6_LDFLAGS += -Wl,--load_addr_map_info,--xref,--callgraph,--symbols
   ARMC6_LDFLAGS += -Wl,--info,sizes,--info,totals,--info,unused,--info,veneers
-  ARMC6_LDFLAGS += -Wl,--list=${TENSORFLOW_ROOT}gen/$(TARGET).map
-  ARMC6_LDFLAGS += -Wl,--entry=Reset_Handler  --verbose
+  ARMC6_LDFLAGS += -Wl,--list=gen/$(TARGET).map
+  ARMC6_LDFLAGS += -Wl,--entry=Reset_Handler --verbose
   ARMC6_LDFLAGS += -Wl,--scatter=$(ETHOS_U_CORE_PLATFORM)/platform.scatter
 
   # Pass a hint to the linker where to find the entry point. This needs to be
@@ -130,11 +134,16 @@ ifeq ($(TOOLCHAIN), armclang)
   # https://developer.arm.com/documentation/100891/0611/troubleshooting/general-troubleshooting-advice
   MICROLITE_LIBS := $(filter-out -lm,$(MICROLITE_LIBS))
 
+  # This does not build with armclang and is anyway not used by this target.
+  EXCLUDED_TESTS := \
+    tensorflow/lite/micro/tools/benchmarking/Makefile.inc
+  MICRO_LITE_BENCHMARKS := $(filter-out $(EXCLUDED_TESTS), $(MICRO_LITE_BENCHMARKS))
+
 else ifeq ($(TOOLCHAIN), gcc)
-  TARGET_DEFAULT_TOOLCHAIN_ROOT := $(MAKEFILE_DIR)/downloads/gcc_embedded/bin/
+  TARGET_DEFAULT_TOOLCHAIN_ROOT := $(DOWNLOADS_DIR)/gcc_embedded/bin/
   TARGET_TOOLCHAIN_ROOT := $(TARGET_DEFAULT_TOOLCHAIN_ROOT)
   ifeq ($(TARGET_TOOLCHAIN_ROOT), $(TARGET_DEFAULT_TOOLCHAIN_ROOT))
-    DOWNLOAD_RESULT := $(shell $(MAKEFILE_DIR)/arm_gcc_download.sh ${MAKEFILE_DIR}/downloads)
+    DOWNLOAD_RESULT := $(shell $(MAKEFILE_DIR)/arm_gcc_download.sh $(DOWNLOADS_DIR) $(TENSORFLOW_ROOT))
     ifneq ($(DOWNLOAD_RESULT), SUCCESS)
       $(error Something went wrong with the GCC download: $(DOWNLOAD_RESULT))
     endif
@@ -148,7 +157,7 @@ else ifeq ($(TOOLCHAIN), gcc)
   LDFLAGS += \
     --specs=nosys.specs \
     -T $(ETHOS_U_CORE_PLATFORM)/platform_parsed.ld \
-    -Wl,-Map=${TENSORFLOW_ROOT}gen/$(TARGET).map,--cref \
+    -Wl,-Map=gen/$(TARGET).map,--cref \
     -Wl,--gc-sections \
     --entry Reset_Handler
 
@@ -172,11 +181,11 @@ PLATFORM_FLAGS = \
 CXXFLAGS += $(PLATFORM_FLAGS)
 CCFLAGS += $(PLATFORM_FLAGS)
 
-CXXFLAGS += -D$(ARM_CPU)$(CMSIS_ARM_FEATURES)
-CCFLAGS += -D$(ARM_CPU)$(CMSIS_ARM_FEATURES)
+CXXFLAGS += -D$(ARM_CPU)
+CCFLAGS += -D$(ARM_CPU)
 
 # For Ethos-U Core Driver. Header file name is depending on target architecture.
-CXXFLAGS += -DCMSIS_DEVICE_ARM_CORTEX_M_XX_HEADER_FILE=\"$(ARM_CPU)$(CMSIS_ARM_FEATURES).h\"
+CXXFLAGS += -DCMSIS_DEVICE_ARM_CORTEX_M_XX_HEADER_FILE=\"$(ARM_CPU).h\"
 
 THIRD_PARTY_CC_SRCS += \
   $(ETHOS_U_CORE_PLATFORM)/retarget.c \
@@ -186,19 +195,22 @@ ifeq ($(CO_PROCESSOR), ethos_u)
   ETHOSU_ARCH=u55
 endif
 
-CMSIS_DEFAULT_DOWNLOAD_PATH := $(MAKEFILE_DIR)/downloads/cmsis
-CMSIS_PATH := $(CMSIS_DEFAULT_DOWNLOAD_PATH)
 THIRD_PARTY_CC_SRCS += \
-  $(CMSIS_PATH)/Device/ARM/$(ARM_CPU)/Source/system_$(ARM_CPU).c \
-  $(CMSIS_PATH)/Device/ARM/$(ARM_CPU)/Source/startup_$(ARM_CPU).c
+  $(CORTEX_DFP_PATH)/Device/$(ARM_CPU)/Source/system_$(ARM_CPU).c \
+  $(CORTEX_DFP_PATH)/Device/$(ARM_CPU)/Source/startup_$(ARM_CPU).c
 INCLUDES += \
-  -I$(CMSIS_PATH)/Device/ARM/$(ARM_CPU)/Include \
+  -I$(CORTEX_DFP_PATH)/Device/$(ARM_CPU)/Include \
   -I$(CMSIS_PATH)/CMSIS/Core/Include
 
 # TODO(#274): Examine why some tests fail here.
 EXCLUDED_TESTS := \
-  tensorflow/lite/micro/memory_arena_threshold_test.cc  \
-  tensorflow/lite/micro/recording_micro_allocator_test.cc
+  $(TENSORFLOW_ROOT)tensorflow/lite/micro/memory_arena_threshold_test.cc  \
+  $(TENSORFLOW_ROOT)tensorflow/lite/micro/recording_micro_allocator_test.cc
+ifeq ($(CO_PROCESSOR), ethos_u)
+# This does not work with Ethos-U enabled since then NPU PMU counters are used instead for the sake of the benchmark example.
+EXCLUDED_TESTS += \
+  $(TENSORFLOW_ROOT)tensorflow/lite/micro/micro_time_test.cc
+endif
 MICROLITE_TEST_SRCS := $(filter-out $(EXCLUDED_TESTS), $(MICROLITE_TEST_SRCS))
 
-TEST_SCRIPT := tensorflow/lite/micro/testing/test_with_arm_corstone_300.sh
+TEST_SCRIPT := $(TENSORFLOW_ROOT)tensorflow/lite/micro/testing/test_with_arm_corstone_300.sh

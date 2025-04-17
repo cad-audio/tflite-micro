@@ -24,8 +24,8 @@ limitations under the License.
 #include "tensorflow/lite/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/kernels/fully_connected.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
+#include "tensorflow/lite/micro/kernels/lstm_shared.h"
 #include "tensorflow/lite/micro/kernels/xtensa/lstm_eval.h"
-#include "tensorflow/lite/micro/kernels/xtensa/lstm_shared.h"
 
 namespace tflite {
 
@@ -111,6 +111,7 @@ TfLiteStatus UnidirectionalSequenceLstmEval(TfLiteContext* context,
       LSTMBuffers<float> buffers =
           CreateLSTMBuffers<float>(context, op_data.buffer_indices);
       return EvalLstm<float, float, float, float>(op_data, kernel_content, buffers);
+      break;
     }
     case kTfLiteInt8: {
       switch (weight_type) {
@@ -119,7 +120,8 @@ TfLiteStatus UnidirectionalSequenceLstmEval(TfLiteContext* context,
           LSTMBuffers<int16_t> buffers =
               CreateLSTMBuffers<int16_t>(context, op_data.buffer_indices);
           return EvalLstm<int8_t, int8_t, int16_t, int32_t>(op_data, kernel_content,
-                                                            buffers);
+                                                     buffers);
+          break;
         }
         default: {
           MicroPrintf("Filter type %s (%d) not supported.",
@@ -136,7 +138,8 @@ TfLiteStatus UnidirectionalSequenceLstmEval(TfLiteContext* context,
           LSTMBuffers<int16_t> buffers =
               CreateLSTMBuffers<int16_t>(context, op_data.buffer_indices);
           return EvalLstm<int16_t, int8_t, int16_t, int64_t>(op_data, kernel_content,
-                                                             buffers);
+                                                      buffers);
+          break;
         }
         default: {
           MicroPrintf("Filter type %s (%d) not supported.",

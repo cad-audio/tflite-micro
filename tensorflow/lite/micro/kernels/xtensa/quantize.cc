@@ -166,7 +166,10 @@ TfLiteStatus EvalXtensa(TfLiteContext* context, TfLiteNode* node) {
         }
 
         default: {
-          return EvalQuantizeReference(context, node);
+          MicroPrintf("Input %s, output %s not supported.",
+                      TfLiteTypeGetName(input->type),
+                      TfLiteTypeGetName(output->type));
+          return kTfLiteError;
         }
       }
       break;
@@ -247,7 +250,10 @@ TfLiteStatus EvalXtensa(TfLiteContext* context, TfLiteNode* node) {
         }
 
         default: {
-          return EvalQuantizeReference(context, node);
+          MicroPrintf("Input %s, output %s not supported.",
+                      TfLiteTypeGetName(input->type),
+                      TfLiteTypeGetName(output->type));
+          return kTfLiteError;
         }
       }
       break;
@@ -278,7 +284,10 @@ TfLiteStatus EvalXtensa(TfLiteContext* context, TfLiteNode* node) {
         }
 
         default: {
-          return EvalQuantizeReference(context, node);
+          MicroPrintf("Input %s, output %s not supported.",
+                      TfLiteTypeGetName(input->type),
+                      TfLiteTypeGetName(output->type));
+          return kTfLiteError;
         }
       }
       break;
@@ -328,19 +337,22 @@ TfLiteStatus EvalXtensa(TfLiteContext* context, TfLiteNode* node) {
                   static_cast<float>(op_data->quantization_params.scale),
                   zero_point, size),
               0);
-#else // #if HIFI_VFPU && (defined(HIFI4) || defined(HIFI5))             
+#else // #if HIFI_VFPU && (defined(HIFI4) || defined(HIFI5))
           reference_ops::AffineQuantize(
               op_data->quantization_params,
               tflite::micro::GetTensorShape(input),
               tflite::micro::GetTensorData<float>(input),
               tflite::micro::GetTensorShape(output),
               tflite::micro::GetTensorData<int16_t>(output));
-#endif              
+#endif  // #if HIFI_VFPU && (defined(HIFI4) || defined(HIFI5))
           break;
         }
 
         default: {
-          return EvalQuantizeReference(context, node);
+          MicroPrintf("Input %s, output %s not supported.",
+                      TfLiteTypeGetName(input->type),
+                      TfLiteTypeGetName(output->type));
+          return kTfLiteError;
         }
       }
       break;

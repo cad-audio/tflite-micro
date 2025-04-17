@@ -24,6 +24,7 @@ limitations under the License.
 #include "tensorflow/lite/kernels/kernel_util.h"
 #include "tensorflow/lite/kernels/op_macros.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
+#include "tensorflow/lite/micro/micro_log.h"
 #include "tensorflow/lite/micro/micro_utils.h"
 #include "tensorflow/lite/micro/kernels/xtensa/xtensa.h"
 
@@ -98,9 +99,17 @@ TfLiteStatus ReluEval(TfLiteContext* context, TfLiteNode* node) {
 #endif // defined(HIFI5) || defined(HIFI4)
       return kTfLiteOk;
     }
+    case kTfLiteInt16: {
+      tflite::ReluQuantized<int16_t>(
+          data, tflite::micro::GetTensorShape(input),
+          tflite::micro::GetTensorShape(output),
+          tflite::micro::GetTensorData<int16_t>(input),
+          tflite::micro::GetTensorData<int16_t>(output));
+      return kTfLiteOk;
+    }
     default: {
-      TF_LITE_KERNEL_LOG(context, "Only float32 is supported currently, got %s",
-                         TfLiteTypeGetName(input->type));
+      MicroPrintf("Only float32/int8/int16 is supported currently, got %s",
+                  TfLiteTypeGetName(input->type));
       return kTfLiteError;
     }
   }
@@ -157,10 +166,10 @@ TfLiteStatus Relu6Eval(TfLiteContext* context, TfLiteNode* node) {
       out_data_ptr = tflite::micro::GetTensorData<int8_t>(output);
 
       err = xa_nn_vec_activation_min_max_8_8(out_data_ptr, inp_data_ptr,
-                                                     data.zero_int8, data.six_int8, flat_size);
+                                                     data.zero, data.six, flat_size);
       TF_LITE_ENSURE(context, err == 0);
 #else
-      Relu6Quantized(data.zero_int8, data.six_int8,
+      Relu6Quantized(data.zero, data.six,
                      tflite::micro::GetTensorShape(input),
                      tflite::micro::GetTensorData<int8_t>(input),
                      tflite::micro::GetTensorShape(output),
@@ -168,9 +177,17 @@ TfLiteStatus Relu6Eval(TfLiteContext* context, TfLiteNode* node) {
 #endif // defined(HIFI5) || defined(HIFI4)
       return kTfLiteOk;
     }
+    case kTfLiteInt16: {
+      Relu6Quantized<int16_t>(data.zero, data.six,
+                              tflite::micro::GetTensorShape(input),
+                              tflite::micro::GetTensorData<int16_t>(input),
+                              tflite::micro::GetTensorShape(output),
+                              tflite::micro::GetTensorData<int16_t>(output));
+      return kTfLiteOk;
+    }
     default: {
-      TF_LITE_KERNEL_LOG(context, "Only float32 is supported currently, got %s",
-                         TfLiteTypeGetName(input->type));
+      MicroPrintf("Only float32/int8/int16 is supported currently, got %s",
+                  TfLiteTypeGetName(input->type));
       return kTfLiteError;
     }
   }
