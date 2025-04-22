@@ -58,6 +58,31 @@ TfLiteStatus EvalHifiInt8(const XtensaSoftmaxOpData* op_data,
 }
 #endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
 
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+TfLiteStatus EvalHifiInt16(const XtensaSoftmaxOpData* op_data,
+                          const TfLiteEvalTensor* input,
+                          TfLiteEvalTensor* output, TfLiteContext* context) {
+  const RuntimeShape& input_shape = tflite::micro::GetTensorShape(input);
+  const int16_t* input_data = tflite::micro::GetTensorData<int16_t>(input);
+  const RuntimeShape& output_shape = tflite::micro::GetTensorShape(output);
+  int16_t* output_data = tflite::micro::GetTensorData<int16_t>(output);
+  const int trailing_dim = input_shape.DimensionsCount() - 1;
+  const int outer_size =
+      MatchingFlatSizeSkipDim(input_shape, trailing_dim, output_shape);
+  const int depth =
+      MatchingDim(input_shape, trailing_dim, output_shape, trailing_dim);
+
+  for (int i = 0; i < outer_size; ++i) {
+    int err = xa_nn_vec_softmax_sym16s_16(
+        &output_data[i * depth], &input_data[i * depth],
+        op_data->params.input_left_shift,
+        op_data->params.input_multiplier, depth);
+    TF_LITE_ENSURE(context, err == 0);
+  }
+  return kTfLiteOk;
+}
+#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+
 TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
   const TfLiteEvalTensor* input = tflite::micro::GetEvalInput(context, node, 0);
   TfLiteEvalTensor* output = tflite::micro::GetEvalOutput(context, node, 0);
@@ -95,12 +120,17 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
   }
 
   if (input->type == kTfLiteInt16 && output->type == kTfLiteInt16) {
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+    return EvalHifiInt16(static_cast<XtensaSoftmaxOpData*>(node->user_data),
+                        input, output, context);
+#else
     tflite::reference_ops::SoftmaxInt16(
         params, tflite::micro::GetTensorShape(input),
         tflite::micro::GetTensorData<int16_t>(input),
         tflite::micro::GetTensorShape(output),
         tflite::micro::GetTensorData<int16_t>(output));
     return kTfLiteOk;
+#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
   }
 
   if (input->type == kTfLiteFloat32) {
