@@ -119,7 +119,7 @@ TfLiteStatus CalculateOpData(TfLiteContext* context, TfLiteNode* node,
     int output_channels = filter->dims->data[kConvQuantizedDimension];
 
     TF_LITE_ENSURE_STATUS(tflite::PopulateConvolutionQuantizationParams(
-        context, input, filter, bias, output, kTfLiteActNone,
+        context, input, filter, bias, output, params->activation,
         &data->params.output_multiplier, &data->params.output_shift,
         &data->params.quantized_activation_min,
         &data->params.quantized_activation_max,
@@ -494,6 +494,13 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
           num_groups, data.params.input_offset, data.params.output_offset,
           data.per_channel_output_shift, data.per_channel_output_multiplier,
           scratch_buffer
+        );
+        err = xa_nn_vec_activation_min_max_8_8(
+          output_data,
+          output_data,
+          data.params.quantized_activation_min,
+          data.params.quantized_activation_max,
+          (batches * output_height * output_width * output_depth)
         );
         TF_LITE_ENSURE(context, err == 0);
       }
