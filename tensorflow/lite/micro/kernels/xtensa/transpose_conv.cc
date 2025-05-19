@@ -495,6 +495,13 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
           data.per_channel_output_shift, data.per_channel_output_multiplier,
           scratch_buffer
         );
+        err = xa_nn_vec_activation_min_max_8_8(
+          output_data,
+          output_data,
+          data.params.quantized_activation_min,
+          data.params.quantized_activation_max,
+          (batches * output_height * output_width * output_depth)
+        );
         TF_LITE_ENSURE(context, err == 0);
       }
 #else
