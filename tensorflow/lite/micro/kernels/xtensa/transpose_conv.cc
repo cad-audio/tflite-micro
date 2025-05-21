@@ -119,7 +119,7 @@ TfLiteStatus CalculateOpData(TfLiteContext* context, TfLiteNode* node,
     int output_channels = filter->dims->data[kConvQuantizedDimension];
 
     TF_LITE_ENSURE_STATUS(tflite::PopulateConvolutionQuantizationParams(
-        context, input, filter, bias, output, kTfLiteActNone,
+        context, input, filter, bias, output, params->activation,
         &data->params.output_multiplier, &data->params.output_shift,
         &data->params.quantized_activation_min,
         &data->params.quantized_activation_max,
@@ -497,6 +497,15 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
         );
         TF_LITE_ENSURE(context, err == 0);
       }
+
+      err = xa_nn_vec_activation_min_max_8_8(
+        output_data,
+        output_data,
+        data.params.quantized_activation_min,
+        data.params.quantized_activation_max,
+        (batches * output_height * output_width * output_depth)
+      );
+      TF_LITE_ENSURE(context, err == 0);
 #else
       reference_integer_ops::TransposeConv(
           data.params, data.per_channel_output_multiplier,
@@ -614,6 +623,16 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
           );
           TF_LITE_ENSURE(context, err == 0);
         }
+
+        err = xa_nn_vec_activation_min_max_16_16(
+          output_data,
+          output_data,
+          data.params.quantized_activation_min,
+          data.params.quantized_activation_max,
+          (batches * output_height * output_width * output_depth)
+        );
+        TF_LITE_ENSURE(context, err == 0);
+
 #else  // #if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
         reference_integer_ops::TransposeConv(
             data.params, data.per_channel_output_multiplier,
