@@ -1,0 +1,1369 @@
+1879051520 00300568 R g_person_detect_model_data
+1879429120 00139264 B tensor_arena
+1476497408 00017805 T xa_nn_matmul_v2_per_chan_sym8sxasym8s_asym8s
+1476524992 00017467 T xa_nn_matXvec_sym8sxasym8s_asym8s_circ
+1879352096 00009216 R g_person_image_data
+1879361312 00009216 R g_no_person_image_data
+1476515904 00009086 T xa_nn_matXvec_sym4sxasym8s_asym8s_circ
+1476413728 00007620 T xa_nn_avgpool_8
+1476458240 00006327 T xa_nn_dilated_conv2d_depthwise_v2_per_chan_sym8sxasym8s
+1476452256 00005144 T xa_nn_conv2d_depthwise_v2_nhwc_per_chan_sym8sxasym8s
+1879377504 00004100 R inv_256_tbl
+1476408960 00004086 T xa_nn_vec_softmax_asym8s_asym8s
+1476492464 00003071 t internal_xa_nn_conv2d_v2_per_chan_sym8sxasym8s
+1476487840 00003042 t internal_xa_nn_conv2d_std_per_chan_sym8sxasym8s
+1476559288 00002774 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseExpr()
+1476475616 00002762 T conv2d_group_update_cir_buf
+1476421360 00002695 T xa_nn_avgpool_8_hwc_16
+1476485168 00002660 T xa_nn_conv2d_std_v2_per_chan_sym8sxasym8s
+1476464576 00002466 T xa_nn_conv2d_std_per_chan_sym4sxasym8s
+1476424064 00002462 T xa_nn_avgpool_8_hwc_32
+1476467056 00002331 t internal_xa_nn_conv2d_std_per_chan_sym4sxasym8s
+1476550004 00002263 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseType()
+1476601664 00002214 T _Putfld
+1476624000 00002070 T xa_nn_circ_buf_nhwc_add_cols_with_pad_val
+1476607904 00002060 T _Ldtob
+1476439728 00001980 T tflite::CalculateSoftmaxParams(TfLiteContext*, TfLiteTensor const*, TfLiteTensor*, TfLiteSoftmaxParams const*, tflite::SoftmaxParams*)
+1476483200 00001965 T xa_nn_dilated_conv2d_std_v2_per_chan_sym8sxasym8s
+1476589388 00001962 t execute_cfa_program
+1476481264 00001932 T conv2d_std_update_cir_buf_asym8
+1476445376 00001906 T tflite::ConvEvalHifiInt8(TfLiteContext*, TfLiteNode*, TfLiteConvParams const&, tflite::XtensaConvOpData const&, TfLiteEvalTensor const*, TfLiteEvalTensor const*, TfLiteEvalTensor const*, TfLiteEvalTensor*)
+1476626080 00001891 T xa_nn_dilated_circ_buf_nhwc_add_cols_with_pad_val
+1476548080 00001842 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseEncoding()
+1476621680 00001817 t special_function_for_cols_mul_32
+1476450640 00001614 T tflite::DepthwiseConvEvalInt8Hifi(TfLiteContext*, TfLiteNode*, TfLiteDepthwiseConvParams const&, tflite::XtensaDepthwiseConvOpData const&, TfLiteEvalTensor const*, TfLiteEvalTensor const*, TfLiteEvalTensor const*, TfLiteEvalTensor*)
+1476478384 00001612 T xa_nn_dilated_conv2d_std_load_cir_buf_asym8
+1476592816 00001606 t search_object
+1476490896 00001567 T xa_nn_conv2d_v2_per_chan_sym8sxasym8s
+1879427568 00001536 b __external_threading_tls_get::__tls_vals
+1476447296 00001446 W tflite::reference_integer_ops::ConvPerChannel(tflite::ConvParams const&, int const*, int const*, tflite::RuntimeShape const&, signed char const*, tflite::RuntimeShape const&, signed char const*, tflite::RuntimeShape const&, int const*, tflite::RuntimeShape const&, signed char*)
+1476398432 00001441 T __gxx_personality_v0
+1476474304 00001303 T conv2d_group_init_cir_buf
+1476480000 00001264 T conv2d_std_init_cir_buf_asym8
+1476562812 00001197 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseExprPrimary()
+1476443740 00001126 T tflite::ConvPrepareHifi(TfLiteContext*, TfLiteNode*)
+1476400352 00001105 T main
+1476620384 00001089 t conv_y_pad_nhwc_out
+1476616560 00001077 T xa_nn_vec_activation_min_max_8_8
+1476448752 00001038 T tflite::ConvEvalHifiInt4(TfLiteContext*, TfLiteNode*, TfLiteConvParams const&, tflite::XtensaConvOpData const&, TfLiteEvalTensor const*, TfLiteEvalTensor const*, TfLiteEvalTensor const*, TfLiteEvalTensor*)
+1476546816 00001023 T __cxa_demangle
+1476612800 00001001 T _LXp_addh
+1476600668 00000990 T _Printf
+1476552268 00000985 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseName((anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::NameState*)
+1476611824 00000974 T _Genld
+1476401952 00000925 T tflite::MicroInterpreter::PrepareNodeAndRegistrationDataFromFlatbuffer()
+1476432576 00000902 T tflite::AllocationInfoBuilder::MarkAllocationLifetimes(int, tflite::internal::ScratchBufferRequest*, tflite::ScratchBufferHandle*, tflite::SubgraphAllocations*)
+1476587024 00000875 t uw_frame_state_for
+1476569080 00000871 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseUnnamedTypeName((anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::NameState*)
+1476570884 00000870 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseTemplateParamDecl()
+1476557844 00000853 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseUnqualifiedName((anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::NameState*, (anonymous namespace)::itanium_demangle::Node*, (anonymous namespace)::itanium_demangle::ModuleName*)
+1879373696 00000844 V tflite::EnumNamesBuiltinOperator()::names
+1476449792 00000834 T tflite::DepthwiseConvPrepareHifi(TfLiteContext*, TfLiteNode*)
+1476565748 00000834 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseUnresolvedName(bool)
+1476457408 00000822 T xa_nn_conv2d_depthwise_v2_per_chan_sym8sxasym8s
+1476585664 00000783 T __divdf3
+1476473280 00000743 T xa_nn_conv2d_std_init_state_sym4s
+1476556016 00000736 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseTemplateArgs(bool)
+1476496672 00000726 T tflite::DepthwiseConvPrepare(TfLiteContext*, TfLiteNode*)
+1476471792 00000710 T xa_nn_conv2d_getsize
+1476633512 00000695 T __umoddi3
+1476630524 00000693 T __udivdi3
+1476515216 00000682 t _xa_nn_dot_product_4_rows_4_vecs_unaligned
+1476577952 00000678 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseFunctionType()
+1476428944 00000664 T tflite::internal::InitializeTfLiteTensorFromFlatbuffer(tflite::IPersistentBufferAllocator*, tflite::INonPersistentBufferAllocator*, bool, tflite::Tensor const&, flatbuffers::Vector<flatbuffers::Offset<tflite::Buffer>, unsigned int> const*, TfLiteTensor*)
+1476437952 00000662 T tflite::ConvPrepare(TfLiteContext*, TfLiteNode*)
+1476442880 00000646 T tflite::CalculateActivationRangeQuantized(TfLiteContext*, TfLiteFusedActivation, TfLiteTensor*, int*, int*)
+1476619744 00000637 t xa_nn_rearrange_chw_to_hwc
+1476405952 00000614 t tflite::(anonymous namespace)::ReshapeOutput(TfLiteContext*, TfLiteNode*)
+1476442008 00000605 T tflite::PopulateConvolutionQuantizationParams(TfLiteContext*, TfLiteTensor const*, TfLiteTensor const*, TfLiteTensor const*, TfLiteTensor*, TfLiteFusedActivation const&, int*, int*, int*, int*, int*, int*, int)
+1476596396 00000586 t fde_mixed_encoding_compare
+1476437368 00000574 T tflite::CalculateOpDataConv(TfLiteContext*, TfLiteNode*, TfLiteConvParams const&, int, int, int, int, int, int, TfLiteType, tflite::OpDataConv*)
+1476614348 00000567 T _Dscalex
+1476594752 00000562 t linear_search_fdes
+1476433968 00000557 T tflite::AllocationInfoBuilder::InitializeAllocationInfo(int const*, tflite::SubgraphAllocations*)
+1476595836 00000557 t add_fdes
+1476496116 00000556 T tflite::CalculateOpDataDepthwiseConv(TfLiteContext*, TfLiteNode*, TfLiteDepthwiseConvParams const&, int, int, int, int, int, int, TfLiteType, tflite::OpDataConv*)
+1476439080 00000550 T tflite::PoolingPrepare(TfLiteContext*, TfLiteNode*)
+1476470688 00000548 T xa_nn_conv2d_pointwise_v2_per_chan_sym8sxasym8s
+1476413100 00000542 T xa_nn_avgpool_getsize
+1476407972 00000534 T tflite::AverageEvalQuantizedInt8Hifi(TfLiteContext*, TfLiteNode const*, TfLitePoolParams const*, tflite::XtensaOpDataPooling const*, TfLiteEvalTensor const*, TfLiteEvalTensor*)
+1476436560 00000530 T tflite::GreedyMemoryPlanner::PrintMemoryPlan()
+1476471248 00000529 T xa_nn_conv2d_std_getsize
+1476595316 00000519 t classify_object_over_fdes
+1476579416 00000517 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseVectorType()
+1879048192 00000514 r ctyp_tab
+1879568416 00000512 b (anonymous namespace)::heap
+1476543792 00000507 T __cxxabiv1::__vmi_class_type_info::search_below_dst(__cxxabiv1::__dynamic_cast_info*, void const*, int, bool) const
+1879401520 00000496 r (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::Ops
+1476444880 00000493 T tflite::ConvPrepareHifiInt4(TfLiteContext*, TfLiteNode*)
+1476469664 00000490 t xa_nn_dilated_conv2d_depthwise_getsize_generic
+1476572808 00000485 t (anonymous namespace)::itanium_demangle::FoldExpr::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476402880 00000482 T tflite::MicroInterpreter::AllocateTensors()
+1476604144 00000478 T _Puttxt
+1476556752 00000473 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseTemplateParam()
+1476575484 00000467 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseOperatorName((anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::NameState*)
+1476436008 00000466 T tflite::GreedyMemoryPlanner::CalculateOffsetsIfNeeded()
+1476407540 00000430 T tflite::AveragePrepareHifi(TfLiteContext*, TfLiteNode*)
+1476610632 00000430 T _LXp_mulh
+1476406720 00000429 t tflite::(anonymous namespace)::EvalHifiInt8(tflite::XtensaSoftmaxOpData const*, TfLiteEvalTensor const*, TfLiteEvalTensor*, TfLiteContext*)
+1476605024 00000429 T _Wctombx
+1476578632 00000423 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseQualifiedType()
+1476592392 00000421 T _Unwind_Find_FDE
+1476542460 00000421 T expf
+1476609984 00000411 T _Litob
+1476588980 00000408 t uw_update_context_1
+1476431588 00000401 T tflite::MicroAllocator::CommitStaticMemoryPlan(tflite::Model const*, tflite::SubgraphAllocations*, tflite::ScratchBufferHandle*)
+1476591352 00000384 t read_encoded_value
+1476611264 00000384 T _Mbtowcx
+1476619360 00000380 t conv_x_right_pad
+1476565212 00000378 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseSubobjectExpr()
+1476427760 00000375 T tflite::MicroInterpreterGraph::ResetVariableTensors()
+1476618976 00000374 t conv_x_left_pad
+1476432192 00000370 T tflite::AllocationInfoBuilder::MarkSubgraphLifetimesIfNecessary(tflite::Operator const*, tflite::internal::ScratchBufferRequest*, tflite::ScratchBufferHandle*, tflite::SubgraphAllocations*)
+1476557476 00000365 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseSubstitution()
+1476564536 00000365 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseBracedExpr()
+1476597916 00000364 T __roundAndPackFloat64
+1476599104 00000363 T malloc
+1476434528 00000360 T tflite::AllocationInfoBuilder::GetOfflinePlannedOffsets(int const**)
+1476404416 00000343 T tflite::ParseConv2D(tflite::Operator const*, tflite::ErrorReporter*, tflite::BuiltinDataAllocator*, void**)
+1476470160 00000340 T xa_nn_dilated_conv2d_depthwise_init
+1476594424 00000325 t read_encoded_value_with_base
+1476597120 00000324 t frame_heapsort
+1476430880 00000318 T tflite::MicroAllocator::AllocateTfLiteEvalTensors(tflite::Model const*, tflite::SubgraphAllocations*)
+1476631840 00000314 T memmove
+1476553256 00000311 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseTemplateArg()
+1476606432 00000310 T strcmp
+1476575064 00000309 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseBaseUnresolvedName()
+1476404760 00000308 T tflite::ParseDepthwiseConv2D(tflite::Operator const*, tflite::ErrorReporter*, tflite::BuiltinDataAllocator*, void**)
+1476597608 00000306 T __propagateFloat64NaN
+1476427452 00000305 T tflite::MicroInterpreterGraph::InvokeSubgraph(int)
+1476564236 00000300 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseFoldExpr()
+1476441708 00000299 T tflite::SoftmaxPrepare(TfLiteContext*, TfLiteNode*)
+1476545316 00000296 t __cxxabiv1::readEncodedPointer(unsigned char const**, unsigned char, unsigned int)
+1476586596 00000284 T _Unwind_RaiseException
+1476566676 00000283 t (anonymous namespace)::itanium_demangle::BinaryExpr::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476615380 00000281 T xthal_window_spill_nw
+1476567460 00000277 t (anonymous namespace)::itanium_demangle::NewExpr::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476472512 00000277 T xa_nn_conv2d_std_getsize_sym4s
+1476632416 00000275 T memcpy
+1476469388 00000270 T xa_nn_conv2d_depthwise_getsize
+1476632976 00000270 T _Dnorm
+1476405068 00000269 T tflite::ParsePool(tflite::Operator const*, tflite::ErrorReporter*, tflite::BuiltinDataAllocator*, void**)
+1476598832 00000266 T fwrite
+1476442616 00000264 T tflite::GetQuantizedConvolutionMultipler(TfLiteContext*, TfLiteTensor const*, TfLiteTensor const*, TfLiteTensor const*, TfLiteTensor*, double*)
+1476603880 00000264 T _Putstr
+1476474032 00000263 T xa_nn_dilated_conv2d_std_init_circ_buf
+1476580700 00000261 t (anonymous namespace)::itanium_demangle::FunctionType::printRight((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476473008 00000259 T xa_nn_conv2d_std_init_state
+1476583216 00000258 t (anonymous namespace)::itanium_demangle::ReferenceType::collapse((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1879426960 00000256 D xtos_exc_handler_table
+1879568944 00000256 b _Atdata
+1476615016 00000252 T _xtos_l1int_handler
+1476600040 00000250 T _Dint
+1476433480 00000246 T tflite::AllocationInfoBuilder::CreateAllocationInfo(int)
+1879569700 00000244 V g_reent
+1476573540 00000241 t (anonymous namespace)::itanium_demangle::BracedExpr::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476582376 00000238 t (anonymous namespace)::itanium_demangle::PointerType::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476544668 00000238 T __cxxabiv1::__vmi_class_type_info::search_above_dst(__cxxabiv1::__dynamic_cast_info*, void const*, void const*, int, bool) const
+1476577612 00000235 t (anonymous namespace)::itanium_demangle::FunctionEncoding::printRight((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476582804 00000235 t (anonymous namespace)::itanium_demangle::ReferenceType::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476433728 00000235 T tflite::AllocationInfoBuilder::ValidateSubgraph(tflite::SubGraph const*, TfLiteEvalTensor*)
+1476431200 00000232 T tflite::MicroAllocator::AllocateVariables(tflite::SubGraph const*, TfLiteEvalTensor*, int const*)
+1879398484 00000232 r __switchjump_table_xp_temp_40_0
+1476607000 00000232 T fflush
+1476408716 00000230 T tflite::XtensaPrepareSoftmax(TfLiteContext*, TfLiteNode*)
+1476573796 00000226 t (anonymous namespace)::itanium_demangle::BracedRangeExpr::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476574168 00000225 t (anonymous namespace)::itanium_demangle::PointerToMemberConversionExpr::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476546568 00000225 t demangling_terminate_handler()
+1879048732 00000224 r __switchjump_table_xp_temp_0_0
+1476544300 00000222 T __cxxabiv1::__si_class_type_info::search_below_dst(__cxxabiv1::__dynamic_cast_info*, void const*, int, bool) const
+1476588320 00000222 t _Unwind_ForcedUnwind_Phase2
+1476564012 00000221 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseFunctionParam()
+1476610396 00000220 T _LXp_setw
+1476573308 00000218 t (anonymous namespace)::itanium_demangle::ParameterPackExpansion::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476607564 00000216 T _Fofind
+1476472800 00000206 T xa_nn_dilated_conv2d_std_getsize
+1476543444 00000202 T __dynamic_cast
+1476429888 00000200 T tflite::MicroAllocator::StartModelAllocation(tflite::Model const*)
+1476407180 00000196 t tflite::(anonymous namespace)::EvalInt8(TfLiteContext*, TfLiteNode*)
+1476579936 00000194 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseClassEnumType()
+1476401720 00000193 T tflite::MicroInterpreter::MicroInterpreter(tflite::Model const*, tflite::MicroOpResolver const&, unsigned char*, unsigned int, tflite::MicroResourceVariables*, tflite::MicroProfilerInterface*, bool)
+1476401720 00000193 T tflite::MicroInterpreter::MicroInterpreter(tflite::Model const*, tflite::MicroOpResolver const&, unsigned char*, unsigned int, tflite::MicroResourceVariables*, tflite::MicroProfilerInterface*, bool)
+1476569952 00000192 t (anonymous namespace)::itanium_demangle::IntegerLiteral::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1879049504 00000192 r __switchjump_table_xp_temp_23_0
+1476611064 00000192 T _LXp_mulx
+1476568180 00000191 t (anonymous namespace)::itanium_demangle::ConversionExpr::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476554980 00000191 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseModuleNameOpt((anonymous namespace)::itanium_demangle::ModuleName*&)
+1476614068 00000190 T _Force_raise
+1476399876 00000187 T _start
+1476566972 00000185 t (anonymous namespace)::itanium_demangle::Node::printAsOperand((anonymous namespace)::itanium_demangle::OutputBuffer&, (anonymous namespace)::itanium_demangle::Node::Prec, bool) const
+1476570208 00000185 t (anonymous namespace)::itanium_demangle::FloatLiteralImpl<float>::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476495536 00000181 T tflite::MultiplyByQuantizedMultiplier(int, int, int)
+1476427032 00000180 T tflite::MicroInterpreterGraph::PrepareSubgraphs()
+1476570608 00000179 t (anonymous namespace)::itanium_demangle::FloatLiteralImpl<long double>::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476570416 00000179 t (anonymous namespace)::itanium_demangle::FloatLiteralImpl<double>::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476600436 00000179 T _Fwprep
+1476574408 00000178 t (anonymous namespace)::itanium_demangle::SubobjectExpr::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476557228 00000176 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseDecltype()
+1879569216 00000176 b sigtable
+1476568476 00000175 t (anonymous namespace)::itanium_demangle::CastExpr::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476470500 00000174 T xa_nn_dilated_conv2d_depthwise_getsize
+1476543076 00000174 T __feraiseexcept
+1476572352 00000172 t (anonymous namespace)::itanium_demangle::ClosureTypeName::printDeclarator((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476623600 00000171 T xa_nn_circ_buf_nchw_init
+1476631480 00000171 T __divsf3
+1476572584 00000170 t (anonymous namespace)::itanium_demangle::EnumLiteral::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1342177328 00000170 T _ResetHandler
+1476581984 00000169 t (anonymous namespace)::itanium_demangle::PointerToMemberType::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476404228 00000168 T tflite::ConvertTensorType(tflite::TensorType, TfLiteType*, tflite::ErrorReporter*)
+1476430352 00000166 T tflite::MicroAllocator::AllocateNodeAndRegistrations(tflite::Model const*, tflite::SubgraphAllocations*)
+1476546164 00000165 t (anonymous namespace)::fallback_malloc(unsigned int)
+1476555848 00000164 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseUnscopedName((anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::NameState*, bool*)
+1476587900 00000163 t _Unwind_RaiseException_Phase2
+1476607232 00000163 T fputs
+1476405780 00000162 T tflite::PrepareReshapeReference(TfLiteContext*, TfLiteNode*)
+1476583040 00000161 t (anonymous namespace)::itanium_demangle::ReferenceType::printRight((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476426868 00000161 T tflite::MicroInterpreterGraph::InitSubgraphs()
+1476428608 00000160 T tflite::GetRegistrationFromOpCode(tflite::OperatorCode const*, tflite::MicroOpResolver const&, TFLMRegistration const**)
+1476598672 00000158 T free
+1476438768 00000156 T tflite::micro::CreateWritableTensorDimsWithCopy(TfLiteContext*, TfLiteTensor*, TfLiteEvalTensor*)
+1476576212 00000155 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseAbiTags((anonymous namespace)::itanium_demangle::Node*)
+1476588824 00000155 T _Unwind_Backtrace
+1476434928 00000154 T tflite::BytesRequiredForTensor(tflite::Tensor const&, unsigned int*, unsigned int*)
+1476431432 00000154 T tflite::MicroAllocator::PopulateTfLiteTensorFromFlatbuffer(tflite::Model const*, TfLiteTensor*, int, int, bool)
+1476401564 00000153 W tflite::MicroMutableOpResolver<5u>::AddBuiltin(tflite::BuiltinOperator, TFLMRegistration const&, TfLiteStatus (*)(tflite::Operator const*, tflite::ErrorReporter*, tflite::BuiltinDataAllocator*, void**))
+1476629248 00000153 t (anonymous namespace)::itanium_demangle::parse_discriminator(char const*, char const*)
+1476599524 00000153 T realloc
+1476567752 00000150 t (anonymous namespace)::itanium_demangle::NodeArray::printWithComma((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476438928 00000150 T tflite::micro::MakeUnpackedInt4Tensor(TfLiteContext*, int, TfLiteEvalTensor const*)
+1476430732 00000145 T tflite::MicroAllocator::AllocateTempTfLiteTensor(tflite::Model const*, tflite::SubgraphAllocations const*, int, int)
+1476546384 00000145 t (anonymous namespace)::fallback_free(void*)
+1476606852 00000145 T fclose
+1476544524 00000144 T __cxxabiv1::__class_type_info::search_below_dst(__cxxabiv1::__dynamic_cast_info*, void const*, int, bool) const
+1476581196 00000143 t (anonymous namespace)::itanium_demangle::QualType::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476428340 00000143 T tflite::MicroInterpreterGraph::NumSubgraphOutputs(int)
+1476598348 00000142 T _Atrealloc
+1476543648 00000141 T __cxxabiv1::__vmi_class_type_info::has_unambiguous_public_base(__cxxabiv1::__dynamic_cast_info*, void*, int) const
+1476586880 00000141 t uw_init_context_1
+1476553804 00000140 t (anonymous namespace)::itanium_demangle::PODSmallVector<(anonymous namespace)::itanium_demangle::PODSmallVector<(anonymous namespace)::itanium_demangle::Node*, 8u>*, 4u>::operator=((anonymous namespace)::itanium_demangle::PODSmallVector<(anonymous namespace)::itanium_demangle::PODSmallVector<(anonymous namespace)::itanium_demangle::Node*, 8u>*, 4u>&&)
+1476553944 00000140 t (anonymous namespace)::itanium_demangle::PODSmallVector<(anonymous namespace)::itanium_demangle::Node*, 8u>::operator=((anonymous namespace)::itanium_demangle::PODSmallVector<(anonymous namespace)::itanium_demangle::Node*, 8u>&&)
+1476555696 00000138 t (anonymous namespace)::itanium_demangle::ModuleName::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476568664 00000137 t (anonymous namespace)::itanium_demangle::EnclosingExpr::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476571920 00000135 t (anonymous namespace)::itanium_demangle::SyntheticTemplateParamName::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476407404 00000135 t tflite::(anonymous namespace)::EvalInt8(TfLiteContext*, TfLiteNode*)
+1476564980 00000135 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parsePointerToMemberConversionExpr((anonymous namespace)::itanium_demangle::Node::Prec)
+1476554464 00000135 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseCallOffset()
+1476545612 00000135 t __cxxabiv1::exception_spec_can_catch(long long, unsigned char const*, unsigned char, __cxxabiv1::__shim_type_info const*, void*, _Unwind_Exception*, unsigned int)
+1476600292 00000134 T _Dunscale
+1476588668 00000133 T _Unwind_Resume_or_Rethrow
+1476588188 00000132 T _Unwind_ForcedUnwind
+1476592000 00000132 T __deregister_frame_info_bases
+1476592260 00000132 T __deregister_frame
+1476430520 00000130 T tflite::MicroAllocator::AllocatePersistentTfLiteTensor(tflite::Model const*, tflite::SubgraphAllocations const*, int, int)
+1476555536 00000130 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseSourceName((anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::NameState*)
+1476623864 00000129 T xa_nn_circ_buf_nhwc_init
+1476405340 00000128 T tflite::ParseReshape(tflite::Operator const*, tflite::ErrorReporter*, tflite::BuiltinDataAllocator*, void**)
+1879397184 00000128 R pre_loop_sel_pattern
+1879397312 00000128 R post_loop_sel_pattern
+1879397056 00000128 R g_sel_pattern
+1476592132 00000128 T __deregister_frame_info
+1476547840 00000127 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::~AbstractManglingParser()
+1476631664 00000127 T __estimateDiv64To32
+1476574936 00000126 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseSimpleId()
+1476568040 00000125 t (anonymous namespace)::itanium_demangle::CallExpr::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476495720 00000124 T tflite::QuantizeMultiplier(double, int*, int*)
+1476588544 00000124 T _Unwind_Resume
+1476631232 00000123 T __vec_memcpy
+1476588064 00000123 t uw_install_context_1
+1476581768 00000122 t (anonymous namespace)::itanium_demangle::ArrayType::printRight((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476582616 00000122 t (anonymous namespace)::itanium_demangle::PointerType::printRight((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476428484 00000122 T tflite::MicroInterpreterGraph::GetSubgraphOutput(int, int)
+1476574600 00000121 t (anonymous namespace)::itanium_demangle::SizeofParamPackExpr::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476567904 00000121 t (anonymous namespace)::itanium_demangle::DeleteExpr::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476427212 00000120 T tflite::MicroInterpreterGraph::ResetSubgraphs()
+1476427332 00000120 T tflite::MicroInterpreterGraph::FreeSubgraphs()
+1476568816 00000120 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseIntegerLiteral((anonymous namespace)::itanium_demangle::StringView)
+1476574036 00000119 t (anonymous namespace)::itanium_demangle::InitListExpr::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476555172 00000118 t (anonymous namespace)::BumpPointerAllocator::allocate(unsigned int)
+1476562424 00000118 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::NewExpr, (anonymous namespace)::itanium_demangle::NodeArray&, (anonymous namespace)::itanium_demangle::Node*&, (anonymous namespace)::itanium_demangle::NodeArray&, bool&, bool, (anonymous namespace)::itanium_demangle::Node::Prec>((anonymous namespace)::itanium_demangle::NodeArray&, (anonymous namespace)::itanium_demangle::Node*&, (anonymous namespace)::itanium_demangle::NodeArray&, bool&, bool&&, (anonymous namespace)::itanium_demangle::Node::Prec&&)
+1476585536 00000118 T __extendsfdf2
+1476581636 00000117 t (anonymous namespace)::itanium_demangle::VectorType::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476543324 00000117 T __cxxabiv1::__class_type_info::can_catch(__cxxabiv1::__shim_type_info const*, void*&) const
+1476428220 00000117 T tflite::MicroInterpreterGraph::GetSubgraphInput(int, int)
+1476581424 00000115 t (anonymous namespace)::itanium_demangle::BitIntType::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476581068 00000114 t (anonymous namespace)::itanium_demangle::VendorExtQualType::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476576896 00000114 t (anonymous namespace)::itanium_demangle::ModuleEntity::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476495900 00000114 T tflite::PreprocessSoftmaxScaling(double, double, int, int*, int*)
+1476408568 00000114 t tflite::(anonymous namespace)::AverageEvalInt8(TfLiteContext*, TfLiteNode*)
+1476628752 00000114 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parsePositiveInteger(unsigned int*)
+1476443560 00000112 T tflite::ConvPrepareXtensa(TfLiteContext*, TfLiteNode*)
+1476628576 00000112 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseSeqId(unsigned int*)
+1879427224 00000112 D xtos_interrupt_table
+1879427336 00000112 D xtos_interrupt_mask_table
+1879049360 00000112 R __sinhf_tbl
+1476615268 00000111 T _xtos_syscall_handler
+1476555412 00000110 t (anonymous namespace)::itanium_demangle::CtorVtableSpecialName::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476406596 00000110 t tflite::(anonymous namespace)::EvalInt8(TfLiteContext*, TfLiteNode*)
+1476562064 00000110 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseOperatorEncoding()
+1476567264 00000109 t (anonymous namespace)::itanium_demangle::ArraySubscriptExpr::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476558700 00000109 t (anonymous namespace)::itanium_demangle::PODSmallVector<(anonymous namespace)::itanium_demangle::PODSmallVector<(anonymous namespace)::itanium_demangle::Node*, 8u>*, 4u>::push_back((anonymous namespace)::itanium_demangle::PODSmallVector<(anonymous namespace)::itanium_demangle::Node*, 8u>* const&)
+1476571808 00000109 t (anonymous namespace)::itanium_demangle::PODSmallVector<(anonymous namespace)::itanium_demangle::Node*, 8u>::push_back((anonymous namespace)::itanium_demangle::Node* const&)
+1476553568 00000109 t (anonymous namespace)::itanium_demangle::PODSmallVector<(anonymous namespace)::itanium_demangle::Node*, 32u>::push_back((anonymous namespace)::itanium_demangle::Node* const&)
+1476582156 00000108 t (anonymous namespace)::itanium_demangle::PointerToMemberType::printRight((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1879398864 00000108 r __switchjump_table_xp_temp_106_0
+1476597012 00000108 t fde_single_encoding_compare
+1476621568 00000107 T xa_nn_memcpy
+1476545144 00000106 T __cxa_begin_catch
+1476429608 00000105 T tflite::internal::InitializeTfLiteEvalTensorFromFlatbuffer(tflite::Tensor const&, flatbuffers::Vector<flatbuffers::Offset<tflite::Buffer>, unsigned int> const*, TfLiteEvalTensor*)
+1476628464 00000105 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseNumber(bool)
+1476405472 00000103 t TfLiteStatus tflite::(anonymous namespace)::FlatBufferIntVectorToArray<int>(int, flatbuffers::Vector<int, unsigned int> const*, int*, tflite::ErrorReporter*, char const*)
+1476632212 00000102 T _Dtest
+1476429784 00000101 T tflite::MicroAllocator::Create(unsigned char*, unsigned int, tflite::MemoryPlannerType)
+1476606320 00000101 T strlen
+1476496016 00000100 T tflite::CalculateInputRadius(int, int, int)
+1476574836 00000100 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseUnresolvedType()
+1476580448 00000099 t (anonymous namespace)::itanium_demangle::NoexceptSpec::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476628212 00000099 T __cxxabiv1::__class_type_info::process_static_type_above_dst(__cxxabiv1::__dynamic_cast_info*, void const*, void const*, int) const
+1476598572 00000099 T fputc
+1476606184 00000099 T exit
+1476577512 00000098 t (anonymous namespace)::itanium_demangle::FunctionEncoding::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476577204 00000096 t (anonymous namespace)::itanium_demangle::LocalName::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476575376 00000096 t (anonymous namespace)::itanium_demangle::QualifiedName::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476577024 00000096 t (anonymous namespace)::itanium_demangle::NestedName::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1879398716 00000096 r __switchjump_table_xp_temp_40_1
+1476565116 00000095 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::EnclosingExpr, char const (&) [10], (anonymous namespace)::itanium_demangle::Node*&, (anonymous namespace)::itanium_demangle::Node::Prec>(char const (&) [10], (anonymous namespace)::itanium_demangle::Node*&, (anonymous namespace)::itanium_demangle::Node::Prec&&)
+1476439632 00000094 W tflite::Offset(tflite::RuntimeShape const&, int, int, int, int)
+1476403996 00000094 T tflite::NumSubgraphOperators(tflite::Model const*, int)
+1476580560 00000093 t (anonymous namespace)::itanium_demangle::DynamicExceptionSpec::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476628060 00000093 T __cxxabiv1::__si_class_type_info::has_unambiguous_public_base(__cxxabiv1::__dynamic_cast_info*, void*, int) const
+1476618544 00000093 T tflite::ReverseSortInPlace(int*, int*, int)
+1476628884 00000093 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseCVQualifiers()
+1879383824 00000092 R vtable for tflite::SingleArenaBufferAllocator
+1476428848 00000092 T tflite::internal::GetFlatbufferTensorBuffer(tflite::Tensor const&, flatbuffers::Vector<flatbuffers::Offset<tflite::Buffer>, unsigned int> const*)
+1476437276 00000092 T tflite::ConvParamsQuantized(TfLiteConvParams const&, tflite::OpDataConv const&)
+1476562720 00000092 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::CastExpr, (anonymous namespace)::itanium_demangle::StringView&, (anonymous namespace)::itanium_demangle::Node*&, (anonymous namespace)::itanium_demangle::Node*&, (anonymous namespace)::itanium_demangle::Node::Prec>((anonymous namespace)::itanium_demangle::StringView&, (anonymous namespace)::itanium_demangle::Node*&, (anonymous namespace)::itanium_demangle::Node*&, (anonymous namespace)::itanium_demangle::Node::Prec&&)
+1476562332 00000092 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::MemberExpr, (anonymous namespace)::itanium_demangle::Node*&, (anonymous namespace)::itanium_demangle::StringView&, (anonymous namespace)::itanium_demangle::Node*&, (anonymous namespace)::itanium_demangle::Node::Prec>((anonymous namespace)::itanium_demangle::Node*&, (anonymous namespace)::itanium_demangle::StringView&, (anonymous namespace)::itanium_demangle::Node*&, (anonymous namespace)::itanium_demangle::Node::Prec&&)
+1476566584 00000092 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::BinaryExpr, (anonymous namespace)::itanium_demangle::Node*&, (anonymous namespace)::itanium_demangle::StringView&, (anonymous namespace)::itanium_demangle::Node*&, (anonymous namespace)::itanium_demangle::Node::Prec&>((anonymous namespace)::itanium_demangle::Node*&, (anonymous namespace)::itanium_demangle::StringView&, (anonymous namespace)::itanium_demangle::Node*&, (anonymous namespace)::itanium_demangle::Node::Prec&)
+1476604868 00000092 T _Locksyslock
+1476562240 00000091 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parsePrefixExpr((anonymous namespace)::itanium_demangle::StringView, (anonymous namespace)::itanium_demangle::Node::Prec)
+1476623772 00000091 T xa_nn_circ_buf_nhwc_getsize
+1476430176 00000090 T tflite::MicroAllocator::RequestScratchBufferInArena(unsigned int, int, int*)
+1476435444 00000089 T tflite::SingleArenaBufferAllocator::ResizeBuffer(unsigned char*, unsigned int, unsigned int)
+1476403604 00000088 W tflite::MicroInterpreter::outputs() const
+1476405576 00000088 T tflite::ParseSoftmax(tflite::Operator const*, tflite::ErrorReporter*, tflite::BuiltinDataAllocator*, void**)
+1476562544 00000088 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::CallExpr, (anonymous namespace)::itanium_demangle::Node*&, (anonymous namespace)::itanium_demangle::NodeArray, (anonymous namespace)::itanium_demangle::Node::Prec>((anonymous namespace)::itanium_demangle::Node*&, (anonymous namespace)::itanium_demangle::NodeArray&&, (anonymous namespace)::itanium_demangle::Node::Prec&&)
+1476562632 00000088 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::ConversionExpr, (anonymous namespace)::itanium_demangle::Node*&, (anonymous namespace)::itanium_demangle::NodeArray&, (anonymous namespace)::itanium_demangle::Node::Prec>((anonymous namespace)::itanium_demangle::Node*&, (anonymous namespace)::itanium_demangle::NodeArray&, (anonymous namespace)::itanium_demangle::Node::Prec&&)
+1476582276 00000087 t (anonymous namespace)::itanium_demangle::ElaboratedTypeSpefType::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476403440 00000086 W tflite::MicroInterpreter::inputs() const
+1476430088 00000086 T tflite::MicroAllocator::FinishModelAllocation(tflite::Model const*, tflite::SubgraphAllocations*, tflite::ScratchBufferHandle**)
+1476580208 00000086 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::ReferenceType, (anonymous namespace)::itanium_demangle::Node*&, (anonymous namespace)::itanium_demangle::ReferenceKind>((anonymous namespace)::itanium_demangle::Node*&, (anonymous namespace)::itanium_demangle::ReferenceKind&&)
+1476435212 00000085 T tflite::SingleArenaBufferAllocator::Create(unsigned char*, unsigned int)
+1476623500 00000085 T xa_nn_circ_buf_nchw_getsize
+1476576740 00000084 t (anonymous namespace)::itanium_demangle::StructuredBindingName::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476629404 00000084 t (anonymous namespace)::itanium_demangle::ParameterPack::hasRHSComponentSlow((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476629572 00000084 t (anonymous namespace)::itanium_demangle::ParameterPack::hasFunctionSlow((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476629488 00000084 t (anonymous namespace)::itanium_demangle::ParameterPack::hasArraySlow((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476576496 00000083 t (anonymous namespace)::itanium_demangle::ExpandedSpecialSubstitution::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476629836 00000083 t (anonymous namespace)::itanium_demangle::NameWithTemplateArgs::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476431992 00000083 t tflite::(anonymous namespace)::CreatePlan(tflite::MicroMemoryPlanner*, tflite::AllocationInfo const*, unsigned int)
+1476565592 00000083 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::EnclosingExpr, char const (&) [11], (anonymous namespace)::itanium_demangle::Node*&>(char const (&) [11], (anonymous namespace)::itanium_demangle::Node*&)
+1476597456 00000083 T __xtensa_nonlocal_goto
+1476599728 00000083 T snprintf
+1476607780 00000083 T _Fofree
+1476606768 00000082 t closeall
+1476428136 00000081 T tflite::MicroInterpreterGraph::NumSubgraphInputs(int)
+1476404144 00000081 T tflite::GetBuiltinCode(tflite::OperatorCode const*)
+1476542992 00000081 T round
+1476632760 00000081 T memset
+1476581904 00000080 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::PointerToMemberType, (anonymous namespace)::itanium_demangle::Node*&, (anonymous namespace)::itanium_demangle::Node*&>((anonymous namespace)::itanium_demangle::Node*&, (anonymous namespace)::itanium_demangle::Node*&)
+1879426876 00000080 D _Locale
+1879569408 00000080 b ebuf
+1476544908 00000079 T __cxxabiv1::__si_class_type_info::search_above_dst(__cxxabiv1::__dynamic_cast_info*, void const*, void const*, int, bool) const
+1476435088 00000079 T tflite::TfLiteEvalTensorByteLength(TfLiteEvalTensor const*, unsigned int*)
+1476621488 00000079 T tflite::tensor_utils::UnpackDenseInt4IntoInt8(signed char const*, int, signed char*)
+1476606056 00000079 T _Fail_s
+1476577860 00000078 t (anonymous namespace)::itanium_demangle::DotSuffix::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476568384 00000078 t (anonymous namespace)::itanium_demangle::ConditionalExpr::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476580976 00000078 t (anonymous namespace)::itanium_demangle::ObjCProtoName::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476430272 00000078 T tflite::MicroAllocator::FinishPrepareNodeAllocations(int)
+1476430652 00000078 T tflite::MicroAllocator::DeallocateTempTfLiteTensor(TfLiteTensor*)
+1476549924 00000078 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::SpecialName, char const (&) [34], (anonymous namespace)::itanium_demangle::Node*&>(char const (&) [34], (anonymous namespace)::itanium_demangle::Node*&)
+1476585332 00000078 T __fixdfsi
+1476598492 00000078 T atexit
+1476576404 00000077 t (anonymous namespace)::itanium_demangle::SpecialSubstitution::getBaseName() const
+1879383056 00000076 R vtable for tflite::MicroAllocator
+1476403528 00000076 W tflite::MicroInterpreter::outputs_size() const
+1476403364 00000076 W tflite::MicroInterpreter::inputs_size() const
+1476558884 00000076 t (anonymous namespace)::itanium_demangle::ForwardTemplateReference::hasRHSComponentSlow((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476559036 00000076 t (anonymous namespace)::itanium_demangle::ForwardTemplateReference::hasFunctionSlow((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476558960 00000076 t (anonymous namespace)::itanium_demangle::ForwardTemplateReference::hasArraySlow((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476618012 00000076 t tflite::(anonymous namespace)::CommitPlan(tflite::MicroMemoryPlanner*, unsigned char*, tflite::AllocationInfo const*, unsigned int)
+1476580296 00000076 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::PostfixQualifiedType, (anonymous namespace)::itanium_demangle::Node*&, char const (&) [9]>((anonymous namespace)::itanium_demangle::Node*&, char const (&) [9])
+1476580372 00000076 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::PostfixQualifiedType, (anonymous namespace)::itanium_demangle::Node*&, char const (&) [11]>((anonymous namespace)::itanium_demangle::Node*&, char const (&) [11])
+1476564904 00000076 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::InitListExpr, decltype(nullptr), (anonymous namespace)::itanium_demangle::NodeArray>(decltype(nullptr)&&, (anonymous namespace)::itanium_demangle::NodeArray&&)
+1476554236 00000076 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::SpecialName, char const (&) [9], (anonymous namespace)::itanium_demangle::Node*&>(char const (&) [9], (anonymous namespace)::itanium_demangle::Node*&)
+1476554676 00000076 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::SpecialName, char const (&) [41], (anonymous namespace)::itanium_demangle::Node*&>(char const (&) [41], (anonymous namespace)::itanium_demangle::Node*&)
+1476554084 00000076 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::SpecialName, char const (&) [31], (anonymous namespace)::itanium_demangle::Node*&>(char const (&) [31], (anonymous namespace)::itanium_demangle::Node*&)
+1476554600 00000076 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::SpecialName, char const (&) [27], (anonymous namespace)::itanium_demangle::Node*&>(char const (&) [27], (anonymous namespace)::itanium_demangle::Node*&)
+1476554904 00000076 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::SpecialName, char const (&) [25], (anonymous namespace)::itanium_demangle::Node*&>(char const (&) [25], (anonymous namespace)::itanium_demangle::Node*&)
+1476554828 00000076 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::SpecialName, char const (&) [22], (anonymous namespace)::itanium_demangle::Node*&>(char const (&) [22], (anonymous namespace)::itanium_demangle::Node*&)
+1476554388 00000076 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::SpecialName, char const (&) [19], (anonymous namespace)::itanium_demangle::Node*&>(char const (&) [19], (anonymous namespace)::itanium_demangle::Node*&)
+1476554752 00000076 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::SpecialName, char const (&) [18], (anonymous namespace)::itanium_demangle::Node*&>(char const (&) [18], (anonymous namespace)::itanium_demangle::Node*&)
+1476554312 00000076 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::SpecialName, char const (&) [14], (anonymous namespace)::itanium_demangle::Node*&>(char const (&) [14], (anonymous namespace)::itanium_demangle::Node*&)
+1476554160 00000076 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::SpecialName, char const (&) [12], (anonymous namespace)::itanium_demangle::Node*&>(char const (&) [12], (anonymous namespace)::itanium_demangle::Node*&)
+1476413644 00000076 T xa_nn_avgpool_init
+1879374544 00000076 r __switchjump_table_xp_temp_31_0
+1879048956 00000076 r __switchjump_table_xp_temp_0_1
+1476542884 00000076 T floor
+1476436476 00000075 T tflite::GreedyMemoryPlanner::GetMaximumMemorySize()
+1476580132 00000075 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::PointerType, (anonymous namespace)::itanium_demangle::Node*&>((anonymous namespace)::itanium_demangle::Node*&)
+1476546088 00000075 T abort_message
+1476607488 00000074 T _expand_file_table
+1476599940 00000073 T _Assert
+1476581552 00000072 t (anonymous namespace)::itanium_demangle::PixelVectorType::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476570800 00000072 t (anonymous namespace)::itanium_demangle::StringLiteral::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476579272 00000072 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::NameType, char const (&) [9]>(char const (&) [9])
+1476569008 00000072 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::NameType, char const (&) [8]>(char const (&) [8])
+1476565676 00000072 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::NameType, char const (&) [6]>(char const (&) [6])
+1476558812 00000072 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::NameType, char const (&) [5]>(char const (&) [5])
+1476557404 00000072 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::NameType, char const (&) [4]>(char const (&) [4])
+1476577132 00000072 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::NameType, char const (&) [15]>(char const (&) [15])
+1476579128 00000072 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::NameType, char const (&) [14]>(char const (&) [14])
+1476579056 00000072 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::NameType, char const (&) [12]>(char const (&) [12])
+1476579344 00000072 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::NameType, char const (&) [11]>(char const (&) [11])
+1476579200 00000072 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::NameType, char const (&) [10]>(char const (&) [10])
+1879426632 00000072 D _Stdout
+1879426560 00000072 D _Stdin
+1879426704 00000072 D _Stderr
+1476604780 00000072 T _Lockfilelock
+1476627988 00000071 T __cxxabiv1::__class_type_info::has_unambiguous_public_base(__cxxabiv1::__dynamic_cast_info*, void*, int) const
+1476435556 00000071 T tflite::SingleArenaBufferAllocator::AllocateTemp(unsigned int, unsigned int)
+1476545748 00000071 t __cxxabiv1::get_shim_type_info(unsigned long long, unsigned char const*, unsigned char, bool, _Unwind_Exception*, unsigned int)
+1476613996 00000071 T feraiseexcept
+1476568936 00000070 t (anonymous namespace)::itanium_demangle::Node* (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::make<(anonymous namespace)::itanium_demangle::BoolExpr, int>(int&&)
+1879381604 00000068 R vtable for tflite::MicroInterpreterContext
+1476572168 00000068 t (anonymous namespace)::itanium_demangle::TemplateTemplateParamDecl::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476577324 00000068 t (anonymous namespace)::itanium_demangle::TemplateArgs::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476429716 00000068 T tflite::MicroAllocator::Create(tflite::SingleArenaBufferAllocator*, tflite::MicroMemoryPlanner*)
+1879396088 00000068 r __switchjump_table_xp_temp_4_0
+1879396020 00000068 r __switchjump_table_xp_temp_2_0
+1879395764 00000068 r __switchjump_table_xp_temp_1_0
+1879395952 00000068 r __switchjump_table_xp_temp_1_0
+1879395884 00000068 r __switchjump_table_xp_temp_0_0
+1476435752 00000067 T tflite::LinearMemoryPlanner::AddBuffer(int, int, int)
+1476435876 00000067 T tflite::GreedyMemoryPlanner::Init(unsigned char*, int)
+1476553680 00000067 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::popTrailingNodeArray(unsigned int)
+1476597540 00000067 T __xtensa_sync_caches
+1879405628 00000066 r typeinfo name for (anonymous namespace)::itanium_demangle::PointerToMemberConversionExpr
+1476400208 00000066 W std::__1::__libcpp_tls_create(void**, void (*)(void*))
+1476405712 00000066 t tflite::(anonymous namespace)::Eval(TfLiteContext*, TfLiteNode*)
+1476426800 00000065 T tflite::MicroInterpreterGraph::MicroInterpreterGraph(TfLiteContext*, tflite::Model const*, tflite::MicroAllocator*, tflite::MicroResourceVariables*)
+1476426800 00000065 T tflite::MicroInterpreterGraph::MicroInterpreterGraph(TfLiteContext*, tflite::Model const*, tflite::MicroAllocator*, tflite::MicroResourceVariables*)
+1879381816 00000064 R vtable for tflite::MicroInterpreterGraph
+1879406784 00000064 r typeinfo name for (anonymous namespace)::itanium_demangle::ExpandedSpecialSubstitution
+1476618712 00000064 T tflite::GreedyMemoryPlanner::NextSimultaneouslyActiveBuffer(tflite::GreedyMemoryPlanner::ListEntry const*, int, int)
+1476403720 00000064 T tflite::MicroInterpreter::Invoke()
+1879569628 00000064 B _Wcstate
+1476614932 00000064 T _sbrk_r
+1879569496 00000064 B _Mbstate
+1879404076 00000063 r typeinfo name for (anonymous namespace)::itanium_demangle::SyntheticTemplateParamName
+1879404432 00000062 r typeinfo name for (anonymous namespace)::itanium_demangle::TemplateTemplateParamDecl
+1476616052 00000062 W tflite::Operator::builtin_options_as_CallOnceOptions() const
+1476616424 00000062 W tflite::Operator::builtin_options_as_SoftmaxOptions() const
+1476616360 00000062 W tflite::Operator::builtin_options_as_ReshapeOptions() const
+1476616488 00000062 W tflite::Operator::builtin_options_as_WhileOptions() const
+1476616236 00000062 W tflite::Operator::builtin_options_as_IfOptions() const
+1476562176 00000062 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::OperatorInfo::getSymbol() const
+1476435944 00000062 T tflite::GreedyMemoryPlanner::AddBuffer(int, int, int)
+1879404312 00000061 r typeinfo name for (anonymous namespace)::itanium_demangle::NonTypeTemplateParamDecl
+1879401436 00000061 r typeinfo name for (anonymous namespace)::itanium_demangle::ForwardTemplateReference
+1476432128 00000061 T tflite::EvalTensorBytes(TfLiteEvalTensor const*)
+1476605456 00000061 T _Wctomb
+1476629656 00000060 t (anonymous namespace)::itanium_demangle::ParameterPack::getSyntaxNode((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476555292 00000060 t (anonymous namespace)::itanium_demangle::SpecialName::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1879405192 00000059 r typeinfo name for (anonymous namespace)::itanium_demangle::ParameterPackExpansion
+1879409668 00000059 r typeinfo name for (anonymous namespace)::itanium_demangle::ElaboratedTypeSpefType
+1879406392 00000059 r typeinfo name for (anonymous namespace)::itanium_demangle::ConversionOperatorType
+1476616176 00000059 W tflite::Operator::builtin_options_as_DepthwiseConv2DOptions() const
+1476616300 00000059 W tflite::Operator::builtin_options_as_Pool2DOptions() const
+1476616116 00000059 W tflite::Operator::builtin_options_as_Conv2DOptions() const
+1476574764 00000059 t (anonymous namespace)::itanium_demangle::ThrowExpr::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476575996 00000059 t (anonymous namespace)::itanium_demangle::ConversionOperatorType::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476576140 00000059 t (anonymous namespace)::itanium_demangle::GlobalQualifiedName::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476576068 00000059 t (anonymous namespace)::itanium_demangle::LiteralOperator::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476581352 00000059 t (anonymous namespace)::itanium_demangle::BinaryFPType::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476631420 00000059 T __recipsf2
+1476613804 00000059 T _LXp_addx
+1879404196 00000058 r typeinfo name for (anonymous namespace)::itanium_demangle::TypeTemplateParamDecl
+1879404552 00000058 r typeinfo name for (anonymous namespace)::itanium_demangle::TemplateParamPackDecl
+1879407064 00000058 r typeinfo name for (anonymous namespace)::itanium_demangle::StructuredBindingName
+1879401116 00000058 r typeinfo name for (anonymous namespace)::itanium_demangle::CtorVtableSpecialName
+1476629716 00000058 t (anonymous namespace)::itanium_demangle::ParameterPack::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476629776 00000058 t (anonymous namespace)::itanium_demangle::ParameterPack::printRight((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476544988 00000058 T __cxxabiv1::__class_type_info::search_above_dst(__cxxabiv1::__dynamic_cast_info*, void const*, void const*, int, bool) const
+1476576620 00000058 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseBareSourceName()
+1879407936 00000057 r typeinfo name for (anonymous namespace)::itanium_demangle::TemplateArgumentPack
+1879409996 00000057 r typeinfo name for (anonymous namespace)::itanium_demangle::PostfixQualifiedType
+1879407820 00000057 r typeinfo name for (anonymous namespace)::itanium_demangle::NameWithTemplateArgs
+1879408484 00000057 r typeinfo name for (anonymous namespace)::itanium_demangle::DynamicExceptionSpec
+1476629028 00000057 t (anonymous namespace)::itanium_demangle::NonTypeTemplateParamDecl::printRight((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476559112 00000057 t (anonymous namespace)::itanium_demangle::ForwardTemplateReference::getSyntaxNode((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476567388 00000057 t (anonymous namespace)::itanium_demangle::MemberExpr::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476631360 00000057 T __vec_memset
+1879406728 00000056 r typeinfo name for (anonymous namespace)::itanium_demangle::SpecialSubstitution
+1879405860 00000056 r typeinfo name for (anonymous namespace)::itanium_demangle::SizeofParamPackExpr
+1879409556 00000056 r typeinfo name for (anonymous namespace)::itanium_demangle::PointerToMemberType
+1879406616 00000056 r typeinfo name for (anonymous namespace)::itanium_demangle::GlobalQualifiedName
+1879403524 00000056 r typeinfo name for (anonymous namespace)::itanium_demangle::FloatLiteralImpl<float>
+1879403748 00000056 r typeinfo name for (anonymous namespace)::itanium_demangle::FloatLiteralImpl<long double>
+1879403636 00000056 r typeinfo name for (anonymous namespace)::itanium_demangle::FloatLiteralImpl<double>
+1476628156 00000056 T __cxxabiv1::__base_class_type_info::has_unambiguous_public_base(__cxxabiv1::__dynamic_cast_info*, void*, int) const
+1476618656 00000056 T tflite::GreedyMemoryPlanner::AddBuffer(int, int, int, int)
+1879402372 00000055 r typeinfo name for (anonymous namespace)::itanium_demangle::ArraySubscriptExpr
+1476428768 00000055 T tflite::MicroResourceVariables::ResetAll()
+1476548020 00000055 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::consumeIf((anonymous namespace)::itanium_demangle::StringView)
+1476599468 00000055 T raise
+1476604724 00000055 T _Initlocks
+1476553748 00000054 t (anonymous namespace)::itanium_demangle::AbstractManglingParser<(anonymous namespace)::itanium_demangle::ManglingParser<(anonymous namespace)::DefaultAllocator>, (anonymous namespace)::DefaultAllocator>::parseEncoding()::SaveTemplateParams::~SaveTemplateParams()
+1879408816 00000054 r typeinfo name for (anonymous namespace)::itanium_demangle::VendorExtQualType
+1476628312 00000054 T __cxxabiv1::__base_class_type_info::search_above_dst(__cxxabiv1::__dynamic_cast_info*, void const*, void const*, int, bool) const
+1476438616 00000054 T tflite::micro::GetEvalInput(TfLiteContext const*, TfLiteNode const*, int)
+1476426744 00000054 T tflite::MicroInterpreterContext::set_external_context(void*)
+1476630324 00000054 T __floatsidf
+1879408160 00000053 r typeinfo name for (anonymous namespace)::itanium_demangle::FunctionEncoding
+1476545972 00000053 T std::terminate()
+1476401460 00000053 W tflite::MicroMutableOpResolver<5u>::FindOp(char const*) const
+1476572100 00000053 t (anonymous namespace)::itanium_demangle::NonTypeTemplateParamDecl::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476577444 00000053 t (anonymous namespace)::itanium_demangle::EnableIfAttr::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476495844 00000053 T tflite::QuantizeMultiplierGreaterThanOne(double, int*, int*)
+1476435300 00000053 T tflite::SingleArenaBufferAllocator::AllocatePersistentBuffer(unsigned int, unsigned int)
+1476545820 00000053 T __cxa_get_globals
+1879403968 00000052 r typeinfo name for (anonymous namespace)::itanium_demangle::UnnamedTypeName
+1879409240 00000052 r typeinfo name for (anonymous namespace)::itanium_demangle::PixelVectorType
+1879406508 00000052 r typeinfo name for (anonymous namespace)::itanium_demangle::LiteralOperator
+1879403000 00000052 r typeinfo name for (anonymous namespace)::itanium_demangle::ConditionalExpr
+1879404668 00000052 r typeinfo name for (anonymous namespace)::itanium_demangle::ClosureTypeName
+1879405412 00000052 r typeinfo name for (anonymous namespace)::itanium_demangle::BracedRangeExpr
+1476559172 00000052 t (anonymous namespace)::itanium_demangle::ForwardTemplateReference::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476559224 00000052 t (anonymous namespace)::itanium_demangle::ForwardTemplateReference::printRight((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476582752 00000052 t (anonymous namespace)::itanium_demangle::ObjCProtoName::isObjCObject() const
+1476437092 00000052 T tflite::GreedyMemoryPlanner::GetOffsetForBuffer(int, int*)
+1879398812 00000052 r __switchjump_table_xp_temp_97_0
+1879396208 00000052 r __switchjump_table_xp_temp_7_0
+1879396156 00000052 r __switchjump_table_xp_temp_5_0
+1879397760 00000052 r __switchjump_table_xp_temp_4_0
+1879049720 00000052 r __switchjump_table_xp_temp_24_1
+1879395832 00000052 r __switchjump_table_xp_temp_2_0
+1879049864 00000052 r __switchjump_table_xp_temp_11_0
+1476632864 00000052 T strchr
+1476600616 00000052 T _Getmem
+1879383192 00000051 r typeinfo name for tflite::(anonymous namespace)::MicroBuiltinDataAllocator
+1879403316 00000051 r typeinfo name for (anonymous namespace)::itanium_demangle::IntegerLiteral
+1879402892 00000051 r typeinfo name for (anonymous namespace)::itanium_demangle::ConversionExpr
+1476546332 00000051 T __cxxabiv1::__calloc_with_fallback(unsigned int, unsigned int)
+1476599856 00000051 T vfprintf
+1476585280 00000051 T __unorddf2
+1476632160 00000051 T strncmp
+1476607428 00000051 T _Atexit
+1879405752 00000050 r typeinfo name for (anonymous namespace)::itanium_demangle::SubobjectExpr
+1879403860 00000050 r typeinfo name for (anonymous namespace)::itanium_demangle::StringLiteral
+1879409888 00000050 r typeinfo name for (anonymous namespace)::itanium_demangle::ReferenceType
+1879406184 00000050 r typeinfo name for (anonymous namespace)::itanium_demangle::QualifiedName
+1879407604 00000050 r typeinfo name for (anonymous namespace)::itanium_demangle::ParameterPack
+1879408708 00000050 r typeinfo name for (anonymous namespace)::itanium_demangle::ObjCProtoName
+1879405972 00000050 r typeinfo name for (anonymous namespace)::itanium_demangle::NodeArrayNode
+1879404984 00000050 r typeinfo name for (anonymous namespace)::itanium_demangle::FunctionParam
+1879403208 00000050 r typeinfo name for (anonymous namespace)::itanium_demangle::EnclosingExpr
+1476628368 00000050 T __cxxabiv1::__base_class_type_info::search_below_dst(__cxxabiv1::__dynamic_cast_info*, void const*, int, bool) const
+1476618816 00000050 T tflite::ErrorReporter::Report(char const*, ...)
+1476591828 00000050 T __register_frame
+1476413048 00000050 T get_softmax_scratch_size
+1476604672 00000050 T _Clearlocks
+1476598296 00000050 T calloc
+1879407712 00000049 r typeinfo name for (anonymous namespace)::itanium_demangle::TemplateArgs
+1879408376 00000049 r typeinfo name for (anonymous namespace)::itanium_demangle::NoexceptSpec
+1879407288 00000049 r typeinfo name for (anonymous namespace)::itanium_demangle::ModuleEntity
+1879405520 00000049 r typeinfo name for (anonymous namespace)::itanium_demangle::InitListExpr
+1879408600 00000049 r typeinfo name for (anonymous namespace)::itanium_demangle::FunctionType
+1879408052 00000049 r typeinfo name for (anonymous namespace)::itanium_demangle::EnableIfAttr
+1879407180 00000049 r typeinfo name for (anonymous namespace)::itanium_demangle::CtorDtorName
+1879409028 00000049 r typeinfo name for (anonymous namespace)::itanium_demangle::BinaryFPType
+1476547968 00000049 t (anonymous namespace)::itanium_demangle::OutputBuffer::grow(unsigned int)
+1879384492 00000048 R vtable for tflite::LinearMemoryPlanner
+1879384692 00000048 R vtable for tflite::GreedyMemoryPlanner
+1879400964 00000048 r typeinfo name for (anonymous namespace)::itanium_demangle::SpecialName
+1879402268 00000048 r typeinfo name for (anonymous namespace)::itanium_demangle::PostfixExpr
+1879409784 00000048 r typeinfo name for (anonymous namespace)::itanium_demangle::PointerType
+1879404880 00000048 r typeinfo name for (anonymous namespace)::itanium_demangle::EnumLiteral
+1476576680 00000048 t (anonymous namespace)::itanium_demangle::AbiTagAttr::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476599680 00000048 T signal
+1879409348 00000047 r typeinfo name for (anonymous namespace)::itanium_demangle::VectorType
+1879402164 00000047 r typeinfo name for (anonymous namespace)::itanium_demangle::PrefixExpr
+1879407396 00000047 r typeinfo name for (anonymous namespace)::itanium_demangle::NestedName
+1879401332 00000047 r typeinfo name for (anonymous namespace)::itanium_demangle::ModuleName
+1879402484 00000047 r typeinfo name for (anonymous namespace)::itanium_demangle::MemberExpr
+1879404776 00000047 r typeinfo name for (anonymous namespace)::itanium_demangle::LambdaExpr
+1879402688 00000047 r typeinfo name for (anonymous namespace)::itanium_demangle::DeleteExpr
+1879405308 00000047 r typeinfo name for (anonymous namespace)::itanium_demangle::BracedExpr
+1879409136 00000047 r typeinfo name for (anonymous namespace)::itanium_demangle::BitIntType
+1879402060 00000047 r typeinfo name for (anonymous namespace)::itanium_demangle::BinaryExpr
+1879406960 00000047 r typeinfo name for (anonymous namespace)::itanium_demangle::AbiTagAttr
+1476576836 00000047 t (anonymous namespace)::itanium_demangle::CtorDtorName::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476437228 00000047 T tflite::GetTensorShape(TfLiteTensor const*)
+1476555364 00000047 t (anonymous namespace)::itanium_demangle::OutputBuffer::operator+=((anonymous namespace)::itanium_demangle::StringView)
+1476611772 00000047 T _Feraise
+1476629088 00000046 t (anonymous namespace)::itanium_demangle::TemplateTemplateParamDecl::printRight((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476628980 00000046 t (anonymous namespace)::itanium_demangle::TypeTemplateParamDecl::printRight((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476438712 00000046 T tflite::micro::GetTensorShape(TfLiteEvalTensor const*)
+1476633280 00000046 T strnlen_s
+1476613948 00000046 T _Fesetstat
+1476400064 00000046 t __do_global_dtors_aux
+1879406080 00000045 r typeinfo name for (anonymous namespace)::itanium_demangle::ThrowExpr
+1879407500 00000045 r typeinfo name for (anonymous namespace)::itanium_demangle::LocalName
+1879408272 00000045 r typeinfo name for (anonymous namespace)::itanium_demangle::DotSuffix
+1879409452 00000045 r typeinfo name for (anonymous namespace)::itanium_demangle::ArrayType
+1476572292 00000045 t (anonymous namespace)::itanium_demangle::ClosureTypeName::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476572524 00000045 t (anonymous namespace)::itanium_demangle::LambdaExpr::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476435356 00000045 T tflite::SingleArenaBufferAllocator::AllocateResizableBuffer(unsigned int, unsigned int)
+1476403832 00000045 T tflite::MicroInterpreter::output(unsigned int)
+1476403784 00000045 T tflite::MicroInterpreter::input(unsigned int)
+1476403948 00000045 T MicroPrintf(char const*, ...)
+1476591952 00000045 T __register_frame_table
+1476614260 00000045 T fesetenv
+1879406036 00000044 r vtable for (anonymous namespace)::itanium_demangle::ThrowExpr
+1879407456 00000044 r vtable for (anonymous namespace)::itanium_demangle::LocalName
+1879408228 00000044 r vtable for (anonymous namespace)::itanium_demangle::DotSuffix
+1879409408 00000044 r vtable for (anonymous namespace)::itanium_demangle::ArrayType
+1879408884 00000044 r vtable for (anonymous namespace)::itanium_demangle::QualType
+1879401188 00000044 r vtable for (anonymous namespace)::itanium_demangle::NameType
+1879405048 00000044 r vtable for (anonymous namespace)::itanium_demangle::FoldExpr
+1879406248 00000044 r vtable for (anonymous namespace)::itanium_demangle::DtorName
+1879403064 00000044 r vtable for (anonymous namespace)::itanium_demangle::CastExpr
+1879402748 00000044 r vtable for (anonymous namespace)::itanium_demangle::CallExpr
+1879403380 00000044 r vtable for (anonymous namespace)::itanium_demangle::BoolExpr
+1879402544 00000044 r vtable for (anonymous namespace)::itanium_demangle::NewExpr
+1879405584 00000044 r vtable for (anonymous namespace)::itanium_demangle::PointerToMemberConversionExpr
+1879406872 00000044 r vtable for (anonymous namespace)::itanium_demangle::ExpandedSpecialSubstitution
+1879404032 00000044 r vtable for (anonymous namespace)::itanium_demangle::SyntheticTemplateParamName
+1879404388 00000044 r vtable for (anonymous namespace)::itanium_demangle::TemplateTemplateParamDecl
+1879404268 00000044 r vtable for (anonymous namespace)::itanium_demangle::NonTypeTemplateParamDecl
+1879401392 00000044 r vtable for (anonymous namespace)::itanium_demangle::ForwardTemplateReference
+1879405148 00000044 r vtable for (anonymous namespace)::itanium_demangle::ParameterPackExpansion
+1879409624 00000044 r vtable for (anonymous namespace)::itanium_demangle::ElaboratedTypeSpefType
+1879406348 00000044 r vtable for (anonymous namespace)::itanium_demangle::ConversionOperatorType
+1879404152 00000044 r vtable for (anonymous namespace)::itanium_demangle::TypeTemplateParamDecl
+1879404508 00000044 r vtable for (anonymous namespace)::itanium_demangle::TemplateParamPackDecl
+1879407020 00000044 r vtable for (anonymous namespace)::itanium_demangle::StructuredBindingName
+1879401072 00000044 r vtable for (anonymous namespace)::itanium_demangle::CtorVtableSpecialName
+1879407892 00000044 r vtable for (anonymous namespace)::itanium_demangle::TemplateArgumentPack
+1879409952 00000044 r vtable for (anonymous namespace)::itanium_demangle::PostfixQualifiedType
+1879407776 00000044 r vtable for (anonymous namespace)::itanium_demangle::NameWithTemplateArgs
+1879408440 00000044 r vtable for (anonymous namespace)::itanium_demangle::DynamicExceptionSpec
+1879406684 00000044 r vtable for (anonymous namespace)::itanium_demangle::SpecialSubstitution
+1879405816 00000044 r vtable for (anonymous namespace)::itanium_demangle::SizeofParamPackExpr
+1879409512 00000044 r vtable for (anonymous namespace)::itanium_demangle::PointerToMemberType
+1879406572 00000044 r vtable for (anonymous namespace)::itanium_demangle::GlobalQualifiedName
+1879402328 00000044 r vtable for (anonymous namespace)::itanium_demangle::ArraySubscriptExpr
+1879408772 00000044 r vtable for (anonymous namespace)::itanium_demangle::VendorExtQualType
+1879408116 00000044 r vtable for (anonymous namespace)::itanium_demangle::FunctionEncoding
+1879403480 00000044 r vtable for (anonymous namespace)::itanium_demangle::FloatLiteralImpl<float>
+1879403704 00000044 r vtable for (anonymous namespace)::itanium_demangle::FloatLiteralImpl<long double>
+1879403592 00000044 r vtable for (anonymous namespace)::itanium_demangle::FloatLiteralImpl<double>
+1879403924 00000044 r vtable for (anonymous namespace)::itanium_demangle::UnnamedTypeName
+1879409196 00000044 r vtable for (anonymous namespace)::itanium_demangle::PixelVectorType
+1879406464 00000044 r vtable for (anonymous namespace)::itanium_demangle::LiteralOperator
+1879402956 00000044 r vtable for (anonymous namespace)::itanium_demangle::ConditionalExpr
+1879404624 00000044 r vtable for (anonymous namespace)::itanium_demangle::ClosureTypeName
+1879405368 00000044 r vtable for (anonymous namespace)::itanium_demangle::BracedRangeExpr
+1879403272 00000044 r vtable for (anonymous namespace)::itanium_demangle::IntegerLiteral
+1879402848 00000044 r vtable for (anonymous namespace)::itanium_demangle::ConversionExpr
+1879405708 00000044 r vtable for (anonymous namespace)::itanium_demangle::SubobjectExpr
+1879403816 00000044 r vtable for (anonymous namespace)::itanium_demangle::StringLiteral
+1879409844 00000044 r vtable for (anonymous namespace)::itanium_demangle::ReferenceType
+1879406140 00000044 r vtable for (anonymous namespace)::itanium_demangle::QualifiedName
+1879407560 00000044 r vtable for (anonymous namespace)::itanium_demangle::ParameterPack
+1879408664 00000044 r vtable for (anonymous namespace)::itanium_demangle::ObjCProtoName
+1879405928 00000044 r vtable for (anonymous namespace)::itanium_demangle::NodeArrayNode
+1879404940 00000044 r vtable for (anonymous namespace)::itanium_demangle::FunctionParam
+1879403164 00000044 r vtable for (anonymous namespace)::itanium_demangle::EnclosingExpr
+1879407668 00000044 r vtable for (anonymous namespace)::itanium_demangle::TemplateArgs
+1879408332 00000044 r vtable for (anonymous namespace)::itanium_demangle::NoexceptSpec
+1879407244 00000044 r vtable for (anonymous namespace)::itanium_demangle::ModuleEntity
+1879405476 00000044 r vtable for (anonymous namespace)::itanium_demangle::InitListExpr
+1879408556 00000044 r vtable for (anonymous namespace)::itanium_demangle::FunctionType
+1879408008 00000044 r vtable for (anonymous namespace)::itanium_demangle::EnableIfAttr
+1879407136 00000044 r vtable for (anonymous namespace)::itanium_demangle::CtorDtorName
+1879408984 00000044 r vtable for (anonymous namespace)::itanium_demangle::BinaryFPType
+1879400920 00000044 r vtable for (anonymous namespace)::itanium_demangle::SpecialName
+1879402224 00000044 r vtable for (anonymous namespace)::itanium_demangle::PostfixExpr
+1879409740 00000044 r vtable for (anonymous namespace)::itanium_demangle::PointerType
+1879404836 00000044 r vtable for (anonymous namespace)::itanium_demangle::EnumLiteral
+1879409304 00000044 r vtable for (anonymous namespace)::itanium_demangle::VectorType
+1879402120 00000044 r vtable for (anonymous namespace)::itanium_demangle::PrefixExpr
+1879407352 00000044 r vtable for (anonymous namespace)::itanium_demangle::NestedName
+1879401288 00000044 r vtable for (anonymous namespace)::itanium_demangle::ModuleName
+1879402440 00000044 r vtable for (anonymous namespace)::itanium_demangle::MemberExpr
+1879404732 00000044 r vtable for (anonymous namespace)::itanium_demangle::LambdaExpr
+1879402644 00000044 r vtable for (anonymous namespace)::itanium_demangle::DeleteExpr
+1879405264 00000044 r vtable for (anonymous namespace)::itanium_demangle::BracedExpr
+1879409092 00000044 r vtable for (anonymous namespace)::itanium_demangle::BitIntType
+1879402016 00000044 r vtable for (anonymous namespace)::itanium_demangle::BinaryExpr
+1879406916 00000044 r vtable for (anonymous namespace)::itanium_demangle::AbiTagAttr
+1879408928 00000044 r typeinfo name for (anonymous namespace)::itanium_demangle::QualType
+1879401232 00000044 r typeinfo name for (anonymous namespace)::itanium_demangle::NameType
+1879405092 00000044 r typeinfo name for (anonymous namespace)::itanium_demangle::FoldExpr
+1879406292 00000044 r typeinfo name for (anonymous namespace)::itanium_demangle::DtorName
+1879403108 00000044 r typeinfo name for (anonymous namespace)::itanium_demangle::CastExpr
+1879402792 00000044 r typeinfo name for (anonymous namespace)::itanium_demangle::CallExpr
+1879403424 00000044 r typeinfo name for (anonymous namespace)::itanium_demangle::BoolExpr
+1476615808 00000044 W tflite::MicroMutableOpResolver<5u>::FindOp(tflite::BuiltinOperator) const
+1476435820 00000044 T tflite::LinearMemoryPlanner::GetOffsetForBuffer(int, int*)
+1476605620 00000044 T __atomic_compare_exchange_weak_4
+1476605576 00000044 T __atomic_compare_exchange_strong_4
+1476605664 00000044 T __atomic_compare_exchange_4
+1879402588 00000043 r typeinfo name for (anonymous namespace)::itanium_demangle::NewExpr
+1476426596 00000043 T tflite::MicroInterpreterContext::RequestScratchBufferInArena(unsigned int, int*)
+1476403904 00000043 t (anonymous namespace)::VDebugLog(char const*, ...)
+1476618928 00000043 T xa_nn_conv2d_dilation_init_state
+1476591784 00000043 T __register_frame_info
+1476401520 00000042 W tflite::MicroMutableOpResolver<5u>::GetOpDataParser(tflite::BuiltinOperator) const
+1476432076 00000042 T tflite::MicroAllocator::AllocateScratchBufferHandles(tflite::ScratchBufferHandle**, unsigned int)
+1610613056 00000042 T _WindowUnderflow12
+1610612992 00000042 T _WindowOverflow12
+1476599812 00000042 t prout
+1879384411 00000041 V typeinfo name for tflite::INonPersistentBufferAllocator
+1476435168 00000041 T tflite::MicroContextReportOpError(TfLiteContext*, char const*, ...)
+1476615992 00000041 T tflite::NumSubgraphOperators(tflite::SubGraph const*)
+1879397668 00000040 R vtable for __cxxabiv1::__vmi_class_type_info
+1879397576 00000040 R vtable for __cxxabiv1::__si_class_type_info
+1879397536 00000040 R vtable for __cxxabiv1::__class_type_info
+1879051432 00000040 V typeinfo name for tflite::MicroMutableOpResolver<5u>
+1879401012 00000040 r typeinfo name for (anonymous namespace)::itanium_demangle::Node
+1476629988 00000040 t (anonymous namespace)::itanium_demangle::QualType::hasRHSComponentSlow((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476630068 00000040 t (anonymous namespace)::itanium_demangle::QualType::hasFunctionSlow((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476630028 00000040 t (anonymous namespace)::itanium_demangle::QualType::hasArraySlow((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476630164 00000040 t (anonymous namespace)::itanium_demangle::PointerToMemberType::hasRHSComponentSlow((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476630244 00000040 t (anonymous namespace)::itanium_demangle::ReferenceType::hasRHSComponentSlow((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476630204 00000040 t (anonymous namespace)::itanium_demangle::PointerType::hasRHSComponentSlow((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476618264 00000040 T tflite::MicroContext::AllocateTempOutputTensor(TfLiteNode const*, int)
+1476618224 00000040 T tflite::MicroContext::AllocateTempInputTensor(TfLiteNode const*, int)
+1476435404 00000039 T tflite::SingleArenaBufferAllocator::ReserveNonPersistentOverlayMemory(unsigned int, unsigned int)
+1476591744 00000039 T __register_frame_info_bases
+1476611648 00000039 T _Mbtowc
+1879384373 00000038 R typeinfo name for tflite::SingleArenaBufferAllocator
+1879383776 00000038 V typeinfo name for tflite::IPersistentBufferAllocator
+1879397708 00000038 R typeinfo name for __cxxabiv1::__vmi_class_type_info
+1476400312 00000038 W std::__1::__libcpp_tls_set(void*, void*)
+1476567212 00000038 t (anonymous namespace)::itanium_demangle::PostfixExpr::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476567160 00000038 t (anonymous namespace)::itanium_demangle::PrefixExpr::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476438672 00000038 T tflite::micro::GetEvalOutput(TfLiteContext const*, TfLiteNode const*, int)
+1476426672 00000038 T tflite::MicroInterpreterContext::AllocateTempBuffer(unsigned int, unsigned int)
+1476434888 00000038 T tflite::TfLiteTypeSizeOf(TfLiteType, unsigned int*)
+1476545104 00000038 T __cxxabiv1::__isOurExceptionClass(_Unwind_Exception const*)
+1476400164 00000038 t __dtor__ZZ28__external_threading_tls_getE10__tls_vals
+1879397616 00000037 R typeinfo name for __cxxabiv1::__si_class_type_info
+1476546048 00000037 T std::__terminate(void (*)())
+1476571756 00000037 t (anonymous namespace)::itanium_demangle::UnnamedTypeName::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476545252 00000037 t __cxxabiv1::set_registers(_Unwind_Exception*, _Unwind_Context*, __cxxabiv1::(anonymous namespace)::scan_results const&)
+1476576368 00000036 t (anonymous namespace)::itanium_demangle::SpecialSubstitution::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1879381735 00000035 R typeinfo name for tflite::MicroInterpreterContext
+1476400276 00000035 W std::__1::__libcpp_tls_get(void*)
+1476435660 00000035 T tflite::SingleArenaBufferAllocator::ResetTempAllocations()
+1476443704 00000035 T tflite::DepthwiseConvPrepareXtensa(TfLiteContext*, TfLiteNode*)
+1476615664 00000035 T xthal_window_spill
+1476632928 00000035 T strrchr
+1476591916 00000035 T __register_frame_info_table
+1476545876 00000035 T __cxa_get_globals_fast
+1879397488 00000034 R typeinfo name for __cxxabiv1::__class_type_info
+1476617656 00000034 T tflite::MicroInterpreterContext::AllocateTempTfLiteTensor(int)
+1476426560 00000034 T tflite::MicroInterpreterContext::AllocatePersistentBuffer(unsigned int)
+1476401916 00000034 T tflite::MicroInterpreter::~MicroInterpreter()
+1476401916 00000034 T tflite::MicroInterpreter::~MicroInterpreter()
+1476546532 00000034 T __cxxabiv1::__free_with_fallback(void*)
+1476631792 00000034 T memchr
+1879427504 00000034 b dwarf_reg_size_table
+1476605932 00000034 T __atomic_thread_fence
+1476605848 00000034 T __atomic_fetch_nand_4
+1879382036 00000033 R typeinfo name for tflite::MicroInterpreterGraph
+1879397440 00000033 R typeinfo name for __cxxabiv1::__shim_type_info
+1879049088 00000033 r zeroes
+1879049040 00000033 r spaces
+1476591880 00000033 T __register_frame_info_table_bases
+1879383243 00000032 V typeinfo name for tflite::BuiltinDataAllocator
+1879384460 00000032 R typeinfo for tflite::SingleArenaBufferAllocator
+1476435628 00000032 T tflite::SingleArenaBufferAllocator::IsAllTempDeallocated()
+1476604960 00000032 T _Unlocksyslock
+1879049472 00000032 r __switchjump_table_xp_temp_13_0
+1879426784 00000032 d __Files
+1879410160 00000032 r _Dint.mask
+1879384610 00000031 R typeinfo name for tflite::LinearMemoryPlanner
+1879384865 00000031 R typeinfo name for tflite::GreedyMemoryPlanner
+1476570156 00000031 t (anonymous namespace)::itanium_demangle::BoolExpr::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476426528 00000031 T tflite::MicroInterpreterContext::MicroInterpreterContext(tflite::MicroAllocator*, tflite::Model const*, tflite::MicroInterpreterGraph*)
+1476426528 00000031 T tflite::MicroInterpreterContext::MicroInterpreterContext(tflite::MicroAllocator*, tflite::Model const*, tflite::MicroInterpreterGraph*)
+1476618148 00000031 T tflite::AllocationInfoBuilder::FreeAllocationInfo()
+1476400132 00000031 W __external_threading_tls_get
+1879384641 00000030 V typeinfo name for tflite::MicroMemoryPlanner
+1879384928 00000030 R typeinfo name for tflite::MicroErrorReporter
+1476583476 00000030 t (anonymous namespace)::itanium_demangle::PostfixQualifiedType::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476618336 00000030 T tflite::SingleArenaBufferAllocator::DeallocateResizableBuffer(unsigned char*)
+1476426712 00000030 T tflite::MicroInterpreterContext::DeallocateTempBuffer(unsigned char*)
+1476443672 00000030 T tflite::DepthwiseConvInitXtensa(TfLiteContext*, char const*, unsigned int)
+1476408508 00000030 T tflite::XtensaPoolingInit(TfLiteContext*, char const*, unsigned int)
+1476408684 00000030 T tflite::XtensaInitSoftmax(TfLiteContext*, char const*, unsigned int)
+1476443528 00000030 T tflite::ConvInitXtensa(TfLiteContext*, char const*, unsigned int)
+1476545940 00000030 t __cxxabiv1::(anonymous namespace)::destruct_(void*)
+1610612752 00000030 T _xtos_alloca_handler
+1610612816 00000030 t _xtos_alloca_2
+1610612928 00000030 T _WindowUnderflow8
+1610612864 00000030 T _WindowOverflow8
+1476605988 00000030 T set_constraint_handler_s
+1476607396 00000030 T remove
+1476599908 00000030 t prout
+1476542960 00000030 T frexp
+1476615700 00000030 t __do_global_ctors_aux
+1476545072 00000029 W std::__1::__threading_tls::~__threading_tls()
+1476435696 00000029 T tflite::SingleArenaBufferAllocator::GetAvailableMemory(unsigned int) const
+1476575952 00000029 t (anonymous namespace)::itanium_demangle::DtorName::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476572248 00000029 t (anonymous namespace)::itanium_demangle::TemplateParamPackDecl::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476580668 00000029 t (anonymous namespace)::itanium_demangle::FunctionType::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476426640 00000029 T tflite::MicroInterpreterContext::GetScratchBuffer(int)
+1476437144 00000029 T tflite::GetMicroErrorReporter()
+1476605884 00000029 T _Atomic_flag_test_and_set
+1476605544 00000029 T __atomic_exchange_4
+1879051404 00000028 V vtable for tflite::MicroMutableOpResolver<5u>
+1476572768 00000028 t (anonymous namespace)::itanium_demangle::FunctionParam::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476605820 00000028 T __atomic_fetch_xor_4
+1476605736 00000028 T __atomic_fetch_sub_4
+1476605792 00000028 T __atomic_fetch_or_4
+1476605764 00000028 T __atomic_fetch_and_4
+1476605708 00000028 T __atomic_fetch_add_4
+1476630284 00000028 T __ashldi3
+1879051472 00000027 V typeinfo name for tflite::MicroOpResolver
+1476404116 00000027 T tflite::CallBuiltinParseFunction(TfLiteStatus (*)(tflite::Operator const*, tflite::ErrorReporter*, tflite::BuiltinDataAllocator*, void**), tflite::Operator const*, tflite::BuiltinDataAllocator*, void**)
+1476604992 00000027 T _Vacopy
+1476606156 00000027 T __clibrary_init
+1879383132 00000026 R typeinfo name for tflite::MicroAllocator
+1476576580 00000026 t (anonymous namespace)::itanium_demangle::ExpandedSpecialSubstitution::getBaseName() const
+1476407376 00000026 T tflite::Register_DEPTHWISE_CONV_2D_INT8()
+1476408540 00000026 T tflite::Register_AVERAGE_POOL_2D_INT8()
+1476406568 00000026 T tflite::Register_SOFTMAX_INT8()
+1476407152 00000026 T tflite::Register_CONV_2D_INT8()
+1476405664 00000026 T tflite::Register_RESHAPE()
+1476403692 00000026 T tflite::MicroInterpreter::Reset()
+1476611744 00000026 T write
+1476437200 00000026 T TfLiteTypeGetName
+1476596984 00000026 t fde_unencoded_compare
+1476606020 00000026 T abort_handler_s
+1879384958 00000025 V typeinfo name for tflite::ErrorReporter
+1476617708 00000025 T tflite::MicroInterpreterContext::GetEvalTensor(int)
+1476617820 00000025 T tflite::MicroInterpreterGraph::NumSubgraphs()
+1476545912 00000025 t __cxxabiv1::(anonymous namespace)::construct_()
+1879383168 00000024 r vtable for tflite::(anonymous namespace)::MicroBuiltinDataAllocator
+1879381770 00000024 V typeinfo name for tflite::MicroContext
+1476618904 00000024 T tflite::micro::RuntimePaddingType(TfLitePadding)
+1476435728 00000024 T tflite::LinearMemoryPlanner::LinearMemoryPlanner()
+1476435728 00000024 T tflite::LinearMemoryPlanner::LinearMemoryPlanner()
+1476437176 00000024 T tflite::MicroErrorReporter::Report(char const*, __va_list_tag)
+1879383536 00000024 r tflite::(anonymous namespace)::kOfflineMemAllocMetadata
+1476545292 00000024 t __cxxabiv1::call_terminate(bool, _Unwind_Exception*)
+1476633452 00000024 T _xtos_return_from_exc
+1879426848 00000024 d tenth
+1879049792 00000024 r __switchjump_table_xp_temp_9_0
+1879049696 00000024 r __switchjump_table_xp_temp_24_0
+1879398972 00000024 r __switchjump_table_xp_temp_226_0
+1879050084 00000024 r __switchjump_table_xp_temp_17_0
+1879050060 00000024 r __switchjump_table_xp_temp_15_1
+1879050036 00000024 r __switchjump_table_xp_temp_15_0
+1879050012 00000024 r __switchjump_table_xp_temp_14_1
+1879049988 00000024 r __switchjump_table_xp_temp_14_0
+1879049964 00000024 r __switchjump_table_xp_temp_13_0
+1879049940 00000024 r __switchjump_table_xp_temp_12_1
+1879049916 00000024 r __switchjump_table_xp_temp_12_0
+1879049840 00000024 r __switchjump_table_xp_temp_10_1
+1879049816 00000024 r __switchjump_table_xp_temp_10_0
+1879410208 00000024 r _Printf.fbit
+1476606284 00000024 T _init_reent_bss
+1879427456 00000024 d frame_dummy.object
+1476618404 00000023 T tflite::SingleArenaBufferAllocator::GetNonPersistentUsedBytes() const
+1476618880 00000023 T tflite::micro::RegisterOp(void* (*)(TfLiteContext*, char const*, unsigned int), TfLiteStatus (*)(TfLiteContext*, TfLiteNode*), TfLiteStatus (*)(TfLiteContext*, TfLiteNode*), void (*)(TfLiteContext*, void*), void (*)(TfLiteContext*, void*))
+1476404092 00000023 T tflite::ConvertTensorType(tflite::TensorType, TfLiteType*)
+1476403880 00000023 T VMicroPrintf(char const*, __va_list_tag)
+1476633488 00000023 T xthal_dcache_all_writeback
+1476586548 00000023 T _Unwind_FindEnclosingFunction
+1476606744 00000023 T _closeallreg
+1879382069 00000022 V typeinfo name for tflite::MicroGraph
+1476615756 00000022 W std::__1::__libcpp_execute_once(void**, void (*)())
+1476615908 00000022 W tflite::MicroContextRequestScratchBufferInArena(TfLiteContext*, unsigned int, int*)
+1476617988 00000022 T tflite::MicroAllocator::AllocatePersistentTfLiteTensorInternal()
+1476617884 00000022 T tflite::MicroAllocator::AllocatePersistentBuffer(unsigned int)
+1476617908 00000022 T tflite::MicroAllocator::AllocateTempBuffer(unsigned int, unsigned int)
+1476618100 00000022 t tflite::(anonymous namespace)::MicroBuiltinDataAllocator::Allocate(unsigned int, unsigned int)
+1476604648 00000022 T _Getpmbstate
+1476600016 00000022 T _Getpctype
+1476604624 00000022 T _Getmbcurmax
+1476428824 00000022 T DebugLog
+1476618368 00000021 T tflite::SingleArenaBufferAllocator::DeallocateTemp(unsigned char*)
+1476613924 00000021 T _Fegetstat
+1879384908 00000020 R vtable for tflite::MicroErrorReporter
+1476435536 00000020 T non-virtual thunk to tflite::SingleArenaBufferAllocator::AllocatePersistentBuffer(unsigned int, unsigned int)
+1476629920 00000020 t (anonymous namespace)::itanium_demangle::NameWithTemplateArgs::getBaseName() const
+1476629180 00000020 t (anonymous namespace)::itanium_demangle::GlobalQualifiedName::getBaseName() const
+1476629160 00000020 t (anonymous namespace)::itanium_demangle::QualifiedName::getBaseName() const
+1476629200 00000020 t (anonymous namespace)::itanium_demangle::ModuleEntity::getBaseName() const
+1476629220 00000020 t (anonymous namespace)::itanium_demangle::NestedName::getBaseName() const
+1476615952 00000020 W tflite::MicroContextAllocatePersistentBuffer(TfLiteContext*, unsigned int)
+1476615972 00000020 W tflite::MicroContextGetScratchBuffer(TfLiteContext*, int)
+1476615888 00000020 W tflite::MicroContextGetEvalTensor(TfLiteContext const*, int)
+1476615868 00000020 W tflite::MicroContextGetTensor(TfLiteContext const*, int)
+1476615780 00000020 W _xt_atomic_compare_exchange_4
+1879398464 00000020 r __switchjump_table_xp_temp_37_0
+1476613904 00000020 T _LDscalex
+1476613884 00000020 T _LDscale
+1476614328 00000020 T _Dscale
+1476404396 00000019 t tflite::(anonymous namespace)::CheckParsePointerParams(tflite::Operator const*, tflite::ErrorReporter*, tflite::BuiltinDataAllocator*, void**)
+1476611724 00000019 T unlink
+1476606136 00000019 T sbrk
+1476400112 00000019 t frame_dummy
+1476611688 00000019 T close
+1476546028 00000018 T std::get_terminate()
+1476572068 00000018 t (anonymous namespace)::itanium_demangle::TypeTemplateParamDecl::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476615932 00000018 W tflite::MicroContextGetExternalContext(TfLiteContext*, TfLiteExternalContextType)
+1476617948 00000018 T tflite::MicroAllocator::ResetTempAllocations()
+1476617968 00000018 T tflite::MicroAllocator::IsAllTempDeallocated()
+1476405692 00000018 t tflite::(anonymous namespace)::Prepare(TfLiteContext*, TfLiteNode*)
+1476633408 00000018 T _write_r
+1476614996 00000018 T _UserExceptionFromVector
+1476588804 00000018 T _Unwind_DeleteException
+1476633388 00000018 T _unlink_r
+1476614308 00000018 T localeconv
+1476609964 00000018 T _LDunscale
+1476633328 00000018 T ldiv
+1476613864 00000018 T _LDint
+1476633348 00000018 T div
+1476633368 00000018 T _close_r
+1476543304 00000017 T __cxxabiv1::__vmi_class_type_info::~__vmi_class_type_info()
+1476543284 00000017 T __cxxabiv1::__si_class_type_info::~__si_class_type_info()
+1476543264 00000017 T __cxxabiv1::__class_type_info::~__class_type_info()
+1879410432 00000017 r udigs
+1879410464 00000017 r ldigs
+1476630148 00000016 t (anonymous namespace)::itanium_demangle::ArrayType::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476630108 00000016 t (anonymous namespace)::itanium_demangle::QualType::printRight((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476555668 00000016 t (anonymous namespace)::itanium_demangle::NameType::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476629136 00000016 t (anonymous namespace)::itanium_demangle::TemplateParamPackDecl::printRight((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476617692 00000016 T tflite::MicroInterpreterContext::DeallocateTempTfLiteTensor(TfLiteTensor*)
+1476617932 00000016 T tflite::MicroAllocator::DeallocateTempBuffer(unsigned char*)
+1476618180 00000016 T tflite::AlignPointerUp(unsigned char*, unsigned int)
+1476618208 00000016 T tflite::AlignSizeUp(unsigned int, unsigned int)
+1476586500 00000016 T _Unwind_GetIPInfo
+1879049320 00000016 R _Snan
+1879049336 00000016 R _Rteps
+1476611708 00000016 T rmdir
+1879049304 00000016 R _Nan
+1879569568 00000016 b mtx
+1476610616 00000016 T _LXp_movx
+1879049192 00000016 R _LSnan
+1879049208 00000016 R _LRteps
+1879049176 00000016 R _LNan
+1879049160 00000016 R _LInf
+1879049144 00000016 R _LEps
+1879049128 00000016 R _LDenorm
+1879049288 00000016 R _Inf
+1879049272 00000016 R _Hugeval
+1476614916 00000016 T _exit
+1879049256 00000016 R _Eps
+1879410192 00000016 r _Dint.sub
+1879049240 00000016 R _Denorm
+1476618444 00000015 T non-virtual thunk to tflite::SingleArenaBufferAllocator::GetPersistentUsedBytes() const
+1476618428 00000015 T tflite::SingleArenaBufferAllocator::GetPersistentUsedBytes() const
+1476628868 00000015 t (anonymous namespace)::itanium_demangle::NameType::getBaseName() const
+1476628420 00000015 T __cxxabiv1::__getExceptionClass(_Unwind_Exception const*)
+1610612800 00000015 T _WindowUnderflow4
+1610612736 00000015 T _WindowOverflow4
+1476577416 00000014 t (anonymous namespace)::itanium_demangle::TemplateArgumentPack::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476574736 00000014 t (anonymous namespace)::itanium_demangle::NodeArrayNode::printLeft((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476586448 00000014 T _Unwind_GetGR
+1476604852 00000014 T _Unlockfilelock
+1476607864 00000014 T _LDtest
+1610613212 00000014 T _DoubleExceptionVector
+1476605916 00000014 T _Atomic_flag_clear
+1879398264 00000013 R typeinfo name for std::type_info
+1879398241 00000013 R typeinfo name for std::exception
+1476617752 00000013 T tflite::MicroInterpreterContext::SetAlternateProfiler(tflite::MicroProfilerInterface*)
+1476633428 00000013 T xtos_unhandled_exception
+1476598280 00000013 T abort
+1879381804 00000012 R typeinfo for tflite::MicroInterpreterContext
+1879051508 00000012 V typeinfo for tflite::MicroMutableOpResolver<5u>
+1879382100 00000012 R typeinfo for tflite::MicroInterpreterGraph
+1879384680 00000012 R typeinfo for tflite::LinearMemoryPlanner
+1879384896 00000012 R typeinfo for tflite::GreedyMemoryPlanner
+1879384992 00000012 R typeinfo for tflite::MicroErrorReporter
+1879383284 00000012 r typeinfo for tflite::(anonymous namespace)::MicroBuiltinDataAllocator
+1879406128 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::ThrowExpr
+1879407548 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::LocalName
+1879408320 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::DotSuffix
+1879409500 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::ArrayType
+1879408972 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::QualType
+1879401276 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::NameType
+1879405136 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::FoldExpr
+1879406336 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::DtorName
+1879403152 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::CastExpr
+1879402836 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::CallExpr
+1879403468 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::BoolExpr
+1879402632 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::NewExpr
+1879405696 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::PointerToMemberConversionExpr
+1879406848 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::ExpandedSpecialSubstitution
+1879404140 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::SyntheticTemplateParamName
+1879404496 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::TemplateTemplateParamDecl
+1879404376 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::NonTypeTemplateParamDecl
+1879401500 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::ForwardTemplateReference
+1879405252 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::ParameterPackExpansion
+1879409728 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::ElaboratedTypeSpefType
+1879406452 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::ConversionOperatorType
+1879404256 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::TypeTemplateParamDecl
+1879404612 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::TemplateParamPackDecl
+1879407124 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::StructuredBindingName
+1879401176 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::CtorVtableSpecialName
+1879407996 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::TemplateArgumentPack
+1879410056 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::PostfixQualifiedType
+1879407880 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::NameWithTemplateArgs
+1879408544 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::DynamicExceptionSpec
+1879406860 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::SpecialSubstitution
+1879405916 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::SizeofParamPackExpr
+1879409612 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::PointerToMemberType
+1879406672 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::GlobalQualifiedName
+1879402428 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::ArraySubscriptExpr
+1879408872 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::VendorExtQualType
+1879408216 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::FunctionEncoding
+1879403580 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::FloatLiteralImpl<float>
+1879403804 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::FloatLiteralImpl<long double>
+1879403692 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::FloatLiteralImpl<double>
+1879404020 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::UnnamedTypeName
+1879409292 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::PixelVectorType
+1879406560 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::LiteralOperator
+1879403052 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::ConditionalExpr
+1879404720 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::ClosureTypeName
+1879405464 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::BracedRangeExpr
+1879403368 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::IntegerLiteral
+1879402944 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::ConversionExpr
+1879405804 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::SubobjectExpr
+1879403912 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::StringLiteral
+1879409940 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::ReferenceType
+1879406236 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::QualifiedName
+1879407656 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::ParameterPack
+1879408760 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::ObjCProtoName
+1879406024 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::NodeArrayNode
+1879405036 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::FunctionParam
+1879403260 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::EnclosingExpr
+1879407764 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::TemplateArgs
+1879408428 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::NoexceptSpec
+1879407340 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::ModuleEntity
+1879405572 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::InitListExpr
+1879408652 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::FunctionType
+1879408104 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::EnableIfAttr
+1879407232 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::CtorDtorName
+1879409080 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::BinaryFPType
+1879401060 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::SpecialName
+1879402316 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::PostfixExpr
+1879409832 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::PointerType
+1879404928 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::EnumLiteral
+1879409396 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::VectorType
+1879402212 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::PrefixExpr
+1879407444 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::NestedName
+1879401380 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::ModuleName
+1879402532 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::MemberExpr
+1879404824 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::LambdaExpr
+1879402736 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::DeleteExpr
+1879405356 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::BracedExpr
+1879409184 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::BitIntType
+1879402108 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::BinaryExpr
+1879407008 00000012 r typeinfo for (anonymous namespace)::itanium_demangle::AbiTagAttr
+1879397748 00000012 R typeinfo for __cxxabiv1::__vmi_class_type_info
+1879397656 00000012 R typeinfo for __cxxabiv1::__si_class_type_info
+1879397524 00000012 R typeinfo for __cxxabiv1::__class_type_info
+1879397476 00000012 R typeinfo for __cxxabiv1::__shim_type_info
+1476618476 00000012 T tflite::LinearMemoryPlanner::GetMaximumMemorySize()
+1476618488 00000012 T tflite::LinearMemoryPlanner::GetBufferCount()
+1476435864 00000012 T tflite::GreedyMemoryPlanner::GreedyMemoryPlanner()
+1476435864 00000012 T tflite::GreedyMemoryPlanner::GreedyMemoryPlanner()
+1476618196 00000012 T tflite::AlignPointerDown(unsigned char*, unsigned int)
+1476586476 00000012 T _Unwind_SetGR
+1476605520 00000012 T __atomic_store_4
+1476605532 00000012 T __atomic_load_4
+1476628740 00000011 t (anonymous namespace)::itanium_demangle::Node::getBaseName() const
+1476597444 00000011 T __xtensa_libgcc_window_spill
+1610613180 00000011 T _UserExceptionVector
+1476618868 00000011 T TfLiteIntArrayGetSizeInBytes
+1476545048 00000011 W __clang_call_terminate
+1476546796 00000010 t demangle(char const*)::{lambda(char const*)#2}::__invoke(char const*)
+1476574824 00000010 t (anonymous namespace)::itanium_demangle::ThrowExpr::~ThrowExpr()
+1476577300 00000010 t (anonymous namespace)::itanium_demangle::LocalName::~LocalName()
+1476577940 00000010 t (anonymous namespace)::itanium_demangle::DotSuffix::~DotSuffix()
+1476581892 00000010 t (anonymous namespace)::itanium_demangle::ArrayType::~ArrayType()
+1476581340 00000010 t (anonymous namespace)::itanium_demangle::QualType::~QualType()
+1476555684 00000010 t (anonymous namespace)::itanium_demangle::NameType::~NameType()
+1476573296 00000010 t (anonymous namespace)::itanium_demangle::FoldExpr::~FoldExpr()
+1476575984 00000010 t (anonymous namespace)::itanium_demangle::DtorName::~DtorName()
+1476568652 00000010 t (anonymous namespace)::itanium_demangle::CastExpr::~CastExpr()
+1476568168 00000010 t (anonymous namespace)::itanium_demangle::CallExpr::~CallExpr()
+1476570188 00000010 t (anonymous namespace)::itanium_demangle::BoolExpr::~BoolExpr()
+1476567740 00000010 t (anonymous namespace)::itanium_demangle::NewExpr::~NewExpr()
+1476574396 00000010 t (anonymous namespace)::itanium_demangle::PointerToMemberConversionExpr::~PointerToMemberConversionExpr()
+1476576608 00000010 t (anonymous namespace)::itanium_demangle::ExpandedSpecialSubstitution::~ExpandedSpecialSubstitution()
+1476572056 00000010 t (anonymous namespace)::itanium_demangle::SyntheticTemplateParamName::~SyntheticTemplateParamName()
+1476572236 00000010 t (anonymous namespace)::itanium_demangle::TemplateTemplateParamDecl::~TemplateTemplateParamDecl()
+1476572156 00000010 t (anonymous namespace)::itanium_demangle::NonTypeTemplateParamDecl::~NonTypeTemplateParamDecl()
+1476559276 00000010 t (anonymous namespace)::itanium_demangle::ForwardTemplateReference::~ForwardTemplateReference()
+1476573528 00000010 t (anonymous namespace)::itanium_demangle::ParameterPackExpansion::~ParameterPackExpansion()
+1476582364 00000010 t (anonymous namespace)::itanium_demangle::ElaboratedTypeSpefType::~ElaboratedTypeSpefType()
+1476576056 00000010 t (anonymous namespace)::itanium_demangle::ConversionOperatorType::~ConversionOperatorType()
+1476572088 00000010 t (anonymous namespace)::itanium_demangle::TypeTemplateParamDecl::~TypeTemplateParamDecl()
+1476572280 00000010 t (anonymous namespace)::itanium_demangle::TemplateParamPackDecl::~TemplateParamPackDecl()
+1476576824 00000010 t (anonymous namespace)::itanium_demangle::StructuredBindingName::~StructuredBindingName()
+1476555524 00000010 t (anonymous namespace)::itanium_demangle::CtorVtableSpecialName::~CtorVtableSpecialName()
+1476577432 00000010 t (anonymous namespace)::itanium_demangle::TemplateArgumentPack::~TemplateArgumentPack()
+1476583508 00000010 t (anonymous namespace)::itanium_demangle::PostfixQualifiedType::~PostfixQualifiedType()
+1476577404 00000010 t (anonymous namespace)::itanium_demangle::NameWithTemplateArgs::~NameWithTemplateArgs()
+1476580656 00000010 t (anonymous namespace)::itanium_demangle::DynamicExceptionSpec::~DynamicExceptionSpec()
+1476576484 00000010 t (anonymous namespace)::itanium_demangle::SpecialSubstitution::~SpecialSubstitution()
+1476574724 00000010 t (anonymous namespace)::itanium_demangle::SizeofParamPackExpr::~SizeofParamPackExpr()
+1476582264 00000010 t (anonymous namespace)::itanium_demangle::PointerToMemberType::~PointerToMemberType()
+1476576200 00000010 t (anonymous namespace)::itanium_demangle::GlobalQualifiedName::~GlobalQualifiedName()
+1476567376 00000010 t (anonymous namespace)::itanium_demangle::ArraySubscriptExpr::~ArraySubscriptExpr()
+1476581184 00000010 t (anonymous namespace)::itanium_demangle::VendorExtQualType::~VendorExtQualType()
+1476577848 00000010 t (anonymous namespace)::itanium_demangle::FunctionEncoding::~FunctionEncoding()
+1476570396 00000010 t (anonymous namespace)::itanium_demangle::FloatLiteralImpl<float>::~FloatLiteralImpl()
+1476570788 00000010 t (anonymous namespace)::itanium_demangle::FloatLiteralImpl<long double>::~FloatLiteralImpl()
+1476570596 00000010 t (anonymous namespace)::itanium_demangle::FloatLiteralImpl<double>::~FloatLiteralImpl()
+1476571796 00000010 t (anonymous namespace)::itanium_demangle::UnnamedTypeName::~UnnamedTypeName()
+1476581624 00000010 t (anonymous namespace)::itanium_demangle::PixelVectorType::~PixelVectorType()
+1476576128 00000010 t (anonymous namespace)::itanium_demangle::LiteralOperator::~LiteralOperator()
+1476568464 00000010 t (anonymous namespace)::itanium_demangle::ConditionalExpr::~ConditionalExpr()
+1476572340 00000010 t (anonymous namespace)::itanium_demangle::ClosureTypeName::~ClosureTypeName()
+1476574024 00000010 t (anonymous namespace)::itanium_demangle::BracedRangeExpr::~BracedRangeExpr()
+1476570144 00000010 t (anonymous namespace)::itanium_demangle::IntegerLiteral::~IntegerLiteral()
+1476568372 00000010 t (anonymous namespace)::itanium_demangle::ConversionExpr::~ConversionExpr()
+1476574588 00000010 t (anonymous namespace)::itanium_demangle::SubobjectExpr::~SubobjectExpr()
+1476570872 00000010 t (anonymous namespace)::itanium_demangle::StringLiteral::~StringLiteral()
+1476583204 00000010 t (anonymous namespace)::itanium_demangle::ReferenceType::~ReferenceType()
+1476575472 00000010 t (anonymous namespace)::itanium_demangle::QualifiedName::~QualifiedName()
+1476577312 00000010 t (anonymous namespace)::itanium_demangle::ParameterPack::~ParameterPack()
+1476581056 00000010 t (anonymous namespace)::itanium_demangle::ObjCProtoName::~ObjCProtoName()
+1476574752 00000010 t (anonymous namespace)::itanium_demangle::NodeArrayNode::~NodeArrayNode()
+1476572796 00000010 t (anonymous namespace)::itanium_demangle::FunctionParam::~FunctionParam()
+1476568804 00000010 t (anonymous namespace)::itanium_demangle::EnclosingExpr::~EnclosingExpr()
+1476577392 00000010 t (anonymous namespace)::itanium_demangle::TemplateArgs::~TemplateArgs()
+1476580548 00000010 t (anonymous namespace)::itanium_demangle::NoexceptSpec::~NoexceptSpec()
+1476577012 00000010 t (anonymous namespace)::itanium_demangle::ModuleEntity::~ModuleEntity()
+1476574156 00000010 t (anonymous namespace)::itanium_demangle::InitListExpr::~InitListExpr()
+1476580964 00000010 t (anonymous namespace)::itanium_demangle::FunctionType::~FunctionType()
+1476577500 00000010 t (anonymous namespace)::itanium_demangle::EnableIfAttr::~EnableIfAttr()
+1476576884 00000010 t (anonymous namespace)::itanium_demangle::CtorDtorName::~CtorDtorName()
+1476581412 00000010 t (anonymous namespace)::itanium_demangle::BinaryFPType::~BinaryFPType()
+1476555352 00000010 t (anonymous namespace)::itanium_demangle::SpecialName::~SpecialName()
+1476567252 00000010 t (anonymous namespace)::itanium_demangle::PostfixExpr::~PostfixExpr()
+1476582740 00000010 t (anonymous namespace)::itanium_demangle::PointerType::~PointerType()
+1476572756 00000010 t (anonymous namespace)::itanium_demangle::EnumLiteral::~EnumLiteral()
+1476581756 00000010 t (anonymous namespace)::itanium_demangle::VectorType::~VectorType()
+1476567200 00000010 t (anonymous namespace)::itanium_demangle::PrefixExpr::~PrefixExpr()
+1476577120 00000010 t (anonymous namespace)::itanium_demangle::NestedName::~NestedName()
+1476555836 00000010 t (anonymous namespace)::itanium_demangle::ModuleName::~ModuleName()
+1476567448 00000010 t (anonymous namespace)::itanium_demangle::MemberExpr::~MemberExpr()
+1476572572 00000010 t (anonymous namespace)::itanium_demangle::LambdaExpr::~LambdaExpr()
+1476568028 00000010 t (anonymous namespace)::itanium_demangle::DeleteExpr::~DeleteExpr()
+1476573784 00000010 t (anonymous namespace)::itanium_demangle::BracedExpr::~BracedExpr()
+1476581540 00000010 t (anonymous namespace)::itanium_demangle::BitIntType::~BitIntType()
+1476566960 00000010 t (anonymous namespace)::itanium_demangle::BinaryExpr::~BinaryExpr()
+1476576728 00000010 t (anonymous namespace)::itanium_demangle::AbiTagAttr::~AbiTagAttr()
+1476543252 00000010 T __cxxabiv1::__pointer_to_member_type_info::~__pointer_to_member_type_info()
+1476543252 00000010 T __cxxabiv1::__pointer_to_member_type_info::~__pointer_to_member_type_info()
+1476543252 00000010 T __cxxabiv1::__fundamental_type_info::~__fundamental_type_info()
+1476543252 00000010 T __cxxabiv1::__fundamental_type_info::~__fundamental_type_info()
+1476543252 00000010 T __cxxabiv1::__vmi_class_type_info::~__vmi_class_type_info()
+1476543252 00000010 T __cxxabiv1::__vmi_class_type_info::~__vmi_class_type_info()
+1476543252 00000010 T __cxxabiv1::__si_class_type_info::~__si_class_type_info()
+1476543252 00000010 T __cxxabiv1::__si_class_type_info::~__si_class_type_info()
+1476543252 00000010 T __cxxabiv1::__function_type_info::~__function_type_info()
+1476543252 00000010 T __cxxabiv1::__function_type_info::~__function_type_info()
+1476543252 00000010 T __cxxabiv1::__pointer_type_info::~__pointer_type_info()
+1476543252 00000010 T __cxxabiv1::__pointer_type_info::~__pointer_type_info()
+1476543252 00000010 T __cxxabiv1::__pbase_type_info::~__pbase_type_info()
+1476543252 00000010 T __cxxabiv1::__pbase_type_info::~__pbase_type_info()
+1476543252 00000010 T __cxxabiv1::__class_type_info::~__class_type_info()
+1476543252 00000010 T __cxxabiv1::__class_type_info::~__class_type_info()
+1476543252 00000010 T __cxxabiv1::__array_type_info::~__array_type_info()
+1476543252 00000010 T __cxxabiv1::__array_type_info::~__array_type_info()
+1476543252 00000010 T __cxxabiv1::__shim_type_info::~__shim_type_info()
+1476543252 00000010 T __cxxabiv1::__shim_type_info::~__shim_type_info()
+1476543252 00000010 T __cxxabiv1::__enum_type_info::~__enum_type_info()
+1476543252 00000010 T __cxxabiv1::__enum_type_info::~__enum_type_info()
+1476545060 00000010 W operator delete(void*)
+1879048720 00000010 r _Printf.fchar
+1476615744 00000009 W std::__1::__libcpp_mutex_unlock(void**)
+1476615732 00000009 W std::__1::__libcpp_mutex_lock(void**)
+1476618392 00000009 T tflite::SingleArenaBufferAllocator::GetOverlayMemoryAddress() const
+1476617768 00000009 T tflite::MicroInterpreterContext::GetAlternateProfiler() const
+1476618524 00000009 W tflite::LinearMemoryPlanner::preserves_all_tensors() const
+1476618788 00000009 W tflite::GreedyMemoryPlanner::preserves_all_tensors() const
+1476630124 00000009 t (anonymous namespace)::itanium_demangle::ArrayType::hasRHSComponentSlow((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476630136 00000009 t (anonymous namespace)::itanium_demangle::ArrayType::hasArraySlow((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476628688 00000009 t (anonymous namespace)::itanium_demangle::Node::hasRHSComponentSlow((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476628712 00000009 t (anonymous namespace)::itanium_demangle::Node::hasFunctionSlow((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476628700 00000009 t (anonymous namespace)::itanium_demangle::Node::hasArraySlow((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476629940 00000009 t (anonymous namespace)::itanium_demangle::FunctionEncoding::hasRHSComponentSlow((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476629952 00000009 t (anonymous namespace)::itanium_demangle::FunctionEncoding::hasFunctionSlow((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476629964 00000009 t (anonymous namespace)::itanium_demangle::FunctionType::hasRHSComponentSlow((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476629976 00000009 t (anonymous namespace)::itanium_demangle::FunctionType::hasFunctionSlow((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476617792 00000009 W tflite::MicroInterpreterContext::graph()
+1476617780 00000009 W tflite::MicroInterpreterContext::external_context()
+1476617856 00000009 W tflite::MicroInterpreterGraph::GetResourceVariables()
+1476618776 00000009 T tflite::GreedyMemoryPlanner::GetBufferCount()
+1476618500 00000009 W tflite::MicroMemoryPlanner::AddBuffer(int, int, int, int)
+1476618512 00000009 W tflite::MicroMemoryPlanner::Init(unsigned char*, int)
+1476618088 00000009 T tflite::MicroAllocator::GetBuiltinDataAllocator()
+1476586584 00000009 T _Unwind_GetTextRelBase
+1476586536 00000009 T _Unwind_GetRegionStart
+1476586524 00000009 T _Unwind_GetLanguageSpecificData
+1476586488 00000009 T _Unwind_GetIP
+1476586572 00000009 T _Unwind_GetDataRelBase
+1476586464 00000009 T _Unwind_GetCFA
+1476632324 00000009 T _Pmsw
+1476607888 00000009 T _LPmsw
+1476605976 00000009 W __atomic_is_lock_free
+1879398280 00000008 R typeinfo for std::type_info
+1879398256 00000008 R typeinfo for std::exception
+1879384452 00000008 V typeinfo for tflite::INonPersistentBufferAllocator
+1879383816 00000008 V typeinfo for tflite::IPersistentBufferAllocator
+1879383276 00000008 V typeinfo for tflite::BuiltinDataAllocator
+1879384672 00000008 V typeinfo for tflite::MicroMemoryPlanner
+1879051500 00000008 V typeinfo for tflite::MicroOpResolver
+1879383160 00000008 R typeinfo for tflite::MicroAllocator
+1879384984 00000008 V typeinfo for tflite::ErrorReporter
+1879381796 00000008 V typeinfo for tflite::MicroContext
+1879382092 00000008 V typeinfo for tflite::MicroGraph
+1879401052 00000008 r typeinfo for (anonymous namespace)::itanium_demangle::Node
+1879049352 00000008 R _Zero
+1476633444 00000008 T xtos_unhandled_interrupt
+1476586516 00000008 T _Unwind_SetIP
+1879049224 00000008 R _LZero
+1476600428 00000008 T _Exit
+1610613116 00000008 T _DebugExceptionVector
+1476605968 00000008 T __atomic_signal_fence
+1879569200 00000008 B _Aldata
+1476617736 00000007 T tflite::MicroInterpreterContext::SetScratchBufferHandles(tflite::ScratchBufferHandle*)
+1476617744 00000007 T tflite::MicroInterpreterContext::SetInterpreterState(tflite::MicroInterpreterContext::InterpreterState)
+1476617848 00000007 T tflite::MicroInterpreterGraph::SetSubgraphAllocations(tflite::SubgraphAllocations*)
+1610613148 00000006 T _KernelExceptionVector
+1476628444 00000005 t demangle(char const*)::{lambda(char const*)#3}::__invoke(char const*)
+1476618312 00000005 T non-virtual thunk to tflite::SingleArenaBufferAllocator::~SingleArenaBufferAllocator()
+1476618328 00000005 T non-virtual thunk to tflite::SingleArenaBufferAllocator::~SingleArenaBufferAllocator()
+1476628436 00000005 T std::type_info::~type_info()
+1476628436 00000005 T std::type_info::~type_info()
+1476628724 00000005 t (anonymous namespace)::itanium_demangle::Node::getSyntaxNode((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476628732 00000005 t (anonymous namespace)::itanium_demangle::Node::printRight((anonymous namespace)::itanium_demangle::OutputBuffer&) const
+1476627980 00000005 T __cxxabiv1::__shim_type_info::noop2() const
+1476627972 00000005 T __cxxabiv1::__shim_type_info::noop1() const
+1476616036 00000005 T tflite::FlatBufferVectorToTfLiteTypeArray(flatbuffers::Vector<int, unsigned int> const*)
+1476616044 00000005 T tflite::FlatBufferVectorToTfLiteTypeArray(flatbuffers::Vector<float, unsigned int> const*)
+1476618304 00000005 T tflite::SingleArenaBufferAllocator::~SingleArenaBufferAllocator()
+1476618304 00000005 T tflite::SingleArenaBufferAllocator::~SingleArenaBufferAllocator()
+1476618320 00000005 T tflite::SingleArenaBufferAllocator::~SingleArenaBufferAllocator()
+1476617640 00000005 T tflite::MicroInterpreterContext::~MicroInterpreterContext()
+1476617640 00000005 T tflite::MicroInterpreterContext::~MicroInterpreterContext()
+1476617648 00000005 T tflite::MicroInterpreterContext::~MicroInterpreterContext()
+1476615852 00000005 W tflite::MicroMutableOpResolver<5u>::~MicroMutableOpResolver()
+1476617804 00000005 T tflite::MicroInterpreterGraph::~MicroInterpreterGraph()
+1476617804 00000005 T tflite::MicroInterpreterGraph::~MicroInterpreterGraph()
+1476617812 00000005 T tflite::MicroInterpreterGraph::~MicroInterpreterGraph()
+1476618140 00000005 W tflite::BuiltinDataAllocator::~BuiltinDataAllocator()
+1476618460 00000005 T tflite::LinearMemoryPlanner::~LinearMemoryPlanner()
+1476618460 00000005 T tflite::LinearMemoryPlanner::~LinearMemoryPlanner()
+1476618468 00000005 T tflite::LinearMemoryPlanner::~LinearMemoryPlanner()
+1476618640 00000005 T tflite::GreedyMemoryPlanner::~GreedyMemoryPlanner()
+1476618640 00000005 T tflite::GreedyMemoryPlanner::~GreedyMemoryPlanner()
+1476618648 00000005 T tflite::GreedyMemoryPlanner::~GreedyMemoryPlanner()
+1476618536 00000005 W tflite::MicroMemoryPlanner::PrintMemoryPlan()
+1476618808 00000005 W tflite::MicroErrorReporter::~MicroErrorReporter()
+1476615860 00000005 T tflite::InitializeTarget()
+1476615800 00000005 W tflite::MicroOpResolver::~MicroOpResolver()
+1476617868 00000005 T tflite::MicroAllocator::~MicroAllocator()
+1476617868 00000005 T tflite::MicroAllocator::~MicroAllocator()
+1476617876 00000005 T tflite::MicroAllocator::~MicroAllocator()
+1476618800 00000005 W tflite::ErrorReporter::~ErrorReporter()
+1476618132 00000005 t tflite::(anonymous namespace)::MicroBuiltinDataAllocator::~MicroBuiltinDataAllocator()
+1476618124 00000005 t tflite::(anonymous namespace)::MicroBuiltinDataAllocator::Deallocate(void*)
+1476629152 00000005 t (anonymous namespace)::itanium_demangle::Node::~Node()
+1476632316 00000005 T _Plsw
+1476633272 00000005 W _Mtxunlock
+1476633264 00000005 W _Mtxlock
+1476633248 00000005 W _Mtxinit
+1476633256 00000005 W _Mtxdst
+1476607880 00000005 T _LPlsw
+1476606048 00000005 T ignore_handler_s
+1879386052 00000004 R tflite::kPoolingOutputTensor
+1879386048 00000004 R tflite::kPoolingInputTensor
+1879385216 00000004 R tflite::kConvWeightsTensor
+1879385224 00000004 R tflite::kConvOutputTensor
+1879385212 00000004 R tflite::kConvInputTensor
+1879385220 00000004 R tflite::kConvBiasTensor
+1879382240 00000004 r tflite::(anonymous namespace)::kZeroLengthIntArray
+1879568932 00000004 b (anonymous namespace)::freelist
+1879568404 00000004 b (anonymous namespace)::micro_error_reporter_buffer
+1879568400 00000004 b (anonymous namespace)::error_reporter_
+1879568928 00000004 b (anonymous namespace)::heap_mutex
+1879568392 00000004 B micro_test::tests_passed
+1879568396 00000004 B micro_test::tests_failed
+1879568412 00000004 b __cxxabiv1::(anonymous namespace)::flag_
+1879568408 00000004 b __cxxabiv1::(anonymous namespace)::key_
+1879427492 00000004 d cause
+1879427220 00000004 D xtos_vpri_enabled
+1879427216 00000004 D xtos_enabled
+1879569620 00000004 V _xclib_use_mt
+1879427544 00000004 b unseen_objects
+1879569624 00000004 B _Tls_setup__Wcstate
+1879569492 00000004 B _Tls_setup__Mbstate
+1879569488 00000004 B _Tls_setup__Mbcurmax
+1879569696 00000004 B _Tls_setup__Locale
+1879569392 00000004 B _Tls_setup__Ctype
+1879426824 00000004 D stdout
+1879426820 00000004 D stdin
+1879426828 00000004 D stderr
+1879426548 00000004 D _Size_block
+1879427548 00000004 b seen_objects
+1879569600 00000004 b sec_hand
+1879427556 00000004 b _sbrk_r.heap_end
+1879569944 00000004 V _reent_ptr
+1879569604 00000004 B __progname
+1879426836 00000004 D _Nats
+1879426956 00000004 D _heap_sentry_ptr
+1879426500 00000004 r __FRAME_END__
+1879426844 00000004 D fopen_max
+1879426816 00000004 D _Files
+1879569592 00000004 b file_mtx
+1879427540 00000004 b fde_split.marker
+1879569692 00000004 b __environ_term
+1879426872 00000004 D environ
+1879426512 00000004 r __DTOR_LIST__
+1879426516 00000004 r __DTOR_END__
+1879427452 00000004 D __dso_handle
+1879427484 00000004 d __do_global_dtors_aux.p
+1879427488 00000004 D __cxa_terminate_handler
+1879426552 00000004 D _Ctype
+1879426504 00000004 r __CTOR_LIST__
+1879426508 00000004 r __CTOR_END__
+1879569596 00000004 b __atomic_thread_fence._Guard
+1879426544 00000004 D _Atfuns
+1879569616 00000004 B _atexitfree
+1879569612 00000004 B _atexitfns
+1879569608 00000004 B _Atcount0
+1879426840 00000004 D _Atcount
+1342177280 00000003 T _ResetVector
+1879568384 00000001 B micro_test::is_test_complete
+1879568388 00000001 B micro_test::did_test_fail
+1879429104 00000001 b guard variable for __external_threading_tls_get::__tls_vals
+1879569588 00000001 b syslock_o
+1879049232 00000001 r null
+1879426832 00000001 D _Mbcurmax
+1879569584 00000001 b max_lock
+1879427552 00000001 B __float_exception_flags
+1879427480 00000001 d __do_global_dtors_aux.completed
