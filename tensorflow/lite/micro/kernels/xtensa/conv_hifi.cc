@@ -719,6 +719,7 @@ TfLiteStatus ConvEvalHifiFloat32(TfLiteContext* context, TfLiteNode* node,
 
   int output_data_format = 0;
   int out_length = output_height * output_width * output_depth;
+  int err;
   if (filter_height == 1 && filter_width == 1) {
     for (int batch = 0; batch < batches; ++batch) {
       float32_t* p_out_temp;
@@ -733,8 +734,18 @@ TfLiteStatus ConvEvalHifiFloat32(TfLiteContext* context, TfLiteNode* node,
               const_cast<float32_t*>(bias_data), input_height, input_width,
               input_depth, output_depth, output_data_format),
           0);
+
+      err = xa_nn_vec_activation_min_max_f32_f32(
+          tflite::micro::GetTensorData<float>(output),
+          tflite::micro::GetTensorData<float>(output),
+          data.reference_op_data.output_activation_min, data.reference_op_data.output_activation_max,
+          out_length);
+      TF_LITE_ENSURE(context, err == 0);
     }
-  } else {
+  } else if ((filter_depth == input_depth) &&
+           ((params.dilation_width_factor == 1) &&
+            (params.dilation_height_factor == 1)))
+  {
     void* p_scratch = static_cast<void*>(
         context->GetScratchBuffer(context, data.scratch_tensor_index));
 
@@ -742,8 +753,7 @@ TfLiteStatus ConvEvalHifiFloat32(TfLiteContext* context, TfLiteNode* node,
       float32_t* p_out_temp;
       p_out_temp = &output_data[batch * out_length];
 
-      {
-        if((filter_depth == input_depth) && ((params.dilation_width_factor == 1) && (params.dilation_height_factor == 1))){
+      if((filter_depth == input_depth) && ((params.dilation_width_factor == 1) && (params.dilation_height_factor == 1))){
         TF_LITE_ENSURE_EQ(
             context,
             xa_nn_conv2d_std_f32(
@@ -755,24 +765,30 @@ TfLiteStatus ConvEvalHifiFloat32(TfLiteContext* context, TfLiteNode* node,
                 stride_height, pad_width, pad_height, output_height,
                 output_width,output_data_format, static_cast<void*>(p_scratch)),
             0);
-        }
-        else{
-        TFLITE_DCHECK(node->user_data != nullptr);
-        const auto& op_data = *(reinterpret_cast<XtensaConvOpData*>(node->user_data));  
-        tflite::reference_ops::Conv(
-            ConvParamsFloat(params, op_data.reference_op_data),
-            tflite::micro::GetTensorShape(input),
-            tflite::micro::GetTensorData<float>(input),
-            tflite::micro::GetTensorShape(filter),
-            tflite::micro::GetTensorData<float>(filter),
-            tflite::micro::GetTensorShape(bias),
-            tflite::micro::GetOptionalTensorData<float>(bias),
-            tflite::micro::GetTensorShape(output),
+
+        err = xa_nn_vec_activation_min_max_f32_f32(
             tflite::micro::GetTensorData<float>(output),
-            tflite::micro::GetTensorShape(nullptr), nullptr);        
-        }
+            tflite::micro::GetTensorData<float>(output),
+            data.reference_op_data.output_activation_min, data.reference_op_data.output_activation_max,
+            out_length);
+        TF_LITE_ENSURE(context, err == 0);
       }
     }
+  }
+  else{
+    TFLITE_DCHECK(node->user_data != nullptr);
+    const auto& op_data = *(reinterpret_cast<XtensaConvOpData*>(node->user_data));  
+    tflite::reference_ops::Conv(
+        ConvParamsFloat(params, op_data.reference_op_data),
+        tflite::micro::GetTensorShape(input),
+        tflite::micro::GetTensorData<float>(input),
+        tflite::micro::GetTensorShape(filter),
+        tflite::micro::GetTensorData<float>(filter),
+        tflite::micro::GetTensorShape(bias),
+        tflite::micro::GetOptionalTensorData<float>(bias),
+        tflite::micro::GetTensorShape(output),
+        tflite::micro::GetTensorData<float>(output),
+        tflite::micro::GetTensorShape(nullptr), nullptr);        
   }
 
   return kTfLiteOk;
