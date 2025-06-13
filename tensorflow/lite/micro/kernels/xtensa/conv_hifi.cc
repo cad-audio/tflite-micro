@@ -702,6 +702,9 @@ TfLiteStatus ConvEvalHifiFloat32(TfLiteContext* context, TfLiteNode* node,
       micro_context->GetTensorCompressionData(node, kConvBiasTensor);
 
 #endif  // USE_TFLM_COMPRESSION
+  TFLITE_DCHECK(node->user_data != nullptr);
+  const auto& op_data = *(reinterpret_cast<XtensaConvOpData*>(node->user_data));  
+  ConvParams op_params = ConvParamsFloat(params, op_data.reference_op_data);
   
   const float32_t* input_data = tflite::micro::GetTensorData<float32_t>(input);
 #ifdef USE_TFLM_COMPRESSION
@@ -736,9 +739,10 @@ TfLiteStatus ConvEvalHifiFloat32(TfLiteContext* context, TfLiteNode* node,
           0);
 
       err = xa_nn_vec_activation_min_max_f32_f32(
-          tflite::micro::GetTensorData<float>(output),
-          tflite::micro::GetTensorData<float>(output),
-          data.reference_op_data.output_activation_min, data.reference_op_data.output_activation_max,
+          p_out_temp,
+          p_out_temp,
+          op_params.float_activation_min,
+          op_params.float_activation_max,
           out_length);
       TF_LITE_ENSURE(context, err == 0);
     }
@@ -767,9 +771,10 @@ TfLiteStatus ConvEvalHifiFloat32(TfLiteContext* context, TfLiteNode* node,
             0);
 
         err = xa_nn_vec_activation_min_max_f32_f32(
-            tflite::micro::GetTensorData<float>(output),
-            tflite::micro::GetTensorData<float>(output),
-            data.reference_op_data.output_activation_min, data.reference_op_data.output_activation_max,
+            p_out_temp,
+            p_out_temp,
+            op_params.float_activation_min,
+            op_params.float_activation_max,
             out_length);
         TF_LITE_ENSURE(context, err == 0);
       }
