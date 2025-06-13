@@ -146,6 +146,94 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
   return kTfLiteError;
 }
 
+TfLiteStatus EvalInt8(TfLiteContext* context, TfLiteNode* node) {
+  const TfLiteEvalTensor* input = tflite::micro::GetEvalInput(context, node, 0);
+  TfLiteEvalTensor* output = tflite::micro::GetEvalOutput(context, node, 0);
+
+  TFLITE_DCHECK(node->user_data != nullptr);
+
+#if !(defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(VISION_P6))
+  SoftmaxParams params = *static_cast<SoftmaxParams*>(node->user_data);
+#endif
+
+  if (input->type == kTfLiteInt8 && output->type == kTfLiteInt8) {
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+    return EvalHifiInt8(static_cast<XtensaSoftmaxOpData*>(node->user_data),
+                        input, output, context);
+#elif defined(VISION_P6)
+    return SoftmaxEvalVision(
+        context, node, *(static_cast<XtensaSoftmaxOpData*>(node->user_data)),
+        input, output);
+#else
+    tflite::reference_ops::Softmax(
+        params, tflite::micro::GetTensorShape(input),
+        tflite::micro::GetTensorData<int8_t>(input),
+        tflite::micro::GetTensorShape(output),
+        tflite::micro::GetTensorData<int8_t>(output));
+    return kTfLiteOk;
+#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+  }
+
+  MicroPrintf("Type %s (%d) not supported.", TfLiteTypeGetName(input->type),
+              input->type);
+  return kTfLiteError;
+}
+
+TfLiteStatus EvalInt16(TfLiteContext* context, TfLiteNode* node) {
+  const TfLiteEvalTensor* input = tflite::micro::GetEvalInput(context, node, 0);
+  TfLiteEvalTensor* output = tflite::micro::GetEvalOutput(context, node, 0);
+
+  TFLITE_DCHECK(node->user_data != nullptr);
+
+#if !(defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(VISION_P6))
+  SoftmaxParams params = *static_cast<SoftmaxParams*>(node->user_data);
+#endif
+
+  if (input->type == kTfLiteInt16 && output->type == kTfLiteInt16) {
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+    return EvalHifiInt16(static_cast<XtensaSoftmaxOpData*>(node->user_data),
+                        input, output, context);
+#else
+    tflite::reference_ops::SoftmaxInt16(
+        params, tflite::micro::GetTensorShape(input),
+        tflite::micro::GetTensorData<int16_t>(input),
+        tflite::micro::GetTensorShape(output),
+        tflite::micro::GetTensorData<int16_t>(output));
+    return kTfLiteOk;
+#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+  }
+
+  MicroPrintf("Type %s (%d) not supported.", TfLiteTypeGetName(input->type),
+              input->type);
+  return kTfLiteError;
+}
+
+TfLiteStatus EvalFloat32(TfLiteContext* context, TfLiteNode* node) {
+  const TfLiteEvalTensor* input = tflite::micro::GetEvalInput(context, node, 0);
+  TfLiteEvalTensor* output = tflite::micro::GetEvalOutput(context, node, 0);
+
+  TFLITE_DCHECK(node->user_data != nullptr);
+
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+  XtensaSoftmaxOpData op_data =
+      *static_cast<XtensaSoftmaxOpData*>(node->user_data);
+  SoftmaxParams params = op_data.params;
+#else
+  SoftmaxParams params = *static_cast<SoftmaxParams*>(node->user_data);
+#endif
+
+  if (input->type == kTfLiteFloat32) {
+    tflite::reference_ops::Softmax(params, tflite::micro::GetTensorShape(input),
+                                   tflite::micro::GetTensorData<float>(input),
+                                   tflite::micro::GetTensorShape(output),
+                                   tflite::micro::GetTensorData<float>(output));
+    return kTfLiteOk;
+  }
+
+  MicroPrintf("Type %s (%d) not supported.", TfLiteTypeGetName(input->type),
+              input->type);
+  return kTfLiteError;
+}
 }  // namespace
 
 TFLMRegistration Register_SOFTMAX() {
@@ -153,4 +241,17 @@ TFLMRegistration Register_SOFTMAX() {
                                    Eval);
 }
 
+TFLMRegistration Register_SOFTMAX_INT8() {
+  return tflite::micro::RegisterOp(XtensaInitSoftmax, XtensaPrepareSoftmax,
+                                   EvalInt8);
+}
+
+TFLMRegistration Register_SOFTMAX_INT16() {
+  return tflite::micro::RegisterOp(XtensaInitSoftmax, XtensaPrepareSoftmax,
+                                   EvalInt16);
+}
+TFLMRegistration Register_SOFTMAX_FLOAT32() {
+  return tflite::micro::RegisterOp(XtensaInitSoftmax, XtensaPrepareSoftmax,
+                                   EvalFloat32);
+}
 }  // namespace tflite
