@@ -130,9 +130,9 @@ inline TFLMRegistration Register_CONV_2D_INT16() { return Register_CONV_2D(); }
 #endif  // defined(CMSIS_NN) || defined(XTENSA)
 
 #if defined(XTENSA)
-
 TFLMRegistration Register_CONV_2D_FLOAT32();
-
+#else
+inline TFLMRegistration Register_CONV_2D_FLOAT32() { return Register_CONV_2D(); }
 #endif
 
 }  // namespace tflite

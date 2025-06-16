@@ -33,6 +33,9 @@ TfLiteStatus XtensaEvalFullyConnectedQuantizedFloat32(
     const TfLiteEvalTensor* input, const TfLiteEvalTensor* filter,
     const TfLiteEvalTensor* bias, TfLiteEvalTensor* output) {
   
+  TFLITE_DCHECK(node->builtin_data != nullptr);
+  const auto* params =
+      static_cast<const TfLiteFullyConnectedParams*>(node->builtin_data);
 #if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI4) || defined(HIFI5))
   const float32_t* bias_data =
       nullptr != bias ? tflite::micro::GetTensorData<float32_t>(bias) : nullptr;
@@ -45,6 +48,8 @@ TfLiteStatus XtensaEvalFullyConnectedQuantizedFloat32(
   const RuntimeShape& filter_shape = tflite::micro::GetTensorShape(filter);
   const int filter_dim_count = filter_shape.DimensionsCount();
   const int accum_depth = filter_shape.Dims(filter_dim_count - 1);
+
+  FullyConnectedParams op_params = FullyConnectedParamsFloat(params->activation);
 
   if(num_batches == 1) {
       TF_LITE_ENSURE_EQ(
@@ -67,11 +72,15 @@ TfLiteStatus XtensaEvalFullyConnectedQuantizedFloat32(
               num_batches, accum_depth, output_depth, 1),
           0);    
   }
+  float32_t* output_arr = tflite::micro::GetTensorData<float32_t>(output);
+  TF_LITE_ENSURE_EQ(
+      context,
+      xa_nn_vec_activation_min_max_f32_f32(
+          output_arr, output_arr, op_params.float_activation_min,
+          op_params.float_activation_max, num_batches * output_depth),
+      0);
 
 #else
-  TFLITE_DCHECK(node->builtin_data != nullptr);
-  const auto* params =
-      static_cast<const TfLiteFullyConnectedParams*>(node->builtin_data);
 
 #ifdef USE_TFLM_COMPRESSION
 
