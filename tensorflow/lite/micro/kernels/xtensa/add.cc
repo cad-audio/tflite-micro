@@ -49,6 +49,31 @@ TfLiteStatus EvalAdd(TfLiteContext* context, TfLiteNode* node,
       tflite::ArithmeticParams op_params;
       SetActivationParams(data->output_activation_min_f32,
                           data->output_activation_max_f32, &op_params);
+#if HIFI_VFPU && (defined(HIFI3) || defined(HIFI4) || defined(HIFI5))
+      int err;
+      const RuntimeShape extended_input1_shape =
+          RuntimeShape::ExtendedShape(4, tflite::micro::GetTensorShape(input1));
+      const RuntimeShape extended_input2_shape =
+          RuntimeShape::ExtendedShape(4, tflite::micro::GetTensorShape(input2));
+      const RuntimeShape extended_output_shape =
+          RuntimeShape::ExtendedShape(4, tflite::micro::GetTensorShape(output));
+
+      err = xa_nn_elm_add_broadcast_4D_f32xf32_f32(
+          tflite::micro::GetTensorData<float>(output),
+          extended_output_shape.DimsData(),
+          tflite::micro::GetTensorData<float>(input1),
+          extended_input1_shape.DimsData(),
+          tflite::micro::GetTensorData<float>(input2),
+          extended_input2_shape.DimsData());
+      TF_LITE_ENSURE(context, err == 0);
+
+      err = xa_nn_vec_activation_min_max_f32_f32(
+          tflite::micro::GetTensorData<float>(output),
+          tflite::micro::GetTensorData<float>(output),
+          data->output_activation_min_f32, data->output_activation_max_f32,
+          extended_output_shape.FlatSize());
+      TF_LITE_ENSURE(context, err == 0);
+#else   // HIFI_VFPU && (defined(HIFI3) || defined(HIFI4) || defined(HIFI5))
       if (data->requires_broadcast) {
         reference_ops::BroadcastAdd4DSlow(
             op_params, tflite::micro::GetTensorShape(input1),
@@ -89,6 +114,7 @@ TfLiteStatus EvalAdd(TfLiteContext* context, TfLiteNode* node,
                            tflite::micro::GetTensorData<float>(output));
 #endif // HIFI_VFPU
       }
+#endif  // HIFI_VFPU && (defined(HIFI3) || defined(HIFI4) || defined(HIFI5))
     } break;
     case kTfLiteInt32: {
       tflite::ArithmeticParams op_params;
