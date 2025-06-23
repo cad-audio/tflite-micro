@@ -38,7 +38,7 @@ set -e
 source ${3}tensorflow/lite/micro/tools/make/bash_helpers.sh
 
 DOWNLOADS_DIR=${1}
-PATCH=""
+PATCH="../../ext_libs/xa_nnlib_${2}.patch"
 
 if [[ ${2} == "hifi4" ]]; then
   LIBRARY_URL="http://github.com/foss-xtensa/nnlib-hifi4/raw/master/archive/xa_nnlib_hifi4_02_11_2025.zip"
@@ -80,7 +80,7 @@ else
 
   pushd "${LIBRARY_INSTALL_PATH}" > /dev/null
   chmod -R +w ./
-  if [ "${PATCH}" ]; then
+  if [ -f "${PATCH}" ]; then
     create_git_repo ./
     apply_patch_to_folder ./ ${PATCH} "TFLM patch"
   fi
