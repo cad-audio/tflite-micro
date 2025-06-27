@@ -68,12 +68,12 @@ TfLiteStatus ConvReferenceEvalInt16(TfLiteContext* context, TfLiteNode* node) {
                                              weights_comp_td,
                                              op_data.weights_scratch_index),
         tflite::micro::GetTensorShape(bias),
-        tflite::micro::GetOptionalTensorData<int32_t>(
+        tflite::micro::GetTensorData<int32_t>(
             micro_context, bias, bias_comp_td, op_data.bias_scratch_index),
 #else   // USE_TFLM_COMPRESSION
         tflite::micro::GetTensorData<int8_t>(filter),
         tflite::micro::GetTensorShape(bias),
-        tflite::micro::GetOptionalTensorData<std::int32_t>(bias),
+        tflite::micro::GetTensorData<std::int32_t>(bias),
 #endif  // USE_TFLM_COMPRESSION
         tflite::micro::GetTensorShape(output),
         tflite::micro::GetTensorData<int16_t>(output));
