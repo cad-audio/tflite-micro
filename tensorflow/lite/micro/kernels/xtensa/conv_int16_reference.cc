@@ -56,7 +56,7 @@ TfLiteStatus ConvReferenceEvalInt16(TfLiteContext* context, TfLiteNode* node) {
 
 #endif  // USE_TFLM_COMPRESSION
 
-  if (bias == nullptr || bias->type == kTfLiteInt32) {
+  if (bias->type == kTfLiteInt32) {
     reference_integer_ops::ConvPerChannel(
         ConvParamsQuantized(params, op_data),
         op_data.per_channel_output_multiplier, op_data.per_channel_output_shift,
@@ -77,7 +77,7 @@ TfLiteStatus ConvReferenceEvalInt16(TfLiteContext* context, TfLiteNode* node) {
 #endif  // USE_TFLM_COMPRESSION
         tflite::micro::GetTensorShape(output),
         tflite::micro::GetTensorData<int16_t>(output));
-  } else if (bias->type == kTfLiteInt64) {
+  } else if (bias == nullptr || bias->type == kTfLiteInt64) {
     reference_integer_ops::ConvPerChannel(
         ConvParamsQuantized(params, op_data),
         op_data.per_channel_output_multiplier, op_data.per_channel_output_shift,
@@ -89,7 +89,7 @@ TfLiteStatus ConvReferenceEvalInt16(TfLiteContext* context, TfLiteNode* node) {
                                              weights_comp_td,
                                              op_data.weights_scratch_index),
         tflite::micro::GetTensorShape(bias),
-        tflite::micro::GetTensorData<int64_t>(micro_context, bias, bias_comp_td,
+        tflite::micro::GetOptionalTensorData<int64_t>(micro_context, bias, bias_comp_td,
                                               op_data.bias_scratch_index),
 #else   // USE_TFLM_COMPRESSION
         tflite::micro::GetTensorData<int8_t>(filter),
