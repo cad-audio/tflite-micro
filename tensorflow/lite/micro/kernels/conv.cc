@@ -80,7 +80,7 @@ TfLiteStatus ConvEval(TfLiteContext* context, TfLiteNode* node) {
       break;
     }
     case kTfLiteInt16: {
-      if (bias->type == kTfLiteInt32) {
+      if (bias != nullptr && bias->type == kTfLiteInt32) {
         reference_integer_ops::ConvPerChannel(
             ConvParamsQuantized(params, data),
             data.per_channel_output_multiplier, data.per_channel_output_shift,
