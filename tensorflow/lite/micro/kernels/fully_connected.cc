@@ -238,7 +238,7 @@ TfLiteStatus FullyConnectedEval(TfLiteContext* context, TfLiteNode* node) {
     case kTfLiteInt16: {
       switch (filter->type) {
         case kTfLiteInt8: {
-          if (bias->type == kTfLiteInt32) {
+          if (bias != nullptr && bias->type == kTfLiteInt32) {
             data.is_per_channel
                 ? tflite::reference_integer_ops::FullyConnectedPerChannel(
                       FullyConnectedParamsQuantized(data),
