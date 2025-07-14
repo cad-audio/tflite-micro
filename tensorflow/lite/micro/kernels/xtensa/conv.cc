@@ -114,7 +114,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       }
       else if (bias->type == kTfLiteInt32) {
 #else  // defined(HIFI4) || defined(HIFI5)
-      if (bias->type == kTfLiteInt64 || bias->type == kTfLiteInt32) {
+      if (bias == nullptr || bias->type == kTfLiteInt64 || bias->type == kTfLiteInt32) {
 #endif  // defined(HIFI4) || defined(HIFI5)
         return ConvReferenceEvalInt16(context, node);
       }

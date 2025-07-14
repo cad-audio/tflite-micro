@@ -259,7 +259,7 @@ TfLiteStatus FullyConnectedEval(TfLiteContext* context, TfLiteNode* node) {
 #else   // USE_TFLM_COMPRESSION
                       tflite::micro::GetTensorData<int8_t>(filter),
                       tflite::micro::GetTensorShape(bias),
-                      tflite::micro::GetOptionalTensorData<int32_t>(bias),
+                      tflite::micro::GetTensorData<int32_t>(bias),
 #endif  // USE_TFLM_COMPRESSION
                       tflite::micro::GetTensorShape(output),
                       tflite::micro::GetTensorData<int16_t>(output))
@@ -273,13 +273,13 @@ TfLiteStatus FullyConnectedEval(TfLiteContext* context, TfLiteNode* node) {
                           micro_context, filter, weights_comp_td,
                           data.weights_scratch_index),
                       tflite::micro::GetTensorShape(bias),
-                      tflite::micro::GetOptionalTensorData<int32_t>(
+                      tflite::micro::GetTensorData<int32_t>(
                           micro_context, bias, bias_comp_td,
                           data.bias_scratch_index),
 #else   // USE_TFLM_COMPRESSION
                       tflite::micro::GetTensorData<int8_t>(filter),
                       tflite::micro::GetTensorShape(bias),
-                      tflite::micro::GetOptionalTensorData<int32_t>(bias),
+                      tflite::micro::GetTensorData<int32_t>(bias),
 #endif  // USE_TFLM_COMPRESSION
                       tflite::micro::GetTensorShape(output),
                       tflite::micro::GetTensorData<int16_t>(output));
