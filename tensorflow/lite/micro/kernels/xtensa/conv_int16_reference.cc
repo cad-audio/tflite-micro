@@ -56,7 +56,7 @@ TfLiteStatus ConvReferenceEvalInt16(TfLiteContext* context, TfLiteNode* node) {
 
 #endif  // USE_TFLM_COMPRESSION
 
-  if (bias->type == kTfLiteInt32) {
+  if (bias != nullptr && bias->type == kTfLiteInt32) {
     reference_integer_ops::ConvPerChannel(
         ConvParamsQuantized(params, op_data),
         op_data.per_channel_output_multiplier, op_data.per_channel_output_shift,
