@@ -21,6 +21,7 @@ limitations under the License.
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/kernels/xtensa/xtensa.h"
 #include "tensorflow/lite/micro/kernels/xtensa/xtensa_fully_connected.h"
+#include "/home/joshih/xa_debug.h"
 
 namespace tflite {
 
@@ -47,7 +48,69 @@ TfLiteStatus XtensaCalculateOpDataFullyConnected(
     TfLiteType data_type, const TfLiteTensor* input, const TfLiteTensor* filter,
     const TfLiteTensor* bias, TfLiteTensor* output,
     OpDataFullyConnected* data) {
-  if (data_type != kTfLiteFloat32) {
+  data->is_per_channel = false;
+
+  if (data_type == kTfLiteFloat32) {
+    return kTfLiteOk;
+  }
+
+  bool is_per_channel = false;
+  if (filter->quantization.type == kTfLiteAffineQuantization &&
+      filter->quantization.params != nullptr) {
+    const auto* affine_quantization =
+        reinterpret_cast<TfLiteAffineQuantization*>(
+            filter->quantization.params);
+    TF_LITE_ENSURE(context, affine_quantization);
+    TF_LITE_ENSURE(context, affine_quantization->scale);
+    is_per_channel = affine_quantization->scale->size > 1;
+  }
+
+  if (is_per_channel) {
+    data->is_per_channel = is_per_channel;
+    const auto* affine_quantization =
+        reinterpret_cast<TfLiteAffineQuantization*>(
+            filter->quantization.params);
+    const int per_channel_quantization_size = affine_quantization->scale->size;
+
+    //  Currently only Int8/Int16 are supported for per channel quantization.
+    TF_LITE_ENSURE(
+        context,
+        (input->type == kTfLiteInt8 && filter->type != kTfLiteInt4) ||
+            (input->type == kTfLiteInt16 && filter->type != kTfLiteInt4));
+
+    TF_LITE_ENSURE_EQ(context, affine_quantization->scale->size,
+                      per_channel_quantization_size);
+
+    TF_LITE_ENSURE_EQ(
+        context, per_channel_quantization_size,
+        filter->dims->data[affine_quantization->quantized_dimension]);
+
+    data->per_channel_output_multiplier =
+        static_cast<int32_t*>(context->AllocatePersistentBuffer(
+            context, per_channel_quantization_size * sizeof(int32_t)));
+    data->per_channel_output_shift =
+        static_cast<int32_t*>(context->AllocatePersistentBuffer(
+            context, per_channel_quantization_size * sizeof(int32_t)));
+
+    // Populate multiplier and shift using affine quantization.
+    const float input_scale = input->params.scale;
+    const float output_scale = output->params.scale;
+    const float* filter_scales = affine_quantization->scale->data;
+
+    for (int i = 0; i < per_channel_quantization_size; ++i) {
+      const float scale = filter_scales[i];
+      const double filter_scale = static_cast<double>(scale);
+      const double effective_output_scale = static_cast<double>(input_scale) *
+                                            filter_scale /
+                                            static_cast<double>(output_scale);
+      int32_t significand;
+      int channel_shift;
+      QuantizeMultiplier(effective_output_scale, &significand, &channel_shift);
+      data->per_channel_output_multiplier[i] = significand;
+      data->per_channel_output_shift[i] = channel_shift;
+    }
+  } 
+  else {
     double real_multiplier = 0.0;
     TF_LITE_ENSURE_STATUS(GetQuantizedConvolutionMultipler(
         context, input, filter, bias, output, &real_multiplier));
@@ -63,6 +126,7 @@ TfLiteStatus XtensaCalculateOpDataFullyConnected(
     QuantizeMultiplier(real_multiplier, &data->output_multiplier,
                        &data->output_shift);
 #endif
+  }
 
     // Filter weights will always be symmetric quantized since we only support
     // int8 quantization. See
@@ -78,7 +142,6 @@ TfLiteStatus XtensaCalculateOpDataFullyConnected(
     return CalculateActivationRangeQuantized(context, activation, output,
                                              &data->output_activation_min,
                                              &data->output_activation_max);
-  }
   return kTfLiteOk;
 }
 
