@@ -1076,3 +1076,27 @@ index 1ec8a9a..22913b6 100644
    else
    {
      WORD32 inp1_zb, inp1_ls, inp1_mult;
+diff --git a/algo/kernels/activations/hifi5/xa_nn_activations_asym16_asym16.c b/algo/kernels/activations/hifi5/xa_nn_activations_asym16_asym16.c
+index b066d41..55c4750 100644
+--- a/algo/kernels/activations/hifi5/xa_nn_activations_asym16_asym16.c
++++ b/algo/kernels/activations/hifi5/xa_nn_activations_asym16_asym16.c
+@@ -46,7 +46,6 @@ WORD32 xa_nn_vec_leaky_relu_asym16s_asym16s( WORD16 * __restrict__ p_out,
+   XA_NNLIB_ARG_CHK_COND(((inp_zero_bias < -32768) || (inp_zero_bias > 32767)), -1);
+   XA_NNLIB_ARG_CHK_COND(((out_shift < -31) || (out_shift > 31)), -1);
+   XA_NNLIB_ARG_CHK_COND(((alpha_shift < -31) || (alpha_shift > 31)), -1);
+-  XA_NNLIB_ARG_CHK_COND((alpha_multiplier < 0), -1);
+   XA_NNLIB_ARG_CHK_COND((out_multiplier < 0), -1);
+   XA_NNLIB_ARG_CHK_COND(((out_zero_bias < -32768) || (out_zero_bias > 32767)), -1);
+ 
+diff --git a/algo/kernels/activations/hifi5/xa_nn_activations_asym8_asym8.c b/algo/kernels/activations/hifi5/xa_nn_activations_asym8_asym8.c
+index f5e5e71..337c46e 100644
+--- a/algo/kernels/activations/hifi5/xa_nn_activations_asym8_asym8.c
++++ b/algo/kernels/activations/hifi5/xa_nn_activations_asym8_asym8.c
+@@ -1678,7 +1678,6 @@ WORD32 xa_nn_vec_leaky_relu_asym8s_asym8s( WORD8 * __restrict__ p_out,
+   XA_NNLIB_ARG_CHK_COND(((inp_zero_bias < -128) || (inp_zero_bias > 127)), -1);
+   XA_NNLIB_ARG_CHK_COND(((out_shift < -31) || (out_shift > 31)), -1);
+   XA_NNLIB_ARG_CHK_COND(((alpha_shift < -31) || (alpha_shift > 31)), -1);
+-  XA_NNLIB_ARG_CHK_COND((alpha_multiplier < 0), -1);
+   XA_NNLIB_ARG_CHK_COND((out_multiplier < 0), -1);
+   XA_NNLIB_ARG_CHK_COND(((out_zero_bias < -128) || (out_zero_bias > 127)), -1);
+ 
