@@ -1,8 +1,32 @@
-diff --git a/algo/kernels/basic/hifi5/xa_nn_elm_add_quant8.c b/algo/kernels/basic/hifi5/xa_nn_elm_add_quant8.c
-index 1eb2d89..eef1d6b 100644
---- a/algo/kernels/basic/hifi5/xa_nn_elm_add_quant8.c
-+++ b/algo/kernels/basic/hifi5/xa_nn_elm_add_quant8.c
-@@ -734,6 +734,48 @@ WORD32 xa_nn_elm_add_broadcast_4D_asym8sxasym8s_asym8s(WORD8 * __restrict__ p_ou
+diff --git a/algo/kernels/activations/hifi4/xa_nn_activations_asym16_asym16.c b/algo/kernels/activations/hifi4/xa_nn_activations_asym16_asym16.c
+index e5fb930..9816615 100644
+--- a/algo/kernels/activations/hifi4/xa_nn_activations_asym16_asym16.c
++++ b/algo/kernels/activations/hifi4/xa_nn_activations_asym16_asym16.c
+@@ -63,7 +63,6 @@ WORD32 xa_nn_vec_leaky_relu_asym16s_asym16s( WORD16 * __restrict__ p_out,
+   XA_NNLIB_ARG_CHK_COND(((inp_zero_bias < -32768) || (inp_zero_bias > 32767)), -1);
+   XA_NNLIB_ARG_CHK_COND(((out_shift < -31) || (out_shift > 31)), -1);
+   XA_NNLIB_ARG_CHK_COND(((alpha_shift < -31) || (alpha_shift > 31)), -1);
+-  XA_NNLIB_ARG_CHK_COND((alpha_multiplier < 0), -1);
+   XA_NNLIB_ARG_CHK_COND((out_multiplier < 0), -1);
+   XA_NNLIB_ARG_CHK_COND(((out_zero_bias < -32768) || (out_zero_bias > 32767)), -1);
+ 
+diff --git a/algo/kernels/activations/hifi4/xa_nn_activations_asym8_asym8.c b/algo/kernels/activations/hifi4/xa_nn_activations_asym8_asym8.c
+index 07336bd..a3d2862 100644
+--- a/algo/kernels/activations/hifi4/xa_nn_activations_asym8_asym8.c
++++ b/algo/kernels/activations/hifi4/xa_nn_activations_asym8_asym8.c
+@@ -1490,7 +1490,6 @@ WORD32 xa_nn_vec_leaky_relu_asym8s_asym8s( WORD8 * __restrict__ p_out,
+   XA_NNLIB_ARG_CHK_COND(((inp_zero_bias < -128) || (inp_zero_bias > 127)), -1);
+   XA_NNLIB_ARG_CHK_COND(((out_shift < -31) || (out_shift > 31)), -1);
+   XA_NNLIB_ARG_CHK_COND(((alpha_shift < -31) || (alpha_shift > 31)), -1);
+-  XA_NNLIB_ARG_CHK_COND((alpha_multiplier < 0), -1);
+   XA_NNLIB_ARG_CHK_COND((out_multiplier < 0), -1);
+   XA_NNLIB_ARG_CHK_COND(((out_zero_bias < -128) || (out_zero_bias > 127)), -1);
+ 
+diff --git a/algo/kernels/basic/hifi4/xa_nn_elm_add_quant8.c b/algo/kernels/basic/hifi4/xa_nn_elm_add_quant8.c
+index d69744b..5f588a5 100644
+--- a/algo/kernels/basic/hifi4/xa_nn_elm_add_quant8.c
++++ b/algo/kernels/basic/hifi4/xa_nn_elm_add_quant8.c
+@@ -1826,6 +1826,48 @@ WORD32 xa_nn_elm_add_broadcast_4D_asym8sxasym8s_asym8s(WORD8 * __restrict__ p_ou
                  1,
                  p_out_shape[0] * inp1_strides[0]);
    }
@@ -51,7 +75,7 @@ index 1eb2d89..eef1d6b 100644
    else if(inp1_strides[3] == inp2_strides[3])
    {
      WORD32 in_lc, out_lc;
-@@ -810,48 +852,6 @@ WORD32 xa_nn_elm_add_broadcast_4D_asym8sxasym8s_asym8s(WORD8 * __restrict__ p_ou
+@@ -1902,48 +1944,6 @@ WORD32 xa_nn_elm_add_broadcast_4D_asym8sxasym8s_asym8s(WORD8 * __restrict__ p_ou
        p_inp2_tmp += inp2_strides[0];
      }
    }
@@ -100,11 +124,11 @@ index 1eb2d89..eef1d6b 100644
    else
    {
      WORD32 inp1_zb, inp1_ls, inp1_mult;
-diff --git a/algo/kernels/basic/hifi5/xa_nn_elm_mul_quant8.c b/algo/kernels/basic/hifi5/xa_nn_elm_mul_quant8.c
-index 94f3dcf..8ea1f2c 100644
---- a/algo/kernels/basic/hifi5/xa_nn_elm_mul_quant8.c
-+++ b/algo/kernels/basic/hifi5/xa_nn_elm_mul_quant8.c
-@@ -601,6 +601,33 @@ WORD32 xa_nn_elm_mul_broadcast_4D_asym8sxasym8s_asym8s(WORD8 * __restrict__ p_ou
+diff --git a/algo/kernels/basic/hifi4/xa_nn_elm_mul_quant8.c b/algo/kernels/basic/hifi4/xa_nn_elm_mul_quant8.c
+index 770f00b..6abcc91 100644
+--- a/algo/kernels/basic/hifi4/xa_nn_elm_mul_quant8.c
++++ b/algo/kernels/basic/hifi4/xa_nn_elm_mul_quant8.c
+@@ -1525,6 +1525,33 @@ WORD32 xa_nn_elm_mul_broadcast_4D_asym8sxasym8s_asym8s(WORD8 * __restrict__ p_ou
                  1,
                  p_out_shape[0] * inp1_strides[0]);
    }
@@ -138,7 +162,7 @@ index 94f3dcf..8ea1f2c 100644
    else if(inp1_strides[3] == inp2_strides[3])
    {
      WORD32 in_lc, out_lc;
-@@ -664,33 +691,6 @@ WORD32 xa_nn_elm_mul_broadcast_4D_asym8sxasym8s_asym8s(WORD8 * __restrict__ p_ou
+@@ -1588,33 +1615,6 @@ WORD32 xa_nn_elm_mul_broadcast_4D_asym8sxasym8s_asym8s(WORD8 * __restrict__ p_ou
        p_inp2_tmp += inp2_strides[0];
      }
    }
@@ -172,11 +196,11 @@ index 94f3dcf..8ea1f2c 100644
    else
    {
      WORD32 inp1_zb;
-diff --git a/algo/kernels/basic/hifi5/xa_nn_elm_squared_diff_quant8.c b/algo/kernels/basic/hifi5/xa_nn_elm_squared_diff_quant8.c
-index 1ec8a9a..22913b6 100644
---- a/algo/kernels/basic/hifi5/xa_nn_elm_squared_diff_quant8.c
-+++ b/algo/kernels/basic/hifi5/xa_nn_elm_squared_diff_quant8.c
-@@ -458,6 +458,46 @@ WORD32 xa_nn_elm_squared_diff_broadcast_4D_asym8sxasym8s_asym8s(WORD8 * __restri
+diff --git a/algo/kernels/basic/hifi4/xa_nn_elm_squared_diff_quant8.c b/algo/kernels/basic/hifi4/xa_nn_elm_squared_diff_quant8.c
+index e7e3858..78041c8 100644
+--- a/algo/kernels/basic/hifi4/xa_nn_elm_squared_diff_quant8.c
++++ b/algo/kernels/basic/hifi4/xa_nn_elm_squared_diff_quant8.c
+@@ -637,6 +637,46 @@ WORD32 xa_nn_elm_squared_diff_broadcast_4D_asym8sxasym8s_asym8s(WORD8 * __restri
                  1,
                  p_out_shape[0] * inp1_strides[0]);
    }
@@ -223,7 +247,7 @@ index 1ec8a9a..22913b6 100644
    else if(inp1_strides[3] == inp2_strides[3])
    {
      WORD32 in_lc, out_lc;
-@@ -536,46 +576,6 @@ WORD32 xa_nn_elm_squared_diff_broadcast_4D_asym8sxasym8s_asym8s(WORD8 * __restri
+@@ -713,46 +753,6 @@ WORD32 xa_nn_elm_squared_diff_broadcast_4D_asym8sxasym8s_asym8s(WORD8 * __restri
        p_inp2_tmp += inp2_strides[0];
      }
    }
@@ -270,27 +294,3 @@ index 1ec8a9a..22913b6 100644
    else
    {
      WORD32 inp1_zb, inp1_ls, inp1_mult;
-diff --git a/algo/kernels/activations/hifi5/xa_nn_activations_asym16_asym16.c b/algo/kernels/activations/hifi5/xa_nn_activations_asym16_asym16.c
-index b066d41..55c4750 100644
---- a/algo/kernels/activations/hifi5/xa_nn_activations_asym16_asym16.c
-+++ b/algo/kernels/activations/hifi5/xa_nn_activations_asym16_asym16.c
-@@ -46,7 +46,6 @@ WORD32 xa_nn_vec_leaky_relu_asym16s_asym16s( WORD16 * __restrict__ p_out,
-   XA_NNLIB_ARG_CHK_COND(((inp_zero_bias < -32768) || (inp_zero_bias > 32767)), -1);
-   XA_NNLIB_ARG_CHK_COND(((out_shift < -31) || (out_shift > 31)), -1);
-   XA_NNLIB_ARG_CHK_COND(((alpha_shift < -31) || (alpha_shift > 31)), -1);
--  XA_NNLIB_ARG_CHK_COND((alpha_multiplier < 0), -1);
-   XA_NNLIB_ARG_CHK_COND((out_multiplier < 0), -1);
-   XA_NNLIB_ARG_CHK_COND(((out_zero_bias < -32768) || (out_zero_bias > 32767)), -1);
- 
-diff --git a/algo/kernels/activations/hifi5/xa_nn_activations_asym8_asym8.c b/algo/kernels/activations/hifi5/xa_nn_activations_asym8_asym8.c
-index f5e5e71..337c46e 100644
---- a/algo/kernels/activations/hifi5/xa_nn_activations_asym8_asym8.c
-+++ b/algo/kernels/activations/hifi5/xa_nn_activations_asym8_asym8.c
-@@ -1678,7 +1678,6 @@ WORD32 xa_nn_vec_leaky_relu_asym8s_asym8s( WORD8 * __restrict__ p_out,
-   XA_NNLIB_ARG_CHK_COND(((inp_zero_bias < -128) || (inp_zero_bias > 127)), -1);
-   XA_NNLIB_ARG_CHK_COND(((out_shift < -31) || (out_shift > 31)), -1);
-   XA_NNLIB_ARG_CHK_COND(((alpha_shift < -31) || (alpha_shift > 31)), -1);
--  XA_NNLIB_ARG_CHK_COND((alpha_multiplier < 0), -1);
-   XA_NNLIB_ARG_CHK_COND((out_multiplier < 0), -1);
-   XA_NNLIB_ARG_CHK_COND(((out_zero_bias < -128) || (out_zero_bias > 127)), -1);
- 
