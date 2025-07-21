@@ -52,42 +52,76 @@ TfLiteStatus XtensaEvalFullyConnectedQuantizedInt16(
   const int accum_depth = filter_shape.Dims(filter_dim_count - 1);
 
   FullyConnectedParams op_params = FullyConnectedParamsQuantized(data);
-  if(num_batches == 1) {
-      TF_LITE_ENSURE_EQ(
-          context,
-          xa_nn_fully_connected_v2_sym8sxsym16s_sym16s(
-              tflite::micro::GetTensorData<int16_t>(output),
-              tflite::micro::GetTensorData<int8_t>(filter),
-              tflite::micro::GetTensorData<int16_t>(input),
-              bias_data, accum_depth, output_depth,
-              op_params.output_multiplier, op_params.output_shift,
-              data.output_activation_min, data.output_activation_max, NULL),
-          0);
+  if (data.is_per_channel)
+  {
+    TF_LITE_ENSURE_EQ(
+        context,
+        xa_nn_matmul_v2_per_chan_sym8sxsym16s_sym16s(
+            tflite::micro::GetTensorData<int16_t>(output),
+            tflite::micro::GetTensorData<int8_t>(filter),
+            tflite::micro::GetTensorData<int16_t>(input),
+            bias_data, output_depth, accum_depth, accum_depth,
+            num_batches, accum_depth, output_depth, 1,
+            op_params.input_offset, data.per_channel_output_multiplier,
+            data.per_channel_output_shift, op_params.output_offset, 
+            data.output_activation_min, data.output_activation_max, NULL),
+        0);
   }
-  else{
-      TF_LITE_ENSURE_EQ(
-          context,
-          xa_nn_matmul_v2_sym8sxsym16s_sym16s(
-              tflite::micro::GetTensorData<int16_t>(output),
-              tflite::micro::GetTensorData<int8_t>(filter),
-              tflite::micro::GetTensorData<int16_t>(input),
-              bias_data, output_depth, accum_depth, accum_depth,
-              num_batches, accum_depth, output_depth, 1,
-              op_params.input_offset, op_params.output_multiplier, 
-              op_params.output_shift, op_params.output_offset,
-              data.output_activation_min, data.output_activation_max, NULL),
-          0);    
+  else
+  {
+    if(num_batches == 1) {
+        TF_LITE_ENSURE_EQ(
+            context,
+            xa_nn_fully_connected_v2_sym8sxsym16s_sym16s(
+                tflite::micro::GetTensorData<int16_t>(output),
+                tflite::micro::GetTensorData<int8_t>(filter),
+                tflite::micro::GetTensorData<int16_t>(input),
+                bias_data, accum_depth, output_depth,
+                op_params.output_multiplier, op_params.output_shift,
+                data.output_activation_min, data.output_activation_max, NULL),
+            0);
+    }
+    else{
+        TF_LITE_ENSURE_EQ(
+            context,
+            xa_nn_matmul_v2_sym8sxsym16s_sym16s(
+                tflite::micro::GetTensorData<int16_t>(output),
+                tflite::micro::GetTensorData<int8_t>(filter),
+                tflite::micro::GetTensorData<int16_t>(input),
+                bias_data, output_depth, accum_depth, accum_depth,
+                num_batches, accum_depth, output_depth, 1,
+                op_params.input_offset, op_params.output_multiplier, 
+                op_params.output_shift, op_params.output_offset,
+                data.output_activation_min, data.output_activation_max, NULL),
+            0);    
+    }
   }
-
 #else
-  reference_integer_ops::FullyConnected(
-      FullyConnectedParamsQuantized(data), tflite::micro::GetTensorShape(input),
-      tflite::micro::GetTensorData<int16_t>(input),
-      tflite::micro::GetTensorShape(filter),
-      tflite::micro::GetTensorData<int8_t>(filter),
-      tflite::micro::GetTensorShape(bias), bias_data,
-      tflite::micro::GetTensorShape(output),
-      tflite::micro::GetTensorData<int16_t>(output));
+  if (data.is_per_channel)
+  {
+    reference_integer_ops::FullyConnectedPerChannel(
+        FullyConnectedParamsQuantized(data),
+        data.per_channel_output_multiplier,
+        reinterpret_cast<const int*>(data.per_channel_output_shift),
+        tflite::micro::GetTensorShape(input),
+        tflite::micro::GetTensorData<int16_t>(input),
+        tflite::micro::GetTensorShape(filter),
+        tflite::micro::GetTensorData<int8_t>(filter),
+        tflite::micro::GetTensorShape(bias), bias_data,
+        tflite::micro::GetTensorShape(output),
+        tflite::micro::GetTensorData<int16_t>(output))
+  }
+  else
+  {
+    reference_integer_ops::FullyConnected(
+        FullyConnectedParamsQuantized(data), tflite::micro::GetTensorShape(input),
+        tflite::micro::GetTensorData<int16_t>(input),
+        tflite::micro::GetTensorShape(filter),
+        tflite::micro::GetTensorData<int8_t>(filter),
+        tflite::micro::GetTensorShape(bias), bias_data,
+        tflite::micro::GetTensorShape(output),
+        tflite::micro::GetTensorData<int16_t>(output));
+  }
 #endif  // defined(HIFI4) || defined(HIFI5)
   return kTfLiteOk;
 }
