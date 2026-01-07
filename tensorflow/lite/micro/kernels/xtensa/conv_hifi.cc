@@ -762,27 +762,25 @@ TfLiteStatus ConvEvalHifiFloat32(TfLiteContext* context, TfLiteNode* node,
       float32_t* p_out_temp;
       p_out_temp = &output_data[batch * out_length];
 
-      if((filter_depth == input_depth) && ((params.dilation_width_factor == 1) && (params.dilation_height_factor == 1))){
-        TF_LITE_ENSURE_EQ(
-            context,
-            xa_nn_conv2d_std_f32(
-                p_out_temp,
-                &input_data[batch * input_height * input_width * input_depth],
-                const_cast<float32_t*>(filter_data),  // filter_data,
-                bias_data, input_height, input_width, input_depth,
-                filter_height, filter_width, output_depth, stride_width,
-                stride_height, pad_width, pad_height, output_height,
-                output_width,output_data_format, static_cast<void*>(p_scratch)),
-            0);
+      TF_LITE_ENSURE_EQ(
+          context,
+          xa_nn_conv2d_std_f32(
+              p_out_temp,
+              &input_data[batch * input_height * input_width * input_depth],
+              const_cast<float32_t*>(filter_data),  // filter_data,
+              bias_data, input_height, input_width, input_depth,
+              filter_height, filter_width, output_depth, stride_width,
+              stride_height, pad_width, pad_height, output_height,
+              output_width,output_data_format, static_cast<void*>(p_scratch)),
+          0);
 
-        err = xa_nn_vec_activation_min_max_f32_f32(
-            p_out_temp,
-            p_out_temp,
-            op_params.float_activation_min,
-            op_params.float_activation_max,
-            out_length);
-        TF_LITE_ENSURE(context, err == 0);
-      }
+      err = xa_nn_vec_activation_min_max_f32_f32(
+          p_out_temp,
+          p_out_temp,
+          op_params.float_activation_min,
+          op_params.float_activation_max,
+          out_length);
+      TF_LITE_ENSURE(context, err == 0);
     }
   }
   else{
