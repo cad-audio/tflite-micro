@@ -54,7 +54,7 @@ TfLiteStatus ConvPrepareHifi(TfLiteContext* context, TfLiteNode* node) {
 
   bool inputs_and_bias_ok =
       (input->type == kTfLiteInt8 ||
-      (input->type == kTfLiteInt16 && bias->type == kTfLiteInt64) || 
+      (input->type == kTfLiteInt16 && bias && bias->type == kTfLiteInt64) || 
       input->type == kTfLiteFloat32);
 
   if (inputs_and_bias_ok == 0) {
@@ -661,7 +661,7 @@ TfLiteStatus ConvEvalHifiInt4(TfLiteContext* context, TfLiteNode* node,
           tflite::micro::GetTensorShape(filter),
           filter_data,
           tflite::micro::GetTensorShape(bias),
-          tflite::micro::GetTensorData<int32_t>(bias),
+          tflite::micro::GetOptionalTensorData<int32_t>(bias),
           tflite::micro::GetTensorShape(output),
           tflite::micro::GetTensorData<int8_t>(output));        
     }
