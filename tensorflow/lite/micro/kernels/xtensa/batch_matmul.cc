@@ -409,8 +409,8 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
   }
 
   if (lhs_data->type == kTfLiteInt8) {
-    required_scratch = xa_nn_batch_matmul_getsize(mat_inp1_shape, mat_inp2_shape,
-                          adj_x, !adj_y, -4, -4 );
+    required_scratch = xa_nn_batch_matmul_getsize(mat_inp2_shape, mat_inp1_shape,
+                          !adj_y, adj_x, -4, -4 );
     TF_LITE_ENSURE(context, required_scratch >= 0);
     TF_LITE_ENSURE_OK(
         context, context->RequestScratchBufferInArena(
@@ -418,8 +418,8 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
   }
 
   if (lhs_data->type == kTfLiteInt16) {
-    required_scratch = xa_nn_batch_matmul_getsize(mat_inp1_shape, mat_inp2_shape,
-                          adj_x, !adj_y, -8, -8);
+    required_scratch = xa_nn_batch_matmul_getsize(mat_inp2_shape, mat_inp1_shape,
+                          !adj_y, adj_x, -8, -8);
     TF_LITE_ENSURE(context, required_scratch >= 0);
     TF_LITE_ENSURE_OK(
         context, context->RequestScratchBufferInArena(
