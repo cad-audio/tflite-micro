@@ -54,7 +54,7 @@ TfLiteStatus ConvPrepareHifi(TfLiteContext* context, TfLiteNode* node) {
 
   bool inputs_and_bias_ok =
       (input->type == kTfLiteInt8 ||
-      (input->type == kTfLiteInt16 && bias && bias->type == kTfLiteInt64) || 
+      (input->type == kTfLiteInt16 && (!bias || bias->type == kTfLiteInt64)) || 
       input->type == kTfLiteFloat32);
 
   if (inputs_and_bias_ok == 0) {
