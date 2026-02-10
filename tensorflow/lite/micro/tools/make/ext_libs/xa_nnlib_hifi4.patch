@@ -68,3 +68,47 @@ index df5ba5a..0a9fb28 100644
      d_inp0_t = XT_FIROUND_S(d_inp0_t);
      d_out32_0 = XT_TRUNC_S(d_inp0_t, 0);    
      d_out32_0 = AE_ADD32S(d_out32_0, d_out_zero_bias);
+diff --git a/algo/kernels/cnn/hifi4/xa_nn_matXvec_f32_circ.c b/algo/kernels/cnn/hifi4/xa_nn_matXvec_f32_circ.c
+index d368fe4..288c552 100644
+--- a/algo/kernels/cnn/hifi4/xa_nn_matXvec_f32_circ.c
++++ b/algo/kernels/cnn/hifi4/xa_nn_matXvec_f32_circ.c
+@@ -212,8 +212,8 @@ WORD32 xa_nn_matXvec_f32_circ(
+  
+                 xtfloat _xtfloat_mat_0 = ZERO_S();
+                 xtfloat _xtfloat_mat_1 = ZERO_S();
+-                AE_ADDCIRC_XC(p64_x0, (m_itr)*row_offset*sizeof(FLOAT32));
+-                AE_ADDCIRC_XC(p64_x1, (m_itr+1)*row_offset*sizeof(FLOAT32));
++                AE_ADDCIRC16X4_XC(p64_x0, (m_itr)*row_offset*sizeof(FLOAT32));
++                AE_ADDCIRC16X4_XC(p64_x1, (m_itr+1)*row_offset*sizeof(FLOAT32));
+                 xtfloat *px0 = (xtfloat*)p64_x0;
+                 xtfloat *px1 = (xtfloat*)p64_x1;
+                 int k;
+@@ -282,7 +282,7 @@ WORD32 xa_nn_matXvec_f32_circ(
+                 xtfloat *p_vec3  = (xtfloat *)(&p_vec[(vec_itr+3)*vec_offset]);
+  
+                 xtfloat _xtfloat_mat_0 = ZERO_S();
+-                AE_ADDCIRC_XC(p64_x0, (m_itr)*row_offset*sizeof(FLOAT32));
++                AE_ADDCIRC16X4_XC(p64_x0, (m_itr)*row_offset*sizeof(FLOAT32));
+                 xtfloat *px0 = (xtfloat*)p64_x0;
+                 int k;
+                 for(k = 0; k < cols; k++, p_vec0++, p_vec1++, p_vec2++, p_vec3++)
+@@ -333,8 +333,8 @@ WORD32 xa_nn_matXvec_f32_circ(
+  
+                 xtfloat _xtfloat_mat_0 = ZERO_S();
+                 xtfloat _xtfloat_mat_1 = ZERO_S();
+-                AE_ADDCIRC_XC(p64_x0, (m_itr)*row_offset*sizeof(FLOAT32));
+-                AE_ADDCIRC_XC(p64_x1, (m_itr+1)*row_offset*sizeof(FLOAT32));
++                AE_ADDCIRC16X4_XC(p64_x0, (m_itr)*row_offset*sizeof(FLOAT32));
++                AE_ADDCIRC16X4_XC(p64_x1, (m_itr+1)*row_offset*sizeof(FLOAT32));
+                 xtfloat *px0 = (xtfloat *)p64_x0;
+                 xtfloat *px1 = (xtfloat *)p64_x1;
+                 int k;
+@@ -382,7 +382,7 @@ WORD32 xa_nn_matXvec_f32_circ(
+                 xtfloat *p_vec1  = (xtfloat *)(&p_vec[(vec_itr+1)*vec_offset]);
+  
+                 xtfloat _xtfloat_mat_0 = ZERO_S();
+-                AE_ADDCIRC_XC(p64_x0, (m_itr)*row_offset*sizeof(FLOAT32));
++                AE_ADDCIRC16X4_XC(p64_x0, (m_itr)*row_offset*sizeof(FLOAT32));
+                 xtfloat *px0 = (xtfloat*)p64_x0;
+                 int k;
+                 for(k = 0; k < cols; k++, p_vec0++, p_vec1++)
