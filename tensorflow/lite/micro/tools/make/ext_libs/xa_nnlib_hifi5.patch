@@ -37,3 +37,64 @@ index ea2e6f4..585c58f 100644
  
  
    XA_NNLIB_ARG_CHK_COND((kernel_height_dilation > ( y_padding + input_height + y_b_pad)), -1);//dilation
+diff --git a/algo/kernels/basic/hifi5/xa_nn_elm_quantize.c b/algo/kernels/basic/hifi5/xa_nn_elm_quantize.c
+index a658d11..531cc43 100644
+--- a/algo/kernels/basic/hifi5/xa_nn_elm_quantize.c
++++ b/algo/kernels/basic/hifi5/xa_nn_elm_quantize.c
+@@ -1584,23 +1584,35 @@ WORD32 xa_nn_elm_quantize_f32_asym16s(WORD16 * __restrict__ p_out,
+   ae_int32x2 d_out_zero_bias = SW_MOVDA32(out_zero_bias);
+   xtfloat *out_scale_ptr = (xtfloat*)&out_scale;
+   xtfloatx2 d_out_scale = AE_MOVXTFLOATX2_FROMXTFLOAT(*out_scale_ptr);
+-  xtfloatx2 d_one = FLOAT_SX2(SW_MOVDA32(1),0);
+-  xtfloatx2 d_one_over_out_scale = XT_DIV_SX2(d_one, d_out_scale);
++#ifdef DIV_SX4
++  xtfloatx4 d_out_scalex4 = xtfloat_rtor_xtfloatx4(*out_scale_ptr);
++#endif
+ 
+   for(i = 0; i < (num_elm >> 3); i++)
+   {
+-    xtfloatx2 d_inp0, d_inp1, d_inp2, d_inp3;
+     xtfloatx2 d_inp0_t, d_inp1_t, d_inp2_t, d_inp3_t;
+     ae_int16x4 d_out0, d_out1;
+     ae_int32x2 d_out32_0, d_out32_1, d_out32_2, d_out32_3;
+ 
+-
++#ifdef DIV_SX4
++    xtfloatx4 d_inp01, d_inp23;
++    AE_LASX4IP(d_inp01, align_inp, p_i);
++    AE_LASX4IP(d_inp23, align_inp, p_i);
++    d_inp01 = DIV_SX4(d_inp01, d_out_scalex4);
++    d_inp23 = DIV_SX4(d_inp23, d_out_scalex4);
++    d_inp0_t = AE_EXTRACTSX2_FROMSX4_H(d_inp01);
++    d_inp1_t = AE_EXTRACTSX2_FROMSX4_L(d_inp01);
++    d_inp2_t = AE_EXTRACTSX2_FROMSX4_H(d_inp23);
++    d_inp3_t = AE_EXTRACTSX2_FROMSX4_L(d_inp23);
++#else
++    xtfloatx2 d_inp0, d_inp1, d_inp2, d_inp3;
+     AE_LASX2X2_IP(d_inp0, d_inp1, align_inp, p_i);
+     AE_LASX2X2_IP(d_inp2, d_inp3, align_inp, p_i);
+-
+-    MUL_SX2X2(d_inp0_t, d_inp1_t, d_inp0, d_inp1, d_one_over_out_scale, d_one_over_out_scale);
+-    MUL_SX2X2(d_inp2_t, d_inp3_t, d_inp2, d_inp3, d_one_over_out_scale, d_one_over_out_scale);
+-
++    d_inp0_t = DIV_SX2(d_inp0, d_out_scale);
++    d_inp1_t = DIV_SX2(d_inp1, d_out_scale);
++    d_inp2_t = DIV_SX2(d_inp2, d_out_scale);
++    d_inp3_t = DIV_SX2(d_inp3, d_out_scale);
++#endif
+     d_inp0_t = XT_FIROUND_SX2(d_inp0_t);
+     d_inp1_t = XT_FIROUND_SX2(d_inp1_t);
+     d_inp2_t = XT_FIROUND_SX2(d_inp2_t);
+@@ -1649,8 +1661,10 @@ WORD32 xa_nn_elm_quantize_f32_asym16s(WORD16 * __restrict__ p_out,
+     d_inp2 = AE_MOVXTFLOATX2_FROMINT32X2(AE_MOVINT32X2_FROMINT16X4(d_tmp2));
+     d_inp3 = AE_MOVXTFLOATX2_FROMINT32X2(AE_MOVINT32X2_FROMINT16X4(d_tmp3));
+ 
+-    MUL_SX2X2(d_inp0_t, d_inp1_t, d_inp0, d_inp1, d_one_over_out_scale, d_one_over_out_scale);
+-    MUL_SX2X2(d_inp2_t, d_inp3_t, d_inp2, d_inp3, d_one_over_out_scale, d_one_over_out_scale);
++    d_inp0_t = DIV_SX2(d_inp0, d_out_scale);
++    d_inp1_t = DIV_SX2(d_inp1, d_out_scale);
++    d_inp2_t = DIV_SX2(d_inp2, d_out_scale);
++    d_inp3_t = DIV_SX2(d_inp3, d_out_scale);
+ 
+     d_inp0_t = XT_FIROUND_SX2(d_inp0_t);
+     d_inp1_t = XT_FIROUND_SX2(d_inp1_t);
