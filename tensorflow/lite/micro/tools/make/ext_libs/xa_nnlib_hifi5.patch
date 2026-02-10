@@ -98,3 +98,27 @@ index a658d11..531cc43 100644
  
      d_inp0_t = XT_FIROUND_SX2(d_inp0_t);
      d_inp1_t = XT_FIROUND_SX2(d_inp1_t);
+diff --git a/algo/kernels/activations/hifi5/xa_nn_softmax_asym8_asym8.c b/algo/kernels/activations/hifi5/xa_nn_softmax_asym8_asym8.c
+index 9599fd9..3902ca7 100644
+--- a/algo/kernels/activations/hifi5/xa_nn_softmax_asym8_asym8.c
++++ b/algo/kernels/activations/hifi5/xa_nn_softmax_asym8_asym8.c
+@@ -591,7 +591,7 @@ WORD32 xa_nn_vec_softmax_asym8s_asym8s( WORD8 * __restrict__ p_out,
+     xtbool4 g3210;
+     WORD8 *p_in = (WORD8 *)p_vec;
+     ae_int32x4 *p_exp = (ae_int32x4 *)ALIGN_PTR(p_scratch, ALIGNMENT);
+-    ae_int32x2 x32, x10/*, diff_min*/;
++    ae_int32x2 x32, x10, diff_min;
+     ae_int32x2 dequantized_x32, dequantized_x10;
+     ae_f32x2 unsat_out76, unsat_out54, unsat_out32, unsat_out10;
+     ae_int32x2 ONE;
+@@ -668,8 +668,8 @@ WORD32 xa_nn_vec_softmax_asym8s_asym8s( WORD8 * __restrict__ p_out,
+         }
+     }
+ 
+-//    diff_min = AE_MOVDA32(diffmin);
+-    ae_int16x4 diff_min16 = AE_MOVDA16(diffmin);
++    diff_min = AE_MOVDA32(diffmin);
++    ae_int16x4 diff_min16 = AE_SAT16X4(diff_min, diff_min);
+     sum_exp = AE_MOVF32X2_FROMINT32X2(z); // setting to zero
+ 
+     p_in = (WORD8 *)p_vec;
