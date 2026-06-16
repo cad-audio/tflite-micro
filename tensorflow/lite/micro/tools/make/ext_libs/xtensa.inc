@@ -46,6 +46,37 @@ ifeq ($(TARGET_ARCH), hifimini)
   THIRD_PARTY_CC_HDRS += \
     $(shell find $(FFT_PATH)/hifi2_fft -name "*.h")
 
+else ifeq ($(TARGET_ARCH), hifi_iq)
+
+  PLATFORM_FLAGS = \
+    -DDISABLE_ARG_CHK \
+    -Wno-shadow\
+
+  CCFLAGS += $(PLATFORM_FLAGS)
+  CXXFLAGS += $(PLATFORM_FLAGS)
+
+  NNLIB_PATH := $(MAKEFILE_DIR)/downloads/xa_nnlib_hifi_iq
+
+  THIRD_PARTY_KERNEL_CC_SRCS += \
+    $(shell find $(NNLIB_PATH) -name "*.c")
+
+  EXCLUDED_NNLIB_SRCS = \
+    $(NNLIB_PATH)/algo/layers/cnn/src/xa_nn_cnn_api.c \
+    $(NNLIB_PATH)/algo/layers/gru/src/xa_nn_gru_api.c \
+    $(NNLIB_PATH)/algo/layers/lstm/src/xa_nn_lstm_api.c \
+
+  THIRD_PARTY_KERNEL_CC_SRCS := $(filter-out $(EXCLUDED_NNLIB_SRCS), $(THIRD_PARTY_KERNEL_CC_SRCS))
+
+  THIRD_PARTY_CC_HDRS += \
+    $(shell find $(NNLIB_PATH) -name "*.h") \
+
+  INCLUDES += \
+    -I$(NNLIB_PATH)/ \
+    -I$(NNLIB_PATH)/algo/kernels/ \
+    -I$(NNLIB_PATH)/include/nnlib/ \
+    -I$(NNLIB_PATH)/include/ \
+    -I$(NNLIB_PATH)/algo/common/include/ \
+
 else ifeq ($(TARGET_ARCH), hifi5)
   DOWNLOAD_RESULT := $(shell $(MAKEFILE_DIR)/ext_libs/xtensa_download.sh ${DOWNLOADS_DIR} hifi5 $(TENSORFLOW_ROOT))
   ifneq ($(DOWNLOAD_RESULT), SUCCESS)
@@ -85,12 +116,41 @@ else ifeq ($(TARGET_ARCH), hifi5)
     $(shell find $(NDSPLIB_PATH)/library/fft/fft_ie -name "*.c") \
     $(shell find $(NDSPLIB_PATH)/library/fft/fft_ief -name "*.c") \
     $(shell find $(NDSPLIB_PATH)/library/twiddles -name "*.c") \
-    $(shell find $(NDSPLIB_PATH)/library -name "version.c")
+    $(shell find $(NDSPLIB_PATH)/library/twiddles -name "*.c")
 
   EXCLUDED_NNLIB_SRCS = \
     $(NNLIB_PATH)/algo/layers/cnn/src/xa_nn_cnn_api.c \
     $(NNLIB_PATH)/algo/layers/gru/src/xa_nn_gru_api.c \
-    $(NNLIB_PATH)/algo/layers/lstm/src/xa_nn_lstm_api.c
+    $(NNLIB_PATH)/algo/layers/lstm/src/xa_nn_lstm_api.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi5/xa_nn_conv1d_std_16x16.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi5/xa_nn_conv1d_std_8x16.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi5/xa_nn_conv1d_std_8x8.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi5/xa_nn_conv1d_std_f32.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi5/xa_nn_conv1d_std_asym8xasym8.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi5/xa_nn_conv1d_std_circ_buf.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi5/xa_nn_conv2d_depthwise_16x16.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi5/xa_nn_conv2d_depthwise_8x16.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi5/xa_nn_conv2d_depthwise_8x8.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi5/xa_nn_conv2d_pointwise_16x16.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi5/xa_nn_conv2d_pointwise_8x16.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi5/xa_nn_conv2d_pointwise_8x8.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi5/xa_nn_conv2d_std_16x16.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi5/xa_nn_conv2d_std_8x16.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi5/xa_nn_conv2d_std_8x8.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi5/xa_nn_matXvec_16x16_16_circ.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi5/xa_nn_matXvec_8x16_16_circ.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi5/xa_nn_matXvec_8x8_8_circ.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi5/xa_nn_matXvec_16x16_16_circ_nb.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi5/xa_nn_matXvec_8x16_16_circ_nb.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi5/xa_nn_matXvec_8x8_8_circ_nb.c \
+    $(NNLIB_PATH)/algo/kernels/matXvec/hifi5/xa_nn_matXvec_16x16_batch.c \
+    $(NNLIB_PATH)/algo/kernels/matXvec/hifi5/xa_nn_matXvec_8x16_batch.c \
+    $(NNLIB_PATH)/algo/kernels/matXvec/hifi5/xa_nn_matXvec_8x8_batch.c \
+    $(NNLIB_PATH)/algo/kernels/matXvec/hifi5/xa_nn_matXvec_16x16.c \
+    $(NNLIB_PATH)/algo/kernels/matXvec/hifi5/xa_nn_matXvec_8x16.c \
+    $(NNLIB_PATH)/algo/kernels/matXvec/hifi5/xa_nn_matXvec_8x8.c \
+    $(NNLIB_PATH)/algo/kernels/matXvec/hifi5/xa_nn_matmul_16x16.c \
+    $(NNLIB_PATH)/algo/kernels/matXvec/hifi5/xa_nn_matmul_8x16.c
 
   THIRD_PARTY_KERNEL_CC_SRCS := $(filter-out $(EXCLUDED_NNLIB_SRCS), $(THIRD_PARTY_KERNEL_CC_SRCS))
 
@@ -157,7 +217,36 @@ else ifeq ($(TARGET_ARCH), $(filter $(TARGET_ARCH), hifi4 hifi4_internal hifi3 h
   EXCLUDED_NNLIB_SRCS = \
     $(NNLIB_PATH)/algo/layers/cnn/src/xa_nn_cnn_api.c \
     $(NNLIB_PATH)/algo/layers/gru/src/xa_nn_gru_api.c \
-    $(NNLIB_PATH)/algo/layers/lstm/src/xa_nn_lstm_api.c
+    $(NNLIB_PATH)/algo/layers/lstm/src/xa_nn_lstm_api.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi4/xa_nn_conv1d_std_16x16.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi4/xa_nn_conv1d_std_8x16.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi4/xa_nn_conv1d_std_8x8.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi4/xa_nn_conv1d_std_f32.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi4/xa_nn_conv1d_std_asym8xasym8.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi4/xa_nn_conv1d_std_circ_buf.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi4/xa_nn_conv2d_depthwise_16x16.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi4/xa_nn_conv2d_depthwise_8x16.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi4/xa_nn_conv2d_depthwise_8x8.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi4/xa_nn_conv2d_pointwise_16x16.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi4/xa_nn_conv2d_pointwise_8x16.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi4/xa_nn_conv2d_pointwise_8x8.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi4/xa_nn_conv2d_std_16x16.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi4/xa_nn_conv2d_std_8x16.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi4/xa_nn_conv2d_std_8x8.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi4/xa_nn_matXvec_16x16_16_circ.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi4/xa_nn_matXvec_8x16_16_circ.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi4/xa_nn_matXvec_8x8_8_circ.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi4/xa_nn_matXvec_16x16_16_circ_nb.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi4/xa_nn_matXvec_8x16_16_circ_nb.c \
+    $(NNLIB_PATH)/algo/kernels/cnn/hifi4/xa_nn_matXvec_8x8_8_circ_nb.c \
+    $(NNLIB_PATH)/algo/kernels/matXvec/hifi4/xa_nn_matXvec_16x16_batch.c \
+    $(NNLIB_PATH)/algo/kernels/matXvec/hifi4/xa_nn_matXvec_8x16_batch.c \
+    $(NNLIB_PATH)/algo/kernels/matXvec/hifi4/xa_nn_matXvec_8x8_batch.c \
+    $(NNLIB_PATH)/algo/kernels/matXvec/hifi4/xa_nn_matXvec_16x16.c \
+    $(NNLIB_PATH)/algo/kernels/matXvec/hifi4/xa_nn_matXvec_8x16.c \
+    $(NNLIB_PATH)/algo/kernels/matXvec/hifi4/xa_nn_matXvec_8x8.c \
+    $(NNLIB_PATH)/algo/kernels/matXvec/hifi4/xa_nn_matmul_16x16.c \
+    $(NNLIB_PATH)/algo/kernels/matXvec/hifi4/xa_nn_matmul_8x16.c
 
   ifeq ($(TARGET_ARCH), hifi3)
     EXCLUDED_NNLIB_SRCS += \

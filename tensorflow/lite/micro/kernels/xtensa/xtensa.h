@@ -22,7 +22,7 @@ limitations under the License.
 #include "tensorflow/lite/micro/kernels/xtensa/hifimini/fixedpoint_utils.h"
 #endif  // defined(HIFMINI)
 
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
 #include "include/nnlib/xa_nnlib_api.h"
 #include "include/nnlib/xa_nnlib_standards.h"
 
@@ -35,7 +35,7 @@ limitations under the License.
 #include "vision_api.h"
 #endif  // defined(VISION_P6)
 
-#if (( XCHAL_HAVE_HIFI5_VFPU || XCHAL_HAVE_HIFI4_VFPU || XCHAL_HAVE_HIFI3Z_VFPU || XCHAL_HAVE_HIFI3_VFPU || XCHAL_HAVE_HIFI1_VFPU ) && FLOAT_OPT_FLAG )
+#if (( XCHAL_HAVE_HIFI5_VFPU || XCHAL_HAVE_HIFI4_VFPU || XCHAL_HAVE_HIFI3Z_VFPU || XCHAL_HAVE_HIFI3_VFPU || XCHAL_HAVE_HIFI1_VFPU || XCHAL_HAVE_HIFIN_SP_VFPU ) && FLOAT_OPT_FLAG )
 #define INCLUDE_FLOAT_OPT 
 #endif
 
