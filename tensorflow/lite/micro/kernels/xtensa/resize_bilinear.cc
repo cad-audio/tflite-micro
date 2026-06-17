@@ -93,7 +93,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
     tflite::ResizeBilinearParams op_params;
     op_params.align_corners = params->align_corners;
     op_params.half_pixel_centers = params->half_pixel_centers;
-#if defined(HIFI5) || defined(HIFI4)
+#if (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
     const RuntimeShape input_shape =
         RuntimeShape::ExtendedShape(4, tflite::micro::GetTensorShape(input));   
     const RuntimeShape output_size_shape =
