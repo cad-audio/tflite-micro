@@ -194,7 +194,7 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
   // Quantized kernels use an int32 scratch buffer.
   if (input->type == kTfLiteInt8) {
     TFLITE_DCHECK(context->RequestScratchBufferInArena != nullptr);
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
     const int stride_width = params->stride_width;
     const int stride_height = params->stride_height;
 
@@ -224,7 +224,7 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
   // Quantized 16x8 kernels use an int64 scratch buffer.
   if (input->type == kTfLiteInt16) {
     TFLITE_DCHECK(context->RequestScratchBufferInArena != nullptr);
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
     const int stride_width = params->stride_width;
     const int stride_height = params->stride_height;
 
@@ -251,7 +251,7 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
 #endif  // #if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
   }
 
-#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI4) || defined(HIFI5))
+#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI4) || defined(HIFI5)) && !defined(HIFI_IQ)
   if (input->type == kTfLiteFloat32) {
     TFLITE_DCHECK(context->RequestScratchBufferInArena != nullptr);
     const int stride_width = params->stride_width;
@@ -367,7 +367,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
                                &op_params.float_activation_min,
                                &op_params.float_activation_max);
 
-#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI4) || defined(HIFI5))
+#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI4) || defined(HIFI5)) && !defined(HIFI_IQ)
       std::float_t* scratch_buffer = static_cast<float_t*>(
         context->GetScratchBuffer(context, data.scratch_buffer_index)); 
       const RuntimeShape& input_shape = tflite::micro::GetTensorShape(input);
@@ -449,7 +449,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
     case kTfLiteInt8: {
       int32_t* scratch_buffer = static_cast<int32_t*>(
           context->GetScratchBuffer(context, data.scratch_buffer_index));
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       const RuntimeShape& input_shape = tflite::micro::GetTensorShape(input);
       const RuntimeShape& filter_shape =
           tflite::micro::GetTensorShape(filter);
@@ -483,7 +483,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       const int num_elements = output_shape.FlatSize();
 
       for (int b = 0; b < batches; b++) {
-        err = xa_nn_transpose_conv_sym8sxasym8s(
+        err = xa_nn_transpose_conv_v2_sym8sxasym8s(
           &output_data[b * output_height * output_width * output_depth],
           const_cast<WORD8*>(
               &input_data[b * input_height * input_width * input_depth]),
@@ -493,19 +493,13 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
           filter_width, output_height, output_width, num_elements / batches,
           num_groups, data.params.input_offset, data.params.output_offset,
           data.per_channel_output_shift, data.per_channel_output_multiplier,
-          scratch_buffer
+          scratch_buffer,
+          data.params.quantized_activation_min,
+          data.params.quantized_activation_max,
+          NULL
         );
         TF_LITE_ENSURE(context, err == 0);
       }
-
-      err = xa_nn_vec_activation_min_max_8_8(
-        output_data,
-        output_data,
-        data.params.quantized_activation_min,
-        data.params.quantized_activation_max,
-        (batches * output_height * output_width * output_depth)
-      );
-      TF_LITE_ENSURE(context, err == 0);
 #else
       reference_integer_ops::TransposeConv(
           data.params, data.per_channel_output_multiplier,
@@ -569,7 +563,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
             tflite::micro::GetTensorData<int16_t>(output),
             tflite::micro::GetTensorShape(nullptr), nullptr, scratch_buffer);
       } else {
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
         const RuntimeShape& input_shape = tflite::micro::GetTensorShape(input);
         const RuntimeShape& filter_shape =
             tflite::micro::GetTensorShape(filter);
@@ -610,7 +604,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
         const int num_elements = output_shape.FlatSize();
 
         for (int b = 0; b < batches; b++) {
-          err = xa_nn_transpose_conv_sym8sxsym16s(
+          err = xa_nn_transpose_conv_v2_sym8sxsym16s(
             &output_data[b * output_height * output_width * output_depth],
             const_cast<WORD16*>(
                 &input_data[b * input_height * input_width * input_depth]),
@@ -619,21 +613,15 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
             output_depth, input_height, input_width, filter_height,
             filter_width, output_height, output_width, num_elements / batches,
             num_groups, data.per_channel_output_shift, data.per_channel_output_multiplier,
-            scratch_buffer
+            scratch_buffer,
+            data.params.quantized_activation_min,
+            data.params.quantized_activation_max,
+            NULL
           );
           TF_LITE_ENSURE(context, err == 0);
         }
 
-        err = xa_nn_vec_activation_min_max_16_16(
-          output_data,
-          output_data,
-          data.params.quantized_activation_min,
-          data.params.quantized_activation_max,
-          (batches * output_height * output_width * output_depth)
-        );
-        TF_LITE_ENSURE(context, err == 0);
-
-#else  // #if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#else  // #if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
         reference_integer_ops::TransposeConv(
             data.params, data.per_channel_output_multiplier,
             data.per_channel_output_shift, tflite::micro::GetTensorShape(input),

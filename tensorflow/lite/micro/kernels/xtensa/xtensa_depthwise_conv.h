@@ -25,7 +25,7 @@ namespace tflite {
 struct XtensaDepthwiseConvOpData {
   OpDataConv reference_op_data;
 
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
   int scratch_tensor_index;
 #endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
 
@@ -39,7 +39,7 @@ struct XtensaDepthwiseConvOpData {
 #endif  // VISION_P6
 };
 
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
 TfLiteStatus DepthwiseConvPrepareHifi(TfLiteContext* context, TfLiteNode* node);
 
 TfLiteStatus DepthwiseConvEvalInt8Hifi(TfLiteContext* context, TfLiteNode* node,
@@ -58,7 +58,7 @@ TfLiteStatus DepthwiseConvEvalInt16Hifi(TfLiteContext* context, TfLiteNode* node
                                    const TfLiteEvalTensor* bias,
                                    TfLiteEvalTensor* output);
 
-#if defined(INCLUDE_FLOAT_OPT)
+#if defined(INCLUDE_FLOAT_OPT) && !(defined(HIFI_IQ))
 TfLiteStatus DepthwiseConvEvalFloat32Hifi(TfLiteContext* context, TfLiteNode* node,
                                    const TfLiteDepthwiseConvParams& params,
                                    const XtensaDepthwiseConvOpData& data,
@@ -74,7 +74,7 @@ TfLiteStatus DepthwiseConvReferenceEvalInt16(TfLiteContext* context,
                                             TfLiteNode* node);
 TfLiteStatus DepthwiseConvReferenceEvalFloat32(TfLiteContext* context,
                                             TfLiteNode* node);                                                                                        
-#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
 
 #if defined(VISION_P6)
 
