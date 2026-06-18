@@ -196,7 +196,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       } else {
         pad_value = *tflite::micro::GetTensorData<int8_t>(constant_values);
       }
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#if (defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
       if((input->dims->size <= 4))
       {
         int err;
@@ -236,7 +236,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
                             tflite::micro::GetTensorData<int8_t>(output));
         }
       }
-#else // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#else // defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       if (data->params.resizing_category == ResizingCategory::kImageStyle) {
         reference_ops::PadImageStyle(
             data->params, tflite::micro::GetTensorShape(input),
@@ -249,7 +249,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
                            &pad_value, tflite::micro::GetTensorShape(output),
                            tflite::micro::GetTensorData<int8_t>(output));
       }
-#endif // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#endif // defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
 #endif // defined(VISION_P6)
     } break;
     case kTfLiteInt16: {
@@ -282,7 +282,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
                            tflite::micro::GetTensorData<int16_t>(output));
 #if (defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
       }
-#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
     } break;
     case kTfLiteInt32: {
       int32_t pad_value =

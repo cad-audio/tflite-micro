@@ -130,7 +130,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
           tflite::micro::GetTensorData<int32_t>(output));
       break;
     case kTfLiteInt8: {
-#if defined(HIFI4) || defined(HIFI5)
+#if (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
       const RuntimeShape input_shape = tflite::micro::GetTensorShape(input);
       const RuntimeShape output_shape = tflite::micro::GetTensorShape(output);
       const RuntimeShape extended_input_shape = RuntimeShape::ExtendedShape(5, input_shape);
@@ -173,7 +173,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
           tflite::micro::GetTensorData<int8_t>(input),
           tflite::micro::GetTensorShape(output),
           tflite::micro::GetTensorData<int8_t>(output));
-#endif // defined(HIFI4) || defined(HIFI5)
+#endif // defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       break;
     }
     case kTfLiteInt16: {
