@@ -57,7 +57,7 @@ TfLiteStatus EvalInt8(TfLiteContext* context, TfLiteNode* node) {
     #endif        
     }
     case kTfLiteInt8: {
-    #if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+    #if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
         return ConvEvalHifiInt8(context, node, params, op_data, input, filter, bias,
                         output);
     #else
@@ -73,7 +73,7 @@ TfLiteStatus EvalInt8(TfLiteContext* context, TfLiteNode* node) {
 }
 
 TfLiteStatus EvalInt16(TfLiteContext* context, TfLiteNode* node) {
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
   const auto& op_data = *(reinterpret_cast<XtensaConvOpData*>(node->user_data));
   const auto& params =
       *(reinterpret_cast<TfLiteConvParams*>(node->builtin_data));
@@ -105,7 +105,7 @@ TfLiteStatus EvalInt16(TfLiteContext* context, TfLiteNode* node) {
 }
 
 TfLiteStatus EvalFloat32(TfLiteContext* context, TfLiteNode* node) {
-#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI3) || defined(HIFI4) || defined(HIFI5))
+#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
   const auto& op_data = *(reinterpret_cast<XtensaConvOpData*>(node->user_data));
   const auto& params =
       *(reinterpret_cast<TfLiteConvParams*>(node->builtin_data));

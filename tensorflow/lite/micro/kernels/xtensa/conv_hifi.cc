@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
 
 #include <cstdint>
 
@@ -54,7 +54,7 @@ TfLiteStatus ConvPrepareHifi(TfLiteContext* context, TfLiteNode* node) {
 
   bool inputs_and_bias_ok =
       (input->type == kTfLiteInt8 ||
-      (input->type == kTfLiteInt16 && bias && bias->type == kTfLiteInt64) || 
+      (input->type == kTfLiteInt16 && (!bias || bias->type == kTfLiteInt64)) || 
       input->type == kTfLiteFloat32);
 
   if (inputs_and_bias_ok == 0) {
@@ -87,7 +87,7 @@ TfLiteStatus ConvPrepareHifi(TfLiteContext* context, TfLiteNode* node) {
       && ((input->type == kTfLiteInt8) || (input->type == kTfLiteInt16)) && (input_depth == filter_depth)) {
     // For HiFi5, with nnlib-hifi5 versions 1.7.0 onwards and for HiFi4 with nnlib-hifi4 versions 2.5.0 onwards, 
     // we use the below dilated_conv2d_std getsize() API. For the earlier versions, "output_channels" argument is not needed.
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
   if (input->type == kTfLiteInt8) {
     required_scratch = xa_nn_dilated_conv2d_std_getsize(
         input_height, input_depth, filter_height, filter_width, stride_height,
@@ -98,7 +98,7 @@ TfLiteStatus ConvPrepareHifi(TfLiteContext* context, TfLiteNode* node) {
         input_height, input_depth, filter_height, filter_width, stride_height,
         pad_height, output_height, output_channels, PREC_SYM16S, params->dilation_height_factor);
   }
-#endif // defined(HIFI5) || defined(HIFI4)
+#endif // defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
     TF_LITE_ENSURE(context, required_scratch > 0);
   }
   else if ((params->dilation_width_factor == 1) &&
@@ -114,7 +114,6 @@ TfLiteStatus ConvPrepareHifi(TfLiteContext* context, TfLiteNode* node) {
             input_height, input_width, input_depth, filter_height, filter_width, filter_depth, params->dilation_height_factor, params->dilation_width_factor, stride_height,
             pad_height, stride_width, pad_width, output_height, output_width, output_channels, PREC_ASYM8S, PREC_SYM8S, 0/*Out data format*/);        
       }
-      TF_LITE_ENSURE(context, required_scratch > 0);
     }
     if (input->type == kTfLiteInt16) {
       if(input_depth == filter_depth){
@@ -127,7 +126,6 @@ TfLiteStatus ConvPrepareHifi(TfLiteContext* context, TfLiteNode* node) {
             input_height, input_width, input_depth, filter_height, filter_width, filter_depth, params->dilation_height_factor, params->dilation_width_factor, stride_height,
             pad_height, stride_width, pad_width, output_height, output_width, output_channels, PREC_SYM16S, PREC_SYM8S, 0/*Out data format*/);               
       }
-      TF_LITE_ENSURE(context, required_scratch > 0);
     }
 #if defined(INCLUDE_FLOAT_OPT)    
      if ((input->type == kTfLiteFloat32) && (input_depth == filter_depth)) {
@@ -137,6 +135,9 @@ TfLiteStatus ConvPrepareHifi(TfLiteContext* context, TfLiteNode* node) {
      }
 #endif     
   }
+#ifndef HIFI_IQ // Scratchpad may not be required in some cases on HiFi-iQ.
+      TF_LITE_ENSURE(context, required_scratch > 0);
+#endif
   TF_LITE_ENSURE_OK(
       context, context->RequestScratchBufferInArena(
                    context, required_scratch, &data->scratch_tensor_index));
@@ -311,6 +312,7 @@ TfLiteStatus ConvEvalHifiInt16(TfLiteContext* context, TfLiteNode* node,
                   output_activation_min, output_activation_max, NULL),
               0);
           }
+#ifndef HIFI_IQ
           else{
             TF_LITE_ENSURE_EQ(
               context,
@@ -329,6 +331,7 @@ TfLiteStatus ConvEvalHifiInt16(TfLiteContext* context, TfLiteNode* node,
                     output_activation_min, output_activation_max, NULL),
                 0);
           }
+#endif
         }
       }
     }
@@ -639,7 +642,7 @@ TfLiteStatus ConvEvalHifiInt4(TfLiteContext* context, TfLiteNode* node,
                         xa_nn_vec_activation_min_max_8_8(
                             p_out_temp, p_out_temp, output_activation_min,
                             output_activation_max, out_length),
-                      0);            
+                      0);
       }
     }
     else
@@ -804,4 +807,4 @@ TfLiteStatus ConvEvalHifiFloat32(TfLiteContext* context, TfLiteNode* node,
 #endif
 
 }  // namespace tflite
-#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)

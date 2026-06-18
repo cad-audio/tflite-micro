@@ -79,7 +79,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
           break;  
         } 
         case kTfLiteInt8: {
-#if defined(HIFI4) || defined(HIFI5)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
           return ConvEvalHifiInt8(context, node, params, op_data, input, filter,
                            bias, output);
 #elif defined(VISION_P6)
@@ -107,7 +107,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       break;
     }
     case kTfLiteInt16: {
-#if defined(HIFI4) || defined(HIFI5)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       if (bias == nullptr || bias->type == kTfLiteInt64) {
         return ConvEvalHifiInt16(context, node, params, op_data, input, filter, bias,
                           output);
