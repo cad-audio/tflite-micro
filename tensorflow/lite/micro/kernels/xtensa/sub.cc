@@ -127,7 +127,7 @@ TfLiteStatus EvalSubQuantized(TfLiteContext* context, TfLiteNode* node,
                       &op_params);
   // TODO(b/259724572): vision_p6 and hifi code path is getting very confusing.
   // Let's separate them into two different files.
-#if !(defined(HIFI3) || defined(HIFI4) || defined(HIFI5))
+#if !(defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
   bool need_broadcast = reference_ops::ProcessBroadcastShapes(
       tflite::micro::GetTensorShape(input1),
       tflite::micro::GetTensorShape(input2), &op_params);
@@ -135,7 +135,7 @@ TfLiteStatus EvalSubQuantized(TfLiteContext* context, TfLiteNode* node,
 
   switch (output->type) {
     case kTfLiteInt8: {
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       int err;
       const RuntimeShape extended_input1_shape =
           RuntimeShape::ExtendedShape(5, tflite::micro::GetTensorShape(input1));
@@ -177,7 +177,7 @@ TfLiteStatus EvalSubQuantized(TfLiteContext* context, TfLiteNode* node,
 
         TF_LITE_ENSURE(context, err == 0);
       }
-#else   // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#else   // defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       if (need_broadcast) {
         tflite::reference_ops::BroadcastQuantSubSlow(
             op_params, tflite::micro::GetTensorShape(input1),
@@ -199,7 +199,7 @@ TfLiteStatus EvalSubQuantized(TfLiteContext* context, TfLiteNode* node,
       break;
     }
     case kTfLiteInt16: {
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       int err;
       const RuntimeShape extended_input1_shape =
           RuntimeShape::ExtendedShape(5, tflite::micro::GetTensorShape(input1));
@@ -240,7 +240,7 @@ TfLiteStatus EvalSubQuantized(TfLiteContext* context, TfLiteNode* node,
 
         TF_LITE_ENSURE(context, err == 0);
       }
-#else   // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#else   // defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       if (need_broadcast) {
         tflite::reference_ops::BroadcastQuantSubSlow(
             op_params, tflite::micro::GetTensorShape(input1),
@@ -258,7 +258,7 @@ TfLiteStatus EvalSubQuantized(TfLiteContext* context, TfLiteNode* node,
             tflite::micro::GetTensorShape(output),
             tflite::micro::GetTensorData<int16_t>(output));
       }
-#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       break;
     }
     default:

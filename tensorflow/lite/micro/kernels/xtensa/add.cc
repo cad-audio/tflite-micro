@@ -49,7 +49,7 @@ TfLiteStatus EvalAdd(TfLiteContext* context, TfLiteNode* node,
       tflite::ArithmeticParams op_params;
       SetActivationParams(data->output_activation_min_f32,
                           data->output_activation_max_f32, &op_params);
-#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI3) || defined(HIFI4) || defined(HIFI5))
+#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
       int err;
       const RuntimeShape extended_input1_shape =
           RuntimeShape::ExtendedShape(4, tflite::micro::GetTensorShape(input1));
@@ -73,7 +73,7 @@ TfLiteStatus EvalAdd(TfLiteContext* context, TfLiteNode* node,
           data->output_activation_min_f32, data->output_activation_max_f32,
           extended_output_shape.FlatSize());
       TF_LITE_ENSURE(context, err == 0);
-#else   // defined(INCLUDE_FLOAT_OPT) && (defined(HIFI3) || defined(HIFI4) || defined(HIFI5))
+#else   // defined(INCLUDE_FLOAT_OPT) && (defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
       if (data->requires_broadcast) {
         reference_ops::BroadcastAdd4DSlow(
             op_params, tflite::micro::GetTensorShape(input1),
@@ -83,36 +83,12 @@ TfLiteStatus EvalAdd(TfLiteContext* context, TfLiteNode* node,
             tflite::micro::GetTensorShape(output),
             tflite::micro::GetTensorData<float>(output));
       } else {
-#if defined(INCLUDE_FLOAT_OPT)
-        int err;
-        const RuntimeShape& input1_shape = tflite::micro::GetTensorShape(input1);
-        const RuntimeShape& input2_shape = tflite::micro::GetTensorShape(input2);
-        const RuntimeShape& output_shape = tflite::micro::GetTensorShape(output);
-        const int flat_size =
-            MatchingElementsSize(input1_shape, input2_shape, output_shape);
-
-        err = xa_nn_elm_add_f32xf32_f32(tflite::micro::GetTensorData<float>(output),
-                                        tflite::micro::GetTensorData<float>(input1),
-                                        tflite::micro::GetTensorData<float>(input2),
-                                        flat_size);
-
-        TF_LITE_ENSURE(context, err == 0);
-
-        err = xa_nn_vec_activation_min_max_f32_f32(
-            tflite::micro::GetTensorData<float>(output),
-            tflite::micro::GetTensorData<float>(output),
-            data->output_activation_min_f32, data->output_activation_max_f32,
-            flat_size);
-
-        TF_LITE_ENSURE(context, err == 0);
-#else
         reference_ops::Add(op_params, tflite::micro::GetTensorShape(input1),
                            tflite::micro::GetTensorData<float>(input1),
                            tflite::micro::GetTensorShape(input2),
                            tflite::micro::GetTensorData<float>(input2),
                            tflite::micro::GetTensorShape(output),
                            tflite::micro::GetTensorData<float>(output));
-#endif // defined(INCLUDE_FLOAT_OPT)
       }
 #endif  // defined(INCLUDE_FLOAT_OPT) && (defined(HIFI3) || defined(HIFI4) || defined(HIFI5))
     } break;
@@ -163,7 +139,7 @@ TfLiteStatus EvalAddQuantized(TfLiteContext* context, TfLiteNode* node,
   op_params.output_shift = data->output_shift;
   SetActivationParams(data->output_activation_min, data->output_activation_max,
                       &op_params);
-#if !(defined(HIFI4) || defined(HIFI5))
+#if !(defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
   bool need_broadcast = reference_ops::ProcessBroadcastShapes(
       tflite::micro::GetTensorShape(input1),
       tflite::micro::GetTensorShape(input2), &op_params);
@@ -176,7 +152,7 @@ TfLiteStatus EvalAddQuantized(TfLiteContext* context, TfLiteNode* node,
           *(reinterpret_cast<XtensaAddOpData*>(node->user_data));
       AddEvalQuantizedVision(context, node, *params, op_data, input1, input2,
                              output);
-#elif defined(HIFI4) || defined(HIFI5) // #if defined(VISION_P6)
+#elif defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)  // #if defined(VISION_P6)
       int err;
       const RuntimeShape extended_input1_shape =
           RuntimeShape::ExtendedShape(4, tflite::micro::GetTensorShape(input1));
@@ -222,7 +198,7 @@ TfLiteStatus EvalAddQuantized(TfLiteContext* context, TfLiteNode* node,
       break;
     }
     case kTfLiteInt16: {
-#if defined(HIFI4) || defined(HIFI5)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       int err;
       const RuntimeShape extended_input1_shape =
           RuntimeShape::ExtendedShape(4, tflite::micro::GetTensorShape(input1));
