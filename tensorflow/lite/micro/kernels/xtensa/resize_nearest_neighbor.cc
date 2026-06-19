@@ -90,7 +90,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
         tflite::micro::GetTensorShape(output),
         tflite::micro::GetTensorData<int32_t>(output));
   } else if (output->type == kTfLiteInt8) {
-#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI5) || defined(HIFI4))
+#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
 
   const RuntimeShape input_shape =
       RuntimeShape::ExtendedShape(4, tflite::micro::GetTensorShape(input));   
@@ -134,6 +134,41 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
         tflite::micro::GetTensorData<int8_t>(output));
 #endif        
   } else if (output->type == kTfLiteInt16) {
+#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
+
+  const RuntimeShape input_shape =
+      RuntimeShape::ExtendedShape(4, tflite::micro::GetTensorShape(input));   
+  const RuntimeShape output_size_shape =
+      RuntimeShape::ExtendedShape(4, tflite::micro::GetTensorShape(size));      
+  const RuntimeShape output_shape =
+      RuntimeShape::ExtendedShape(4, tflite::micro::GetTensorShape(output));
+
+  int16_t *input_ptr = (int16_t *)(tflite::micro::GetTensorData<int16_t>(input));
+  int16_t *output_ptr = (int16_t *)(tflite::micro::GetTensorData<int16_t>(output));
+  int32_t batches = MatchingDim(input_shape, 0, output_shape, 0);
+  int32_t input_height = input_shape.Dims(1);
+  int32_t input_width = input_shape.Dims(2);
+  int32_t depth = MatchingDim(input_shape, 3, output_shape, 3);
+  int32_t output_height = tflite::micro::GetTensorData<int32_t>(size)[0];
+  int32_t output_width = tflite::micro::GetTensorData<int32_t>(size)[1];
+
+  const float height_scale =
+      (op_params.align_corners && output_height > 1)
+          ? (input_height - 1) / static_cast<float>(output_height - 1)
+          : input_height / static_cast<float>(output_height);
+
+  const float width_scale =
+      (op_params.align_corners && output_width > 1)
+          ? (input_width - 1) / static_cast<float>(output_width - 1)
+          : input_width / static_cast<float>(output_width);
+ 
+  const float offset = op_params.half_pixel_centers ? 0.5f : 0.0f;
+
+  xa_nn_resize_nearest_neighbour_16_16(output_ptr, input_ptr, batches, input_height, input_width,
+                    depth, batches, output_height, output_width, depth, height_scale, width_scale,
+                    offset, offset, op_params.align_corners);
+
+#else    
     reference_ops::ResizeNearestNeighbor(
         op_params, tflite::micro::GetTensorShape(input),
         tflite::micro::GetTensorData<int16_t>(input),
@@ -141,6 +176,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
         tflite::micro::GetTensorData<int32_t>(size),
         tflite::micro::GetTensorShape(output),
         tflite::micro::GetTensorData<int16_t>(output));
+#endif        
   } else {
     MicroPrintf("Output tensor type %s (%d) not supported.",
                 TfLiteTypeGetName(output->type), output->type);

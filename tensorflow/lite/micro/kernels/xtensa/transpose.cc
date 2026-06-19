@@ -100,7 +100,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
                                tflite::micro::GetTensorData<float>(output));
       break;
     case kTfLiteInt8 : {
-#if defined(HIFI4) || defined(HIFI5)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       err = xa_nn_transpose_8_8(
         tflite::micro::GetTensorData<int8_t>(output),
         tflite::micro::GetTensorShape(output).DimsData(),
@@ -116,11 +116,11 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
                                tflite::micro::GetTensorData<int8_t>(input),
                                tflite::micro::GetTensorShape(output),
                                tflite::micro::GetTensorData<int8_t>(output));
-#endif   // defined(HIFI4) || defined(HIFI5)    
+#endif   // defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       }                        
       break;
     case kTfLiteInt16:
-#if defined(HIFI4) || defined(HIFI5)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       err = xa_nn_transpose_16_16(
         tflite::micro::GetTensorData<int16_t>(output),
         tflite::micro::GetTensorShape(output).DimsData(),

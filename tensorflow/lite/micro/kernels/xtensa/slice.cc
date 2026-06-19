@@ -85,7 +85,6 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
 }
 
 TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
-  int err;
   const TfLiteEvalTensor* input =
       tflite::micro::GetEvalInput(context, node, kInputTensor);
   const TfLiteEvalTensor* begin =
@@ -131,10 +130,11 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
           tflite::micro::GetTensorData<int32_t>(output));
       break;
     case kTfLiteInt8: {
-#if defined(HIFI4) || defined(HIFI5)
+#if (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
       const RuntimeShape input_shape = tflite::micro::GetTensorShape(input);
       const RuntimeShape output_shape = tflite::micro::GetTensorShape(output);
       const RuntimeShape extended_input_shape = RuntimeShape::ExtendedShape(5, input_shape);
+      int err;
       
       size_t output_bytes;
       TF_LITE_ENSURE_STATUS(TfLiteTypeSizeOf(output->type, &output_bytes));
@@ -173,14 +173,15 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
           tflite::micro::GetTensorData<int8_t>(input),
           tflite::micro::GetTensorShape(output),
           tflite::micro::GetTensorData<int8_t>(output));
-#endif // defined(HIFI4) || defined(HIFI5)
+#endif // defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       break;
     }
     case kTfLiteInt16: {
-#if defined(HIFI4) || defined(HIFI5)
+#if (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
       const RuntimeShape input_shape = tflite::micro::GetTensorShape(input);
       const RuntimeShape output_shape = tflite::micro::GetTensorShape(output);
       const RuntimeShape extended_input_shape = RuntimeShape::ExtendedShape(5, input_shape);
+      int err;
 
       size_t output_bytes;
       TF_LITE_ENSURE_STATUS(TfLiteTypeSizeOf(output->type, &output_bytes));
@@ -213,13 +214,13 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
         extended_input_shape.Dims(4)
       );
       TF_LITE_ENSURE(context, err == 0);
-#else // defined(HIFI4) || defined(HIFI5)
+#else // defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
       reference_ops::Slice<int16_t>(
           op_params, tflite::micro::GetTensorShape(input),
           tflite::micro::GetTensorData<int16_t>(input),
           tflite::micro::GetTensorShape(output),
           tflite::micro::GetTensorData<int16_t>(output));
-#endif // defined(HIFI4) || defined(HIFI5)
+#endif // defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
       break;
     }
     case kTfLiteBool:
