@@ -26,7 +26,7 @@ namespace tflite {
 namespace {
 
 TfLiteStatus EvalInt8(TfLiteContext* context, TfLiteNode* node) {
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)    
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ) 
   const auto& op_data = *(reinterpret_cast<XtensaDepthwiseConvOpData*>(node->user_data));
   const auto& params =
       *(reinterpret_cast<TfLiteDepthwiseConvParams*>(node->builtin_data));
@@ -51,7 +51,7 @@ TfLiteStatus EvalInt8(TfLiteContext* context, TfLiteNode* node) {
 }
 
 TfLiteStatus EvalInt16(TfLiteContext* context, TfLiteNode* node) {
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
   const auto& op_data = *(reinterpret_cast<XtensaDepthwiseConvOpData*>(node->user_data));
   const auto& params =
       *(reinterpret_cast<TfLiteDepthwiseConvParams*>(node->builtin_data));

@@ -28,7 +28,7 @@ limitations under the License.
 #include "tensorflow/lite/micro/kernels/xtensa/xtensa.h"
 #include "tensorflow/lite/micro/kernels/xtensa/xtensa_depthwise_conv.h"
 
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
 namespace tflite {
 TfLiteStatus DepthwiseConvPrepareHifi(TfLiteContext* context,
                                       TfLiteNode* node) {
@@ -77,23 +77,23 @@ TfLiteStatus DepthwiseConvPrepareHifi(TfLiteContext* context,
             input_height, input_width, input_depth, filter_height, filter_width,
             depth_multiplier, stride_width, stride_height, pad_width, pad_height,
             output_height, output_width, PREC_ASYM8S, 0 /* NHWC */);
-        TF_LITE_ENSURE(context, required_scratch > 0);
         }
         else if(input->type == kTfLiteInt16){
         required_scratch = xa_nn_conv2d_depthwise_getsize(
             input_height, input_width, input_depth, filter_height, filter_width,
             depth_multiplier, stride_width, stride_height, pad_width, pad_height,
             output_height, output_width, PREC_SYM16S, 0 /* NHWC */);
-        TF_LITE_ENSURE(context, required_scratch > 0);            
         }
-#if defined(INCLUDE_FLOAT_OPT)
+#if defined(INCLUDE_FLOAT_OPT) && !(defined(HIFI_IQ))
         else if(input->type == kTfLiteFloat32){
         required_scratch = xa_nn_conv2d_depthwise_getsize(
             input_height, input_width, input_depth, filter_height, filter_width,
             depth_multiplier, stride_width, stride_height, pad_width, pad_height,
             output_height, output_width, PREC_F32, 0 /* NHWC */);
-        TF_LITE_ENSURE(context, required_scratch > 0);            
         }
+#endif       
+#ifndef HIFI_IQ
+        TF_LITE_ENSURE(context, required_scratch > 0);
 #endif       
   }
   else{
@@ -106,7 +106,7 @@ TfLiteStatus DepthwiseConvPrepareHifi(TfLiteContext* context,
       output_height, output_width, PREC_ASYM8S, 0 /* NHWC */);
       TF_LITE_ENSURE(context, required_scratch > 0);        
     }  
-#if defined(INCLUDE_FLOAT_OPT)
+#if defined(INCLUDE_FLOAT_OPT) && !(defined(HIFI_IQ))
         else if(input->type == kTfLiteFloat32){
             required_scratch = xa_nn_dilated_conv2d_depthwise_getsize(
             input_height, input_width, input_depth, filter_height, filter_width,
@@ -420,7 +420,7 @@ TfLiteStatus DepthwiseConvEvalInt16Hifi(TfLiteContext* context, TfLiteNode* node
   }
 }
 
-#if defined(INCLUDE_FLOAT_OPT)
+#if defined(INCLUDE_FLOAT_OPT) && !(defined(HIFI_IQ))
 TfLiteStatus DepthwiseConvEvalFloat32Hifi(TfLiteContext* context, TfLiteNode* node,
                                    const TfLiteDepthwiseConvParams& params,
                                    const XtensaDepthwiseConvOpData& data,
@@ -563,4 +563,4 @@ TfLiteStatus DepthwiseConvEvalFloat32Hifi(TfLiteContext* context, TfLiteNode* no
 #endif
 
 }  // namespace tflite
-#endif  // defined(HIFI3) ||defined(HIFI4) || defined(HIFI5)
+#endif  // defined(HIFI3) ||defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)

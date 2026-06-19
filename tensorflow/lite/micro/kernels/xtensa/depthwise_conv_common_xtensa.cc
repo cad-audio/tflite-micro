@@ -35,7 +35,7 @@ void* DepthwiseConvInitXtensa(TfLiteContext* context, const char* buffer,
 
 TfLiteStatus DepthwiseConvPrepareXtensa(TfLiteContext* context, TfLiteNode* node) {
   TF_LITE_ENSURE_OK(context, DepthwiseConvPrepare(context, node));
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
   TF_LITE_ENSURE_OK(context, DepthwiseConvPrepareHifi(context, node));
 #endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
   return kTfLiteOk;
