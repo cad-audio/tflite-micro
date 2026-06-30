@@ -312,7 +312,6 @@ TfLiteStatus ConvEvalHifiInt16(TfLiteContext* context, TfLiteNode* node,
                   output_activation_min, output_activation_max, NULL),
               0);
           }
-#ifndef HIFI_IQ
           else{
             TF_LITE_ENSURE_EQ(
               context,
@@ -331,7 +330,6 @@ TfLiteStatus ConvEvalHifiInt16(TfLiteContext* context, TfLiteNode* node,
                     output_activation_min, output_activation_max, NULL),
                 0);
           }
-#endif
         }
       }
     }
