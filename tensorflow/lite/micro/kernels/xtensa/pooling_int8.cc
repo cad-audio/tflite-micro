@@ -40,7 +40,7 @@ TfLiteStatus AverageEvalInt8(TfLiteContext* context, TfLiteNode* node) {
   // Inputs and outputs share the same type, guaranteed by the converter.
   switch (input->type) {
     case kTfLiteInt8: {
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       auto* op_data = static_cast<const XtensaOpDataPooling*>(node->user_data);
       AverageEvalQuantizedInt8Hifi(context, node, params, op_data, input, output);
 #elif defined(VISION_P6)
@@ -77,7 +77,7 @@ TfLiteStatus MaxEvalInt8(TfLiteContext* context, TfLiteNode* node) {
 
   switch (input->type) {
     case kTfLiteInt8: {
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       auto* op_data = static_cast<const XtensaOpDataPooling*>(node->user_data);
       MaxEvalQuantizedInt8Hifi(context, node, params, op_data, input, output);
 #elif defined(VISION_P6)
@@ -103,7 +103,7 @@ TfLiteStatus MaxEvalInt8(TfLiteContext* context, TfLiteNode* node) {
 
 }  // namespace
 
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
 
 TfLiteStatus AveragePrepareHifi(TfLiteContext* context, TfLiteNode* node) {
   TF_LITE_ENSURE_STATUS(PoolingPrepare(context, node));
@@ -198,7 +198,6 @@ TfLiteStatus AverageEvalQuantizedInt8Hifi(TfLiteContext* context,
             0, 0, p_scratch),
         0);
   }
-
   const int out_length = batches * output_height * output_width * depth;
   TF_LITE_ENSURE_EQ(
       context,
@@ -206,7 +205,6 @@ TfLiteStatus AverageEvalQuantizedInt8Hifi(TfLiteContext* context,
           out_data_ptr, out_data_ptr, data->reference_op_data.activation_min,
           data->reference_op_data.activation_max, out_length),
       0);
-
   return kTfLiteOk;
 }
 
@@ -218,7 +216,7 @@ TfLiteStatus MaxPrepareHifi(TfLiteContext* context, TfLiteNode* node) {
   TfLiteTensor* input =
       micro_context->AllocateTempInputTensor(node, kPoolingInputTensor);
 
-  if (input->type == kTfLiteInt8 || input->type == kTfLiteInt16) {
+  if (input->type == kTfLiteInt8) { // || input->type == kTfLiteInt16 Since Int16 support is not yet added in NNLib, only PoolingPrepare call is sufficient to run CREF implementation.
     auto* params = reinterpret_cast<TfLitePoolParams*>(node->builtin_data);
     auto* data = static_cast<XtensaOpDataPooling*>(node->user_data);
 
@@ -302,7 +300,6 @@ TfLiteStatus MaxEvalQuantizedInt8Hifi(TfLiteContext* context, TfLiteNode* node,
             0, 0, p_scratch),
         0);
   }
-
   const int out_length = batches * output_height * output_width * depth;
   TF_LITE_ENSURE_EQ(
       context,
@@ -314,12 +311,12 @@ TfLiteStatus MaxEvalQuantizedInt8Hifi(TfLiteContext* context, TfLiteNode* node,
   return kTfLiteOk;
 }
 
-#endif  // defined(HIFI5) || defined(HIFI4)
+#endif  // defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
 
 void* XtensaPoolingInit(TfLiteContext* context, const char* buffer,
                         size_t length) {
   TFLITE_DCHECK(context->AllocatePersistentBuffer != nullptr);
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
   return context->AllocatePersistentBuffer(context,
                                            sizeof(XtensaOpDataPooling));
 #elif defined(VISION_P6)
@@ -334,7 +331,7 @@ void* XtensaPoolingInit(TfLiteContext* context, const char* buffer,
 }
 
 TFLMRegistration Register_AVERAGE_POOL_2D_INT8() {
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
   return tflite::micro::RegisterOp(XtensaPoolingInit, AveragePrepareHifi,
                                    AverageEvalInt8);
 #elif defined(VISION_P6)
@@ -347,7 +344,7 @@ TFLMRegistration Register_AVERAGE_POOL_2D_INT8() {
 }
 
 TFLMRegistration Register_MAX_POOL_2D_INT8() {
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
   return tflite::micro::RegisterOp(XtensaPoolingInit, MaxPrepareHifi,
                                    MaxEvalInt8);
 #elif defined(VISION_P6)
