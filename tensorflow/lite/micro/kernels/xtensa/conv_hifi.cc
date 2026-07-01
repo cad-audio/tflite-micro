@@ -151,7 +151,7 @@ TfLiteStatus ConvPrepareHifi(TfLiteContext* context, TfLiteNode* node) {
   return kTfLiteOk;
 }
 
-#if defined(HIFI5) && defined(NNLIB_HIFI5)
+#if (defined(HIFI5) && defined(NNLIB_HIFI5)) || defined(HIFI_IQ)
 TfLiteStatus ConvPrepareHifiInt4(TfLiteContext* context, TfLiteNode* node) {
   XtensaConvOpData* data = static_cast<XtensaConvOpData*>(node->user_data);
   const auto params = static_cast<const TfLiteConvParams*>(node->builtin_data);
@@ -546,7 +546,7 @@ TfLiteStatus ConvEvalHifiInt8(TfLiteContext* context, TfLiteNode* node,
   return kTfLiteOk;
 }
 
-#if defined(HIFI5) && defined(NNLIB_HIFI5)
+#if (defined(HIFI5) && defined(NNLIB_HIFI5))// || defined(HIFI_IQ)
 TfLiteStatus ConvEvalHifiInt4(TfLiteContext* context, TfLiteNode* node,
                               const TfLiteConvParams& params,
                               const XtensaConvOpData& data,
@@ -668,7 +668,7 @@ TfLiteStatus ConvEvalHifiInt4(TfLiteContext* context, TfLiteNode* node,
     }
     return kTfLiteOk;
 }
-#endif // #if defined(HIFI5) && defined(NNLIB_HIFI5)
+#endif // #if (defined(HIFI5) && defined(NNLIB_HIFI5)) || defined(HIFI_IQ)
 
 #if defined(INCLUDE_FLOAT_OPT)
 

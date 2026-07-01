@@ -44,7 +44,7 @@ TfLiteStatus EvalInt8(TfLiteContext* context, TfLiteNode* node) {
 
   switch (filter->type) {
     case kTfLiteInt4: {
-    #if defined(HIFI5) && defined(NNLIB_HIFI5)
+    #if defined(HIFI5) && defined(NNLIB_HIFI5)// || defined(HIFI_IQ)
         return ConvEvalHifiInt4(context, node, params, op_data, input, filter,
                     bias, output);
     #elif defined(HIFI4)
