@@ -115,7 +115,7 @@ TfLiteStatus EqualEval(TfLiteContext* context, TfLiteNode* node) {
       }
       else
       {
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI_IQ) || defined(HIFI5) || defined(HIFI4)
         int err;
         const int8_t *input1_data_ptr, *input2_data_ptr;
         int8_t *output_data_ptr;
@@ -143,7 +143,7 @@ TfLiteStatus EqualEval(TfLiteContext* context, TfLiteNode* node) {
             tflite::micro::GetTensorData<int8_t>(input1), input2_shape,
             tflite::micro::GetTensorData<int8_t>(input2), output_shape,
             output_data);
-#endif // defined(HIFI5) || defined(HIFI4)
+#endif // defined(HIFI_IQ) || defined(HIFI5) || defined(HIFI4)
       }
       break;
     default:
@@ -236,7 +236,7 @@ TfLiteStatus NotEqualEval(TfLiteContext* context, TfLiteNode* node) {
       }
       else
       {
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI_IQ) || defined(HIFI5) || defined(HIFI4)
         int err;
         const int8_t *input1_data_ptr, *input2_data_ptr;
         int8_t *output_data_ptr;
@@ -264,7 +264,7 @@ TfLiteStatus NotEqualEval(TfLiteContext* context, TfLiteNode* node) {
             tflite::micro::GetTensorData<int8_t>(input1), input2_shape,
             tflite::micro::GetTensorData<int8_t>(input2), output_shape,
             output_data);
-#endif // defined(HIFI5) || defined(HIFI4)
+#endif // defined(HIFI_IQ) || defined(HIFI5) || defined(HIFI4)
       }
       break;
     default:
@@ -343,7 +343,7 @@ TfLiteStatus GreaterEval(TfLiteContext* context, TfLiteNode* node) {
       }
       else
       {
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI_IQ) || defined(HIFI5) || defined(HIFI4)
         int err;
         const int8_t *input1_data_ptr, *input2_data_ptr;
         int8_t *output_data_ptr;
@@ -371,7 +371,7 @@ TfLiteStatus GreaterEval(TfLiteContext* context, TfLiteNode* node) {
             tflite::micro::GetTensorData<int8_t>(input1), input2_shape,
             tflite::micro::GetTensorData<int8_t>(input2), output_shape,
             output_data);
-#endif // defined(HIFI5) || defined(HIFI4)
+#endif // defined(HIFI_IQ) || defined(HIFI5) || defined(HIFI4)
       }
       break;
     case kTfLiteInt16:
@@ -463,7 +463,7 @@ TfLiteStatus GreaterEqualEval(TfLiteContext* context, TfLiteNode* node) {
       }
       else
       {
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI_IQ) || defined(HIFI5) || defined(HIFI4)
         int err;
         const int8_t *input1_data_ptr, *input2_data_ptr;
         int8_t *output_data_ptr;
@@ -491,7 +491,7 @@ TfLiteStatus GreaterEqualEval(TfLiteContext* context, TfLiteNode* node) {
             tflite::micro::GetTensorData<int8_t>(input1), input2_shape,
             tflite::micro::GetTensorData<int8_t>(input2), output_shape,
             output_data);
-#endif // defined(HIFI5) || defined(HIFI4)
+#endif // defined(HIFI_IQ) || defined(HIFI5) || defined(HIFI4)
       }
       break;
     default:
@@ -570,7 +570,7 @@ TfLiteStatus LessEval(TfLiteContext* context, TfLiteNode* node) {
       }
       else
       {
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI_IQ) || defined(HIFI5) || defined(HIFI4)
         int err;
         const int8_t *input1_data_ptr, *input2_data_ptr;
         int8_t *output_data_ptr;
@@ -598,7 +598,7 @@ TfLiteStatus LessEval(TfLiteContext* context, TfLiteNode* node) {
             tflite::micro::GetTensorData<int8_t>(input1), input2_shape,
             tflite::micro::GetTensorData<int8_t>(input2), output_shape,
             output_data);
-#endif // defined(HIFI5) || defined(HIFI4)
+#endif // defined(HIFI_IQ) || defined(HIFI5) || defined(HIFI4)
       }
       break;
     default:
@@ -677,7 +677,7 @@ TfLiteStatus LessEqualEval(TfLiteContext* context, TfLiteNode* node) {
       }
       else
       {
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI_IQ) || defined(HIFI5) || defined(HIFI4)
         int err;
         const int8_t *input1_data_ptr, *input2_data_ptr;
         int8_t *output_data_ptr;
@@ -705,7 +705,7 @@ TfLiteStatus LessEqualEval(TfLiteContext* context, TfLiteNode* node) {
             tflite::micro::GetTensorData<int8_t>(input1), input2_shape,
             tflite::micro::GetTensorData<int8_t>(input2), output_shape,
             output_data);
-#endif // defined(HIFI5) || defined(HIFI4)
+#endif // defined(HIFI_IQ) || defined(HIFI5) || defined(HIFI4)
       }
       break;
     default:
