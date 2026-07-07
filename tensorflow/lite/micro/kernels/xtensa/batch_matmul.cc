@@ -394,7 +394,7 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
       ReshapeOutputTensor(context, node, extended_lhs_shape, extended_rhs_shape,
                           adj_x, adj_y, output_rank, output);
 
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
   int required_scratch = 0;
   int mat_inp1_shape[] = {1, 1, 1, 1, 1};
   int mat_inp2_shape[] = {1, 1, 1, 1, 1};
@@ -425,7 +425,7 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
         context, context->RequestScratchBufferInArena(
                      context, required_scratch, &op_data->scratch_buffer_index));
   }
-#endif // defined(HIFI5) || defined(HIFI4)
+#endif // defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
 
   return status;
 }
@@ -514,7 +514,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
   bool adj_y = op_context.params->adj_y;
   bool adj_x = op_context.params->adj_x;
 
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
   if( (lhs->type == kTfLiteInt8) || (lhs->type == kTfLiteInt16)){
 
     int mat_inp1_shape[] = {1, 1, 1, 1, 1};
@@ -565,7 +565,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       return kTfLiteOk;
     }
   }
-#endif
+#endif // defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
 
   // Compress BatchMatMul when third from last RHS dimension is one.
   int32_t rhs_dims_count = orig_rhs_shape.DimensionsCount();
