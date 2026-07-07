@@ -22,7 +22,7 @@ limitations under the License.
 #include "tensorflow/lite/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/kernels/prelu.h"
-#if defined(HIFI5) || defined(HIFI4) 
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ) 
 #include "tensorflow/lite/micro/kernels/xtensa/xtensa_prelu.h"
 #endif
 namespace tflite {
@@ -95,7 +95,7 @@ TfLiteStatus PreluPrepare(TfLiteContext* context, TfLiteNode* node) {
   TfLiteTensor* output = micro_context->AllocateTempOutputTensor(node, 0);
   TF_LITE_ENSURE(context, output != nullptr);
 
-#if defined(HIFI5) || defined(HIFI4)  
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ) 
   TfLiteEvalTensor* output_eval = tflite::micro::GetEvalOutput(context, node, 0);
   const TfLiteEvalTensor* alpha_eval = tflite::micro::GetEvalInput(context, node, 1);
   const TfLiteEvalTensor* input_eval = tflite::micro::GetEvalInput(context, node, 0);

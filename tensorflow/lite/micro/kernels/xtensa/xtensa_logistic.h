@@ -1,4 +1,4 @@
-/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2026 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,21 +12,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-#ifndef TENSORFLOW_LITE_MICRO_KERNELS_XTENSA_XTENSA_PRELU_H_
-#define TENSORFLOW_LITE_MICRO_KERNELS_XTENSA_XTENSA_PRELU_H_
 
-#include <cstdint>
+#ifndef TENSORFLOW_LITE_MICRO_KERNELS_XTENSA_XTENSA_LOGISTIC_H_
+#define TENSORFLOW_LITE_MICRO_KERNELS_XTENSA_XTENSA_LOGISTIC_H_
 
-#include "tensorflow/lite/c/common.h"
-#include "tensorflow/lite/kernels/internal/types.h"
-#include "tensorflow/lite/micro/kernels/prelu.h"
+#include "tensorflow/lite/micro/kernels/logistic.h"
 
-#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
 namespace tflite {
-struct XtensaPreluData {
-  PreluParams reference_op_data;
-  int scratch_tensor_index;
+
+struct OpDataLogisticXtensa {
+  OpDataLogistic reference_op_data;
+  // Points to a 256-entry int8_t sigmoid LUT for kTfLiteInt8 inputs;
+  void* sigmoid_lut;
 };
+
 }  // namespace tflite
-#endif
-#endif  // TENSORFLOW_LITE_MICRO_KERNELS_XTENSA_XTENSA_PRELU_H_
+
+#endif  // TENSORFLOW_LITE_MICRO_KERNELS_XTENSA_XTENSA_LOGISTIC_H_
