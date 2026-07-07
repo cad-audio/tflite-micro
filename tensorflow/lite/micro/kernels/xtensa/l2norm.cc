@@ -117,7 +117,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
         MatchingDim(input_shape, trailing_dim, output_shape, trailing_dim);
     const int outer_size =
         MatchingFlatSizeSkipDim(input_shape, trailing_dim, output_shape);
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI_IQ) || defined(HIFI5) || defined(HIFI4)
     int err, itr = 0;
     const int8_t *input_data_ptr;
     int8_t *output_data_ptr;

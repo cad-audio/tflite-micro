@@ -29,7 +29,7 @@ namespace tflite {
 
 namespace hifi {
 
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI_IQ) || defined(HIFI5) || defined(HIFI4)
 inline TfLiteStatus EvalLogicalNot(TfLiteContext* context, TfLiteNode* node) {
     const TfLiteEvalTensor* input = tflite::micro::GetEvalInput(context, node, 0);
     TfLiteEvalTensor* output = tflite::micro::GetEvalOutput(context, node, 0);
@@ -48,7 +48,7 @@ inline TfLiteStatus EvalLogicalNot(TfLiteContext* context, TfLiteNode* node) {
     TF_LITE_ENSURE(context, err==0);
     return kTfLiteOk;
   }
-#endif // defined(HIFI5) || defined(HIFI4)
+#endif // defined(HIFI_IQ) || defined(HIFI5) || defined(HIFI4)
 
 } //namespae hifi
 
@@ -328,7 +328,7 @@ TfLiteStatus AbsEval(TfLiteContext* context, TfLiteNode* node) {
   TfLiteStatus eval_result;
 
   switch (type) {
-#if defined(INCLUDE_FLOAT_OPT)
+#if defined(INCLUDE_FLOAT_OPT) || defined(HIFI5) || defined(HIFI4)
     case kTfLiteFloat32: {
       const TfLiteEvalTensor* input = tflite::micro::GetEvalInput(context, node, 0);
       TfLiteEvalTensor* output = tflite::micro::GetEvalOutput(context, node, 0);
@@ -375,7 +375,7 @@ TfLiteStatus AbsEval(TfLiteContext* context, TfLiteNode* node) {
 }
 
 TfLiteStatus SinEval(TfLiteContext* context, TfLiteNode* node) {
-#if defined(INCLUDE_FLOAT_OPT)
+#if defined(INCLUDE_FLOAT_OPT) || defined(HIFI5) || defined(HIFI4)
   const TfLiteEvalTensor* input = tflite::micro::GetEvalInput(context, node, 0);
   TfLiteEvalTensor* output = tflite::micro::GetEvalOutput(context, node, 0);
   TF_LITE_ENSURE_TYPES_EQ(context, input->type, kTfLiteFloat32);
@@ -397,7 +397,7 @@ TfLiteStatus SinEval(TfLiteContext* context, TfLiteNode* node) {
 }
 
 TfLiteStatus CosEval(TfLiteContext* context, TfLiteNode* node) {
-#if defined(INCLUDE_FLOAT_OPT)
+#if defined(INCLUDE_FLOAT_OPT) || defined(HIFI5) || defined(HIFI4)
   const TfLiteEvalTensor* input = tflite::micro::GetEvalInput(context, node, 0);
   TfLiteEvalTensor* output = tflite::micro::GetEvalOutput(context, node, 0);
   TF_LITE_ENSURE_TYPES_EQ(context, input->type, kTfLiteFloat32);
@@ -415,11 +415,11 @@ TfLiteStatus CosEval(TfLiteContext* context, TfLiteNode* node) {
   return kTfLiteOk;
 #else
   return EvalNumeric(context, node, std::cos);
-#endif // defined(INCLUDE_FLOAT_OPT)
+#endif // defined(INCLUDE_FLOAT_OPT) || defined(HIFI5) || defined(HIFI4)
 }
 
 TfLiteStatus LogEval(TfLiteContext* context, TfLiteNode* node) {
-#if defined(INCLUDE_FLOAT_OPT)
+#if defined(INCLUDE_FLOAT_OPT) || defined(HIFI5) || defined(HIFI4)
   const TfLiteEvalTensor* input = tflite::micro::GetEvalInput(context, node, 0);
   TfLiteEvalTensor* output = tflite::micro::GetEvalOutput(context, node, 0);
   TF_LITE_ENSURE_TYPES_EQ(context, input->type, kTfLiteFloat32);
@@ -437,11 +437,11 @@ TfLiteStatus LogEval(TfLiteContext* context, TfLiteNode* node) {
   return kTfLiteOk;
 #else
   return EvalNumeric(context, node, std::log);
-#endif // defined(INCLUDE_FLOAT_OPT)
+#endif // defined(INCLUDE_FLOAT_OPT) || defined(HIFI5) || defined(HIFI4)
 }
 
 TfLiteStatus SqrtEval(TfLiteContext* context, TfLiteNode* node) {
-#if defined(INCLUDE_FLOAT_OPT)
+#if defined(INCLUDE_FLOAT_OPT) || defined(HIFI5) || defined(HIFI4)
   const TfLiteEvalTensor* input = tflite::micro::GetEvalInput(context, node, 0);
   TfLiteEvalTensor* output = tflite::micro::GetEvalOutput(context, node, 0);
   TF_LITE_ENSURE_TYPES_EQ(context, input->type, kTfLiteFloat32);
@@ -459,14 +459,14 @@ TfLiteStatus SqrtEval(TfLiteContext* context, TfLiteNode* node) {
   return kTfLiteOk;
 #else
   return EvalNumeric(context, node, std::sqrt);
-#endif // defined(INCLUDE_FLOAT_OPT)
+#endif // defined(INCLUDE_FLOAT_OPT) || defined(HIFI5) || defined(HIFI4)
 }
 
 TfLiteStatus RsqrtEval(TfLiteContext* context, TfLiteNode* node) {
   const auto* op_data = static_cast<const OpDataAbsRsqrt*>(node->user_data);
   TfLiteType type = op_data->input_type;
   switch (type) {
-#if defined(INCLUDE_FLOAT_OPT)
+#if defined(INCLUDE_FLOAT_OPT) || defined(HIFI5) || defined(HIFI4)
     case kTfLiteFloat32: {
       const TfLiteEvalTensor* input = tflite::micro::GetEvalInput(context, node, 0);
       TfLiteEvalTensor* output = tflite::micro::GetEvalOutput(context, node, 0);
@@ -488,7 +488,7 @@ TfLiteStatus RsqrtEval(TfLiteContext* context, TfLiteNode* node) {
       return EvalImpl<float>(
           context, node, [](float f) { return 1.f / std::sqrt(f); },
           /*validate_input_func=*/nullptr, type);
-#endif // defined(INCLUDE_FLOAT_OPT)
+#endif // defined(INCLUDE_FLOAT_OPT) || defined(HIFI5) || defined(HIFI4)
     case kTfLiteInt8:
       return EvalImplQuantized<int8_t>(context, node, RsqrtEvalQuantized,
                                        validate_input_func, type);
@@ -504,7 +504,7 @@ TfLiteStatus RsqrtEval(TfLiteContext* context, TfLiteNode* node) {
 }
 
 TfLiteStatus SquareEval(TfLiteContext* context, TfLiteNode* node) {
-#if defined(INCLUDE_FLOAT_OPT)
+#if defined(INCLUDE_FLOAT_OPT) || defined(HIFI5) || defined(HIFI4)
   const TfLiteEvalTensor* input = tflite::micro::GetEvalInput(context, node, 0);
   TfLiteEvalTensor* output = tflite::micro::GetEvalOutput(context, node, 0);
   TF_LITE_ENSURE_TYPES_EQ(context, input->type, kTfLiteFloat32);
@@ -522,11 +522,11 @@ TfLiteStatus SquareEval(TfLiteContext* context, TfLiteNode* node) {
   return kTfLiteOk;
 #else
   return EvalNumeric(context, node, [](float f) { return f * f; });
-#endif // defined(INCLUDE_FLOAT_OPT)
+#endif // defined(INCLUDE_FLOAT_OPT) || defined(HIFI5) || defined(HIFI4)
 }
 
 TfLiteStatus LogicalNotEval(TfLiteContext* context, TfLiteNode* node) {
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI_IQ) || defined(HIFI5) || defined(HIFI4)
   return hifi::EvalLogicalNot(context, node);
 #else
   return EvalLogical(context, node, [](bool v) { return !v; });
