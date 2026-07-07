@@ -77,8 +77,7 @@ void StridedSlice_int16_hifi(const tflite::StridedSliceParams& op_params,
                             input_shape.Dims(1), input_shape.Dims(2),
                             input_shape.Dims(3), input_shape.Dims(4));
 }
-#endif
-#if (defined(HIFI3) || defined(HIFI4) || defined(HIFI5))
+
 void StridedSlice_int32_hifi(const tflite::StridedSliceParams& op_params,
                                  const RuntimeShape& unextended_input_shape,
                                  const int32_t* input_data,
@@ -125,9 +124,7 @@ void StridedSlice_int32_hifi(const tflite::StridedSliceParams& op_params,
                             input_shape.Dims(1), input_shape.Dims(2),
                             input_shape.Dims(3), input_shape.Dims(4));
 }
-#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
 
-#if (defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
 void StridedSlice_int8_hifi(const tflite::StridedSliceParams& op_params,
                              const RuntimeShape& unextended_input_shape,
                              const int8_t* input_data,
@@ -228,7 +225,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
 #endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
       break;
     case kTfLiteInt32:
-#if (defined(HIFI3) || defined(HIFI4) || defined(HIFI5))
+#if (defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
       StridedSlice_int32_hifi(
           op_params, tflite::micro::GetTensorShape(input),
           tflite::micro::GetTensorData<int32_t>(input),
@@ -240,7 +237,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
           tflite::micro::GetTensorData<int32_t>(input),
           tflite::micro::GetTensorShape(output),
           tflite::micro::GetTensorData<int32_t>(output));
-#endif  //defined(HIFI3) || defined(HIFI4) || defined(HIFI5) 
+#endif  //defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       break;
     case kTfLiteBool:
       reference_ops::StridedSlice(op_params,
