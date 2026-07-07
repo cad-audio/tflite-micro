@@ -70,7 +70,7 @@ inline void GetShapesPointers(const RuntimeShape* shapes, size_t num,
   }
 }
 
-#if defined(HIFI5) || defined(HIFI4)
+#if (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
 // Equal to kMaxSmallSize from tensorflow/lite/kernels/internal/runtime_shape.h
 constexpr int kMaxDims = 6;  // Maximum number of dimensions
 
@@ -118,7 +118,7 @@ inline void GetAllInputDimsPointers(int32_t all_shapes[kMaxInputNum][kMaxDims],
     pointers[i] = &all_shapes[i][0];
   }
 }
-#endif
+#endif // (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
 
 // Gets data pointers from a list of tensors.
 template <typename T>
@@ -154,7 +154,7 @@ void EvalUnquantized(TfLiteContext* context, TfLiteNode* node) {
                                tflite::micro::GetTensorData<data_type>(output));
 }
 
-#if defined(HIFI5) || defined(HIFI4)
+#if (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
 TfLiteStatus EvalUnquantizedHifi(TfLiteContext* context, TfLiteNode* node) {
   // Collect the shapes and data pointer of input tensors
   WORD32 inputs_shape[kMaxInputNum][kMaxDims];
@@ -207,7 +207,7 @@ TfLiteStatus EvalUnquantizedHifi(TfLiteContext* context, TfLiteNode* node) {
   TF_LITE_ENSURE_EQ(context, ret, 0);
   return kTfLiteOk;
 }
-#endif
+#endif // (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
 
 void* Init(TfLiteContext* context, const char* buffer, size_t length) {
   TFLITE_DCHECK(context->AllocatePersistentBuffer != nullptr);
@@ -327,7 +327,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
   TfLiteType output_type = output_tensor->type;
 
   switch (output_type) {  // Already know in/outtypes are same.
-#if !(defined(HIFI5) || defined(HIFI4))
+#if !(defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)) 
     case kTfLiteFloat32:
       EvalUnquantized<float>(context, node);
       break;
@@ -351,7 +351,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
     case kTfLiteInt16:
       return EvalUnquantizedHifi(context, node);
       break;
-#endif
+#endif // !(defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
     case kTfLiteBool:
       EvalUnquantized<bool>(context, node);
       break;

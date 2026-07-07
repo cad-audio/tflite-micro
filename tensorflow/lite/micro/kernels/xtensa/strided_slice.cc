@@ -198,7 +198,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
 #endif
       break;
     case kTfLiteInt8:
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#if (defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
       StridedSlice_int8_hifi(
           op_params, tflite::micro::GetTensorShape(input),
           tflite::micro::GetTensorData<int8_t>(input),
@@ -228,7 +228,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
 #endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
       break;
     case kTfLiteInt32:
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#if (defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
       StridedSlice_int32_hifi(
           op_params, tflite::micro::GetTensorShape(input),
           tflite::micro::GetTensorData<int32_t>(input),
@@ -240,7 +240,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
           tflite::micro::GetTensorData<int32_t>(input),
           tflite::micro::GetTensorShape(output),
           tflite::micro::GetTensorData<int32_t>(output));
-#endif  //defined(HIFI3) || defined(HIFI4) || defined(HIFI5) 
+#endif  //defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       break;
     case kTfLiteBool:
       reference_ops::StridedSlice(op_params,

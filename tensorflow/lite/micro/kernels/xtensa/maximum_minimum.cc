@@ -31,13 +31,13 @@ namespace tflite {
 
 namespace {
 
+#if (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
 // This file has the HiFi implementation of TFMaximum/TFMinimum.
 enum KernelType {
   kHiFi5,
   kReference,
 };
 
-#if defined(HIFI5) || defined(HIFI4)
 namespace hifi {
 
 enum class basic_op {
@@ -191,7 +191,9 @@ int hifi::MaximumMinimumBroadcast( const RuntimeShape& unextended_input1_shape, 
     err |= hifi::ExecElemKernel(op, output_data,                        // exec element-wise op after bcast
                    input1_data, output_data,
                    extended_output_shape.FlatSize());
-  } else {
+  } 
+#if (defined(HIFI4) || defined(HIFI5))
+  else {
 
     /* Both inputs need broadcast.
      * Call any of the xa_nn_elm_[min,max]_[4D,8D]_Bcast_8x8_8(...) kernels.
@@ -214,6 +216,7 @@ int hifi::MaximumMinimumBroadcast( const RuntimeShape& unextended_input1_shape, 
                    input2_data, input2_desc.strides );
     }
   }
+#endif
 
   return err;
 }
@@ -224,13 +227,15 @@ template <KernelType kernel_type, typename OpType>
 TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
   OpContext op_context(context, node);
 
+#if (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
   if (kernel_type == kReference || kernel_type == kHiFi5) {
 
-#if defined(HIFI5) || defined(HIFI4)
     hifi::basic_op operation =
         std::is_same<OpType, MinimumOp>::value ? hifi::basic_op::min :
             std::is_same<OpType, MaximumOp>::value ? hifi::basic_op::max :
                 hifi::basic_op::no_op;
+#else
+  if (kernel_type == kReference) {
 #endif
 
     switch (op_context.output->type) {
@@ -238,7 +243,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
         TFLiteOperation<float, OpType>(context, node, op_context);
         break;
       case kTfLiteInt8:
-#if defined(HIFI5) || defined(HIFI4)
+#if (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
         hifi::TFLiteOperation<int8_t>(context, node, op_context, operation);
 #else
         TFLiteOperation<int8_t, OpType>(context, node, op_context);
@@ -271,7 +276,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
 TFLMRegistration Register_MAXIMUM() {
   return tflite::micro::RegisterOp(
       nullptr, nullptr,
-#if defined(HIFI5) || defined(HIFI4)
+#if (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
           Eval<kHiFi5, MaximumOp>
 #else
           Eval<kReference, MaximumOp>
@@ -282,7 +287,7 @@ TFLMRegistration Register_MAXIMUM() {
 TFLMRegistration Register_MINIMUM() {
   return tflite::micro::RegisterOp(
       nullptr, nullptr,
-#if defined(HIFI5) || defined(HIFI4)
+#if (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
           Eval<kHiFi5, MinimumOp>
 #else
           Eval<kReference, MinimumOp>

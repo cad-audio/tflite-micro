@@ -154,7 +154,7 @@ TfLiteStatus SquaredDifferencePrepare(TfLiteContext* context,
   return kTfLiteOk;
 }
 
-#if (defined(HIFI4) || defined(HIFI5))
+#if (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
 void EvalQuantizedSquaredDifferenceInt8Hifi(TfLiteContext* context,
                                             TfLiteNode* node,
                                             const OpData* data,
@@ -218,7 +218,7 @@ void EvalQuantizedSquaredDifferenceInt16Hifi(TfLiteContext* context,
       params.left_shift);
   (void)err;    
 }
-#endif // #if !(defined(HIFI4) || defined(HIFI5))
+#endif // #if !(defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
 
 template <typename T>
 T SquaredDifference(T x, T y, const ArithmeticParams& params) {
@@ -312,7 +312,7 @@ TfLiteStatus SquaredDifferenceEval(TfLiteContext* context, TfLiteNode* node) {
   } else if (output->type == kTfLiteInt32) {
     EvalSquaredDifference<int32_t>(context, node, data, input1, input2, output);
   } else if (output->type == kTfLiteInt8) {
-#if defined(HIFI4) || defined(HIFI5)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
     EvalQuantizedSquaredDifferenceInt8Hifi(context, node, data, input1, input2,
                                            output);
 #else
@@ -320,7 +320,7 @@ TfLiteStatus SquaredDifferenceEval(TfLiteContext* context, TfLiteNode* node) {
                                            output);
 #endif
   } else if (output->type == kTfLiteInt16) {
-#if defined(HIFI4) || defined(HIFI5)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
     EvalQuantizedSquaredDifferenceInt16Hifi(context, node, data, input1, input2,
                                            output);
 #else

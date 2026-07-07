@@ -56,7 +56,7 @@ TfLiteStatus PrepareMaxHifi(TfLiteContext* context, TfLiteNode* node,
   context->RequestScratchBufferInArena(
       context, sizeof(int) * static_cast<int>(ElementCount(*axis->dims)),
       &op_data->resolved_axis_idx);
-#if defined(HIFI5) || defined(HIFI4)
+#if (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
   XtensaReduceOpData* xt_data =
           reinterpret_cast<XtensaReduceOpData*>(node->user_data);
   if((input->dims->size <= 4) && (input->type == kTfLiteInt8))
@@ -113,7 +113,7 @@ TfLiteStatus PrepareMeanOrSumHifi(TfLiteContext* context, TfLiteNode* node,
     op_data->output_zp = output->params.zero_point;
     op_data->output_scale = output->params.scale;
   }
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
   XtensaReduceOpData* xt_data =
           reinterpret_cast<XtensaReduceOpData*>(node->user_data);
   if((input->dims->size <= 4) && (input->type == kTfLiteInt8 || input->type == kTfLiteInt16))
@@ -284,7 +284,7 @@ TfLiteStatus EvalMeanHifi(TfLiteContext* context, TfLiteNode* node,
       }
     } break;
     case kTfLiteInt8: {
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       XtensaReduceOpData* xt_data =
               reinterpret_cast<XtensaReduceOpData*>(node->user_data);
       const int8_t *input_data_ptr  = tflite::micro::GetTensorData<int8_t>(input);
@@ -330,7 +330,7 @@ TfLiteStatus EvalMeanHifi(TfLiteContext* context, TfLiteNode* node,
 #endif
     } break;
     case kTfLiteInt16: {
-#if defined(HIFI5) || defined(HIFI4)
+#if (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
       XtensaReduceOpData* xt_data =
               reinterpret_cast<XtensaReduceOpData*>(node->user_data);
       const int16_t *input_data_ptr  = tflite::micro::GetTensorData<int16_t>(input);
@@ -414,7 +414,7 @@ TfLiteStatus EvalMaxHifi(TfLiteContext* context, TfLiteNode* node,
               }));
       break;
     case kTfLiteInt8: {
-#if defined(HIFI5) || defined(HIFI4)
+#if (defined(HIFI_IQ) || defined(HIFI5) || defined(HIFI4))
       XtensaReduceOpData* xt_data =
               reinterpret_cast<XtensaReduceOpData*>(node->user_data);
       const int8_t *input_data_ptr  = tflite::micro::GetTensorData<int8_t>(input);
