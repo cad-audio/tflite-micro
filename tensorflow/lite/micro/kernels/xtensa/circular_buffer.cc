@@ -88,7 +88,7 @@ TfLiteStatus CircularBufferEval(TfLiteContext* context, TfLiteNode* node) {
   int depth = output->dims->data[2] * output->dims->data[3];
 
   if (input->type == kTfLiteInt8) {
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI5) || defined(HIFI4) || defined(HIFI_IQ)
     const int8_t* xa_input;
     int8_t* xa_output;
     int err;
