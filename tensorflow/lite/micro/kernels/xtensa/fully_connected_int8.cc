@@ -63,12 +63,12 @@ TfLiteStatus XtensaEvalFullyConnectedQuantizedInt8(
 
   // P6 Vision will handle INT4 filters as a reference operation.
   // For all other architectures, unpack INT4 here.
-#if defined(HIFI5) && defined(NNLIB_HIFI5)  
+#if (defined(HIFI5) && defined(NNLIB_HIFI5)) || defined(HIFI_IQ)
   void* p_scratch = (void *)0;
 #endif
 
   if (filter->type == kTfLiteInt4) {
-#if defined(HIFI5) && defined(NNLIB_HIFI5)   
+#if (defined(HIFI5) && defined(NNLIB_HIFI5)) || defined(HIFI_IQ)
     p_scratch = static_cast<void*>(
     context->GetScratchBuffer(context, data.filter_buffer_index));
 #else    
@@ -92,7 +92,7 @@ TfLiteStatus XtensaEvalFullyConnectedQuantizedInt8(
                              tflite::micro::GetTensorShape(bias), bias_data,
                              tflite::micro::GetTensorShape(output),
                              tflite::micro::GetTensorData<int8_t>(output));
-#elif defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#elif defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
   const RuntimeShape& output_shape = tflite::micro::GetTensorShape(output);
   const int num_batches =
       FlatSizeSkipDim(output_shape, output_shape.DimensionsCount() - 1);
@@ -122,7 +122,7 @@ TfLiteStatus XtensaEvalFullyConnectedQuantizedInt8(
   else
   {
     if(num_batches == 1) {
-#if defined(HIFI5) && defined(NNLIB_HIFI5)    
+#if (defined(HIFI5) && defined(NNLIB_HIFI5)) || defined(HIFI_IQ)   
       if(filter->type == kTfLiteInt4){
           TF_LITE_ENSURE_EQ(
               context,
@@ -142,7 +142,7 @@ TfLiteStatus XtensaEvalFullyConnectedQuantizedInt8(
                       0);
       }
       else{
-#endif        
+#endif       
           TF_LITE_ENSURE_EQ(
               context,
               xa_nn_fully_connected_v2_asym8sxasym8s_asym8s(
@@ -154,12 +154,12 @@ TfLiteStatus XtensaEvalFullyConnectedQuantizedInt8(
                   op_params.output_shift, op_params.output_offset,
                   data.output_activation_min, data.output_activation_max, NULL),
               0);
-#if defined(HIFI5) && defined(NNLIB_HIFI5)        
+#if (defined(HIFI5) && defined(NNLIB_HIFI5)) || defined(HIFI_IQ)       
       }
 #endif    
     }
     else {
-#if defined(HIFI5) && defined(NNLIB_HIFI5)    
+#if (defined(HIFI5) && defined(NNLIB_HIFI5)) || defined(HIFI_IQ)
       if(filter->type == kTfLiteInt4){
         for (int b = 0; b < num_batches; ++b) {
           int8_t *base_input = (int8_t *)tflite::micro::GetTensorData<int8_t>(input);
@@ -199,7 +199,7 @@ TfLiteStatus XtensaEvalFullyConnectedQuantizedInt8(
                   op_params.output_offset, 
                   data.output_activation_min, data.output_activation_max, NULL),
               0);
-#if defined(HIFI5) && defined(NNLIB_HIFI5)            
+#if (defined(HIFI5) && defined(NNLIB_HIFI5)) || defined(HIFI_IQ)            
       }
 #endif    
     }
@@ -225,7 +225,7 @@ TfLiteStatus XtensaEvalFullyConnectedQuantizedInt8(
         tflite::micro::GetTensorData<int8_t>(filter),
         tflite::micro::GetTensorShape(bias), bias_data,
         tflite::micro::GetTensorShape(output),
-        tflite::micro::GetTensorData<int8_t>(output))
+        tflite::micro::GetTensorData<int8_t>(output));
   }
   else
   {
@@ -237,7 +237,7 @@ TfLiteStatus XtensaEvalFullyConnectedQuantizedInt8(
         tflite::micro::GetTensorShape(output),
         tflite::micro::GetTensorData<int8_t>(output));
   }
-#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
 
   return kTfLiteOk;
 }
