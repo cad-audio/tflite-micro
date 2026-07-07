@@ -96,18 +96,11 @@ TfLiteStatus MaxEval(TfLiteContext* context, TfLiteNode* node) {
 #if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
   const OpDataPooling* reference_op_data;
   auto* op_data = static_cast<const XtensaOpDataPooling*>(node->user_data);
-  if(input->type == kTfLiteInt16){
-    reference_op_data =
-        static_cast<const OpDataPooling*>(node->user_data);
-  }
-  else{
-    reference_op_data = &(op_data->reference_op_data);
-  }
+  reference_op_data = &(op_data->reference_op_data);
 #else
   const OpDataPooling* reference_op_data =
       static_cast<const OpDataPooling*>(node->user_data);
 #endif
-
 
   switch (input->type) {
     case kTfLiteFloat32: {

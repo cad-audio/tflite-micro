@@ -216,7 +216,7 @@ TfLiteStatus MaxPrepareHifi(TfLiteContext* context, TfLiteNode* node) {
   TfLiteTensor* input =
       micro_context->AllocateTempInputTensor(node, kPoolingInputTensor);
 
-  if (input->type == kTfLiteInt8) { // || input->type == kTfLiteInt16 Since Int16 support is not yet added in NNLib, only PoolingPrepare call is sufficient to run CREF implementation.
+  if (input->type == kTfLiteInt8 || input->type == kTfLiteInt16) {
     auto* params = reinterpret_cast<TfLitePoolParams*>(node->builtin_data);
     auto* data = static_cast<XtensaOpDataPooling*>(node->user_data);
 
