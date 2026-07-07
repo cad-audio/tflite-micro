@@ -57,7 +57,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
   TfLiteEvalTensor* output =
       tflite::micro::GetEvalOutput(context, node, kOutputTensor);
 
-#if defined(INCLUDE_FLOAT_OPT) 
+#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI3) || defined(HIFI4) || defined(HIFI5))
   const int flat_size = MatchingFlatSize(tflite::micro::GetTensorShape(input), tflite::micro::GetTensorShape(output));
   const float* in_data = tflite::micro::GetTensorData<float>(input);
   float* out_data = tflite::micro::GetTensorData<float>(output);
@@ -73,7 +73,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
                       tflite::micro::GetTensorData<float>(input),
                       tflite::micro::GetTensorShape(output),
                       tflite::micro::GetTensorData<float>(output));
-#endif // defined(INCLUDE_FLOAT_OPT)
+#endif  // defined(INCLUDE_FLOAT_OPT) && (defined(HIFI3) || defined(HIFI4) || defined(HIFI5))
 
   return kTfLiteOk;
 }
