@@ -124,7 +124,7 @@ TfLiteStatus LogisticPrepare(TfLiteContext* context, TfLiteNode* node) {
   TF_LITE_ENSURE_OK(context, CalculateArithmeticOpDataLogistic(
                                   context, node, &xtensa_data->reference_op_data));
 
-#if defined(HIFI5) || defined(HIFI_IQ)
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
   MicroContext* micro_context = GetMicroContext(context);
   TfLiteTensor* input =
       micro_context->AllocateTempInputTensor(node, kLogisticInputTensor);

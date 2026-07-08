@@ -218,7 +218,7 @@ TfLiteStatus EvalFloat32(TfLiteContext* context, TfLiteNode* node) {
 
   TFLITE_DCHECK(node->user_data != nullptr);
 
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) 
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
   XtensaSoftmaxOpData op_data =
       *static_cast<XtensaSoftmaxOpData*>(node->user_data);
   SoftmaxParams params = op_data.params;

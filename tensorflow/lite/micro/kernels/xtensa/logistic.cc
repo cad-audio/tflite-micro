@@ -77,7 +77,7 @@ TfLiteStatus LogisticEval(TfLiteContext* context, TfLiteNode* node) {
       break;
     }
     case kTfLiteInt8: {
-#if defined(HIFI5) || defined(HIFI_IQ)
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       const RuntimeShape& input_shape = tflite::micro::GetTensorShape(input);
       const RuntimeShape& output_shape = tflite::micro::GetTensorShape(output);
       const int flat_size = MatchingFlatSize(input_shape, output_shape);
@@ -91,22 +91,6 @@ TfLiteStatus LogisticEval(TfLiteContext* context, TfLiteNode* node) {
               output_data_ptr, input_data_ptr,
               static_cast<int8_t*>(xtensa_data->sigmoid_lut),
               256, flat_size),
-          0);
-#elif defined(HIFI3) || defined(HIFI4) 
-      const RuntimeShape& input_shape = tflite::micro::GetTensorShape(input);
-      const RuntimeShape& output_shape = tflite::micro::GetTensorShape(output);
-      const int flat_size = MatchingFlatSize(input_shape, output_shape);
-
-      const int8_t* input_data_ptr =
-          tflite::micro::GetTensorData<int8_t>(input);
-      int8_t* output_data_ptr = tflite::micro::GetTensorData<int8_t>(output);
-
-      TF_LITE_ENSURE_EQ(
-          context,
-          xa_nn_vec_sigmoid_asym8s_asym8s(
-              output_data_ptr, input_data_ptr, data->input_zero_point,
-              data->input_range_radius, data->input_multiplier,
-              data->input_left_shift, flat_size),
           0);
 #else
       reference_integer_ops::Logistic(

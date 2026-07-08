@@ -211,7 +211,7 @@ TfLiteStatus TanhEval(TfLiteContext* context, TfLiteNode* node) {
       return kTfLiteOk;
     } break;
     case kTfLiteInt8: {
-#if defined(HIFI5) || defined(HIFI_IQ)
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       const int8_t *input_data_ptr;
       int8_t *output_data_ptr;
       const RuntimeShape& input_shape  = tflite::micro::GetTensorShape(input);
@@ -228,25 +228,6 @@ TfLiteStatus TanhEval(TfLiteContext* context, TfLiteNode* node) {
               static_cast<int8_t*>(data->tanh_lut),
               256, flat_size),
           0);
-#elif defined(HIFI4) || defined(HIFI3)
-      int err;
-      const int8_t *input_data_ptr;
-      int8_t *output_data_ptr;
-      const RuntimeShape& input_shape  = tflite::micro::GetTensorShape(input);
-      const RuntimeShape& output_shape = tflite::micro::GetTensorShape(output);
-      const int flat_size = MatchingFlatSize(input_shape, output_shape);
-
-      input_data_ptr  = tflite::micro::GetTensorData<int8_t>(input);
-      output_data_ptr = tflite::micro::GetTensorData<int8_t>(output);
-
-      err = xa_nn_vec_tanh_asym8s_asym8s(output_data_ptr,
-                                        input_data_ptr,
-                                        data->input_zero_point,
-                                        data->input_range_radius,
-                                        data->input_multiplier,
-                                        data->input_left_shift,
-                                        flat_size);
-      TF_LITE_ENSURE(context, err == 0);
 #else
       reference_integer_ops::Tanh(
           data->input_zero_point, data->input_range_radius, data->input_multiplier,
@@ -254,7 +235,7 @@ TfLiteStatus TanhEval(TfLiteContext* context, TfLiteNode* node) {
           tflite::micro::GetTensorData<int8_t>(input),
           tflite::micro::GetTensorShape(output),
           tflite::micro::GetTensorData<int8_t>(output));
-#endif  // defined(HIFI5) || defined(HIFI_IQ)
+#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       return kTfLiteOk;
     } break;
     default:
