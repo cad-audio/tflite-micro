@@ -36,7 +36,7 @@ TfLiteStatus XtensaEvalFullyConnectedQuantizedFloat32(
   TFLITE_DCHECK(node->builtin_data != nullptr);
   const auto* params =
       static_cast<const TfLiteFullyConnectedParams*>(node->builtin_data);
-#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI4) || defined(HIFI5))
+#if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
   const float32_t* bias_data =
       nullptr != bias ? tflite::micro::GetTensorData<float32_t>(bias) : nullptr;
   const RuntimeShape& output_shape = tflite::micro::GetTensorShape(output);
@@ -113,7 +113,7 @@ TfLiteStatus XtensaEvalFullyConnectedQuantizedFloat32(
 #endif  // USE_TFLM_COMPRESSION
       tflite::micro::GetTensorShape(output),
       tflite::micro::GetTensorData<float>(output));
-#endif  // defined(HIFI4) || defined(HIFI5)
+#endif  // defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
   return kTfLiteOk;
 }
 
