@@ -151,7 +151,7 @@ TfLiteStatus TanhPrepare(TfLiteContext* context, TfLiteNode* node) {
   data->input_zero_point = input->params.zero_point;
   TF_LITE_ENSURE_OK(context, CalculateArithmeticOpData(context, node, data));
 
-#if defined(HIFI5) || defined(HIFI_IQ)
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
   if (input->type == kTfLiteInt8) {
     void* raw =
         context->AllocatePersistentBuffer(context, 256 * sizeof(int8_t));
@@ -169,7 +169,7 @@ TfLiteStatus TanhPrepare(TfLiteContext* context, TfLiteNode* node) {
   } else {
     data->tanh_lut = nullptr;
   }
-#endif  // defined(HIFI5) || defined(HIFI_IQ)
+#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
 
   micro_context->DeallocateTempTfLiteTensor(input);
   return kTfLiteOk;

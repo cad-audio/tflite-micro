@@ -98,7 +98,7 @@ TfLiteStatus LogisticEval(TfLiteContext* context, TfLiteNode* node) {
           data->input_multiplier, data->input_left_shift,
           NumElements(input->dims), tflite::micro::GetTensorData<int8_t>(input),
           tflite::micro::GetTensorData<int8_t>(output));
-#endif  // defined(HIFI5) || defined(HIFI_IQ)
+#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       break;
     }
     case kTfLiteInt16: {

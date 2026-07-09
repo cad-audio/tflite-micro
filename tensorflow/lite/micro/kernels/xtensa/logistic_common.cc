@@ -149,7 +149,7 @@ TfLiteStatus LogisticPrepare(TfLiteContext* context, TfLiteNode* node) {
   }
 
   micro_context->DeallocateTempTfLiteTensor(input);
-#endif  // defined(HIFI5) || defined(HIFI_IQ)
+#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
   return kTfLiteOk;
 }
 
