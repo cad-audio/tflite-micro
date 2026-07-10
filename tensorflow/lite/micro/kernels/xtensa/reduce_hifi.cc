@@ -30,7 +30,7 @@ limitations under the License.
 namespace tflite {
 
 const int kMaxNumberOfAxisHifi = 5;
-const int kMaxNumberOfReducedAxisHifi = 2;
+const int kMaxNumberOfReducedAxisHifi = 4;
 
 extern TfLiteStatus PrepareSimple(TfLiteContext* context, TfLiteNode* node,
                            int32_t* multiplier, int* shift);
@@ -56,7 +56,7 @@ TfLiteStatus PrepareMaxHifi(TfLiteContext* context, TfLiteNode* node,
   context->RequestScratchBufferInArena(
       context, sizeof(int) * static_cast<int>(ElementCount(*axis->dims)),
       &op_data->resolved_axis_idx);
-#if defined(HIFI5) || defined(HIFI4)
+#if (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
   XtensaReduceOpData* xt_data =
           reinterpret_cast<XtensaReduceOpData*>(node->user_data);
   if((input->dims->size <= 4) && (input->type == kTfLiteInt8))
@@ -113,7 +113,7 @@ TfLiteStatus PrepareMeanOrSumHifi(TfLiteContext* context, TfLiteNode* node,
     op_data->output_zp = output->params.zero_point;
     op_data->output_scale = output->params.scale;
   }
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
   XtensaReduceOpData* xt_data =
           reinterpret_cast<XtensaReduceOpData*>(node->user_data);
   if((input->dims->size <= 4) && (input->type == kTfLiteInt8 || input->type == kTfLiteInt16))
@@ -284,7 +284,7 @@ TfLiteStatus EvalMeanHifi(TfLiteContext* context, TfLiteNode* node,
       }
     } break;
     case kTfLiteInt8: {
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       XtensaReduceOpData* xt_data =
               reinterpret_cast<XtensaReduceOpData*>(node->user_data);
       const int8_t *input_data_ptr  = tflite::micro::GetTensorData<int8_t>(input);
@@ -302,12 +302,17 @@ TfLiteStatus EvalMeanHifi(TfLiteContext* context, TfLiteNode* node,
         p_scratch = static_cast<void*>(
         context->GetScratchBuffer(context, xt_data->scratch_tensor_index));
 
+        int output_size = output->dims->size;
+        if(output_size == 0){
+          output_size = 1;
+          output->dims->data[0] = 1;
+        }
         err = xa_nn_reduce_mean_4D_asym8s_asym8s(output_data_ptr,
                                                  output->dims->data,
                                                  input_data_ptr,
                                                  input->dims->data,
                                                  resolved_axis,
-                                                 output->dims->size,
+                                                 output_size,
                                                  input->dims->size,
                                                  num_resolved_axis,
                                                  op_data->input_zp,
@@ -330,7 +335,7 @@ TfLiteStatus EvalMeanHifi(TfLiteContext* context, TfLiteNode* node,
 #endif
     } break;
     case kTfLiteInt16: {
-#if defined(HIFI5) || defined(HIFI4)
+#if (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
       XtensaReduceOpData* xt_data =
               reinterpret_cast<XtensaReduceOpData*>(node->user_data);
       const int16_t *input_data_ptr  = tflite::micro::GetTensorData<int16_t>(input);
@@ -414,7 +419,7 @@ TfLiteStatus EvalMaxHifi(TfLiteContext* context, TfLiteNode* node,
               }));
       break;
     case kTfLiteInt8: {
-#if defined(HIFI5) || defined(HIFI4)
+#if (defined(HIFI_IQ) || defined(HIFI5) || defined(HIFI4))
       XtensaReduceOpData* xt_data =
               reinterpret_cast<XtensaReduceOpData*>(node->user_data);
       const int8_t *input_data_ptr  = tflite::micro::GetTensorData<int8_t>(input);
