@@ -317,13 +317,19 @@ void FullyConnected(const FullyConnectedParams& params,
                     const int num_batches, const int output_depth,
                     const int accum_depth) {
   WORD32 err;
-#pragma loop_count min = 1
-  for (int b = 0; b < num_batches; b++) {
+  if(num_batches == 1) {
     err = xa_nn_matXvec_out_stride_sym8sxasym8s_16(
-        output_data + b * output_depth, filter_data,
-        input_data + b * accum_depth, bias_data, output_depth, accum_depth,
-        accum_depth, 1, params.input_offset, params.output_multiplier,
+        output_data, filter_data, input_data, bias_data,
+        output_depth, accum_depth, accum_depth, 1, 
+        params.input_offset, params.output_multiplier,
         params.output_shift);
+  }
+  else{
+      err = xa_nn_matmul_sym8sxasym8s_sym16s(
+          output_data, filter_data, input_data, bias_data, 
+          output_depth, accum_depth, accum_depth, num_batches, 
+          accum_depth, output_depth, 1, params.input_offset, 
+          params.output_multiplier, params.output_shift);
   }
   (void)err;
   return;
@@ -335,11 +341,19 @@ void FullyConnected(const FullyConnectedParams& params,
                     const int num_batches, const int output_depth,
                     const int accum_depth) {
   WORD32 err;
-  err = xa_nn_matmul_sym8sxsym16s_sym16s(
-      output_data, filter_data, input_data, bias_data, output_depth,
-      accum_depth, accum_depth, num_batches, accum_depth, output_depth, 1,
-      params.input_offset, params.output_multiplier, params.output_shift,
-      params.output_offset);
+  if(num_batches == 1) {
+      err = xa_nn_fully_connected_v2_sym8sxsym16s_sym16s(
+              output_data, filter_data, input_data, bias_data,
+              accum_depth, output_depth, params.output_multiplier, params.output_shift,
+              -32768, 32767, NULL);
+  }
+  else{
+      err = xa_nn_matmul_sym8sxsym16s_sym16s(
+          output_data, filter_data, input_data, bias_data, output_depth,
+          accum_depth, accum_depth, num_batches, accum_depth, output_depth, 1,
+          params.input_offset, params.output_multiplier, params.output_shift,
+          params.output_offset);
+  }
   (void)err;    
   return;
 }
