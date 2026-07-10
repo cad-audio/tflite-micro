@@ -50,7 +50,7 @@ TfLiteStatus XtensaEvalFullyConnectedQuantizedFloat32(
   const int accum_depth = filter_shape.Dims(filter_dim_count - 1);
 
   FullyConnectedParams op_params = FullyConnectedParamsFloat(params->activation);
-
+#ifndef HIFI_IQ
   if(num_batches == 1) {
       TF_LITE_ENSURE_EQ(
           context,
@@ -79,6 +79,31 @@ TfLiteStatus XtensaEvalFullyConnectedQuantizedFloat32(
           output_arr, output_arr, op_params.float_activation_min,
           op_params.float_activation_max, num_batches * output_depth),
       0);
+#else
+  if(num_batches == 1) {
+      TF_LITE_ENSURE_EQ(
+          context,
+          xa_nn_fully_connected_v2_f32(
+              tflite::micro::GetTensorData<float32_t>(output),
+              tflite::micro::GetTensorData<float32_t>(filter),
+              tflite::micro::GetTensorData<float32_t>(input),
+              bias_data, accum_depth, output_depth,
+              op_params.float_activation_min, op_params.float_activation_max, NULL),
+          0);
+  }
+  else{
+      TF_LITE_ENSURE_EQ(
+          context,
+          xa_nn_matmul_v2_f32xf32_f32(
+              tflite::micro::GetTensorData<float32_t>(output),
+              tflite::micro::GetTensorData<float32_t>(filter),
+              tflite::micro::GetTensorData<float32_t>(input),
+              bias_data, output_depth, accum_depth, accum_depth,
+              num_batches, accum_depth, output_depth, 1,
+              op_params.float_activation_min, op_params.float_activation_max, NULL),
+          0);    
+  }
+#endif // HIFI_IQ
 
 #else
 
