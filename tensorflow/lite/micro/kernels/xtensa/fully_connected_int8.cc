@@ -126,20 +126,15 @@ TfLiteStatus XtensaEvalFullyConnectedQuantizedInt8(
       if(filter->type == kTfLiteInt4){
           TF_LITE_ENSURE_EQ(
               context,
-              xa_nn_fully_connected_asym4sxasym8s_asym8s(
+              xa_nn_fully_connected_v2_asym4sxasym8s_asym8s(
                   tflite::micro::GetTensorData<int8_t>(output),
                   filter_data,
                   tflite::micro::GetTensorData<int8_t>(input),
                   bias_data, accum_depth, output_depth, op_params.input_offset,
                   op_params.weights_offset, op_params.output_multiplier,
-                  op_params.output_shift, op_params.output_offset, p_scratch),
+                  op_params.output_shift, op_params.output_offset, p_scratch,
+                  data.output_activation_min, data.output_activation_max, NULL),
               0);
-      int8_t* output_arr = tflite::micro::GetTensorData<int8_t>(output);
-      TF_LITE_ENSURE_EQ(context,
-                      xa_nn_vec_activation_min_max_8_8(
-                          output_arr, output_arr, data.output_activation_min,
-                          data.output_activation_max, output_depth),
-                      0);
       }
       else{
 #endif       
