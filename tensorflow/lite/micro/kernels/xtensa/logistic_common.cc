@@ -24,6 +24,8 @@ limitations under the License.
 #include "tensorflow/lite/kernels/op_macros.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/kernels/logistic.h"
+#include "tensorflow/lite/micro/kernels/xtensa/xtensa.h"
+#include "tensorflow/lite/micro/kernels/xtensa/xtensa_logistic.h"
 #if defined(USE_HIFI_ACT_TIE)
 #include <xtensa/tie/xt_hifi2.h>
 #endif
@@ -118,9 +120,37 @@ TfLiteStatus CalculateArithmeticOpDataLogistic(TfLiteContext* context,
 
 TfLiteStatus LogisticPrepare(TfLiteContext* context, TfLiteNode* node) {
   TFLITE_DCHECK(node->user_data != nullptr);
-  OpDataLogistic* data = static_cast<OpDataLogistic*>(node->user_data);
+  auto* xtensa_data = static_cast<OpDataLogisticXtensa*>(node->user_data);
+  TF_LITE_ENSURE_OK(context, CalculateArithmeticOpDataLogistic(
+                                  context, node, &xtensa_data->reference_op_data));
 
-  return CalculateArithmeticOpDataLogistic(context, node, data);
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
+  MicroContext* micro_context = GetMicroContext(context);
+  TfLiteTensor* input =
+      micro_context->AllocateTempInputTensor(node, kLogisticInputTensor);
+  TF_LITE_ENSURE(context, input != nullptr);
+  if (input->type == kTfLiteInt8)
+  {
+    void* raw = context->AllocatePersistentBuffer(
+        context, sizeof(int8_t) * 256);
+    TF_LITE_ENSURE(context, raw != nullptr);
+    xtensa_data->sigmoid_lut = raw;
+    TF_LITE_ENSURE_EQ(
+        context,
+        xa_nn_init_lut_asym8s_sigmoid(
+            static_cast<int8_t*>(xtensa_data->sigmoid_lut),
+            xtensa_data->reference_op_data.input_zero_point,
+            xtensa_data->reference_op_data.input_range_radius,
+            xtensa_data->reference_op_data.input_multiplier,
+            xtensa_data->reference_op_data.input_left_shift),
+        0);
+  } else {
+    xtensa_data->sigmoid_lut = nullptr;
+  }
+
+  micro_context->DeallocateTempTfLiteTensor(input);
+#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
+  return kTfLiteOk;
 }
 
 }  // namespace tflite

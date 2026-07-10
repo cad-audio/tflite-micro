@@ -24,7 +24,7 @@ limitations under the License.
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/kernels/prelu.h"
 #include "tensorflow/lite/micro/kernels/xtensa/xtensa.h"
-#if defined(HIFI5) || defined(HIFI4) 
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
 #include "tensorflow/lite/micro/kernels/xtensa/xtensa_prelu.h"
 #endif
 
@@ -32,7 +32,7 @@ namespace tflite {
 
 void* PreluInit(TfLiteContext* context, const char* buffer, size_t length) {
   TFLITE_DCHECK(context->AllocatePersistentBuffer != nullptr);
-#if defined(HIFI5) || defined(HIFI4)   
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
   return context->AllocatePersistentBuffer(context, sizeof(XtensaPreluData));
 #else
   return context->AllocatePersistentBuffer(context, sizeof(PreluParams));
@@ -58,7 +58,7 @@ TfLiteStatus PreluEval(TfLiteContext* context, TfLiteNode* node) {
                                 tflite::micro::GetTensorData<float>(output));
       return kTfLiteOk;
     } break;
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
     case kTfLiteInt8: {
       const RuntimeShape& input_shape = tflite::micro::GetTensorShape(input);
       const RuntimeShape& alpha_shape = tflite::micro::GetTensorShape(alpha);
@@ -116,7 +116,7 @@ TfLiteStatus PreluEval(TfLiteContext* context, TfLiteNode* node) {
           tflite::micro::GetTensorData<int8_t>(output));
       return kTfLiteOk;
     } break;
-#endif // defined(HIFI5) || defined(HIFI4)
+#endif // defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
     default:
       TF_LITE_KERNEL_LOG(
           context, "Only float32 and uint8_t are supported currently, got %d.",

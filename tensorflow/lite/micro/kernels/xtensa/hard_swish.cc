@@ -52,7 +52,7 @@ TfLiteStatus HardSwishEval(TfLiteContext* context, TfLiteNode* node) {
           tflite::micro::GetTensorData<float>(output));
     } break;
     case kTfLiteInt8: {
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       int err = 0;
       const int flat_size = MatchingFlatSize(tflite::micro::GetTensorShape(input), tflite::micro::GetTensorShape(output));
       err = xa_nn_vec_hard_swish_asym8s_asym8s(
@@ -73,7 +73,7 @@ TfLiteStatus HardSwishEval(TfLiteContext* context, TfLiteNode* node) {
           tflite::micro::GetTensorData<int8_t>(input),
           tflite::micro::GetTensorShape(output),
           tflite::micro::GetTensorData<int8_t>(output));
-#endif // defined(HIFI5) || defined(HIFI4)
+#endif // defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
     } break;
     default: {
       MicroPrintf("Unsupported type %s", TfLiteTypeGetName(input->type));

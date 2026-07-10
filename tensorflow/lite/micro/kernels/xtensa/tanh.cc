@@ -42,6 +42,7 @@ struct OpData {
   int32_t input_range_radius;
   int32_t input_multiplier;
   int input_left_shift;
+  void* tanh_lut;
 };
 
 void* TanhInit(TfLiteContext* context, const char* buffer, size_t length) {
@@ -150,6 +151,26 @@ TfLiteStatus TanhPrepare(TfLiteContext* context, TfLiteNode* node) {
   data->input_zero_point = input->params.zero_point;
   TF_LITE_ENSURE_OK(context, CalculateArithmeticOpData(context, node, data));
 
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
+  if (input->type == kTfLiteInt8) {
+    void* raw =
+        context->AllocatePersistentBuffer(context, 256 * sizeof(int8_t));
+    TF_LITE_ENSURE(context, raw != nullptr);
+    data->tanh_lut = raw;
+    TF_LITE_ENSURE_EQ(
+        context,
+        xa_nn_init_lut_asym8s_tanh(
+            static_cast<int8_t*>(data->tanh_lut),
+            data->input_zero_point,
+            data->input_range_radius,
+            data->input_multiplier,
+            data->input_left_shift),
+        0);
+  } else {
+    data->tanh_lut = nullptr;
+  }
+#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
+
   micro_context->DeallocateTempTfLiteTensor(input);
   return kTfLiteOk;
 }
@@ -161,7 +182,7 @@ TfLiteStatus TanhEval(TfLiteContext* context, TfLiteNode* node) {
       tflite::micro::GetEvalOutput(context, node, kOutputTensor);
 
   TFLITE_DCHECK(node->user_data != nullptr);
-  const OpData& data = *(static_cast<const OpData*>(node->user_data));
+  OpData* data = static_cast<OpData*>(node->user_data);
 
   switch (input->type) {
     case kTfLiteFloat32: {
@@ -172,26 +193,25 @@ TfLiteStatus TanhEval(TfLiteContext* context, TfLiteNode* node) {
       return kTfLiteOk;
     } break;
     case kTfLiteInt16: {
-#if defined(HIFI4) || defined(HIFI5)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       int32_t vec_len = MatchingFlatSize(tflite::micro::GetTensorShape(input), tflite::micro::GetTensorShape(output)); 
       TF_LITE_ENSURE_EQ(context, xa_nn_vec_tanh_sym16s_sym16s(tflite::micro::GetTensorData<int16_t>(output),
                            tflite::micro::GetTensorData<int16_t>(input),
-                            data.input_multiplier,
-                            data.input_left_shift,
+                            data->input_multiplier,
+                            data->input_left_shift,
                             vec_len), 0);
 #else
       reference_integer_ops::Tanh(
-          data.input_multiplier, data.input_left_shift,
+          data->input_multiplier, data->input_left_shift,
           tflite::micro::GetTensorShape(input),
           tflite::micro::GetTensorData<int16_t>(input),
           tflite::micro::GetTensorShape(output),
           tflite::micro::GetTensorData<int16_t>(output));
-#endif  // defined(HIFI4) || defined(HIFI5)
+#endif  // defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       return kTfLiteOk;
     } break;
     case kTfLiteInt8: {
-#if defined(HIFI5) || defined(HIFI4)
-      int err;
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       const int8_t *input_data_ptr;
       int8_t *output_data_ptr;
       const RuntimeShape& input_shape  = tflite::micro::GetTensorShape(input);
@@ -201,22 +221,21 @@ TfLiteStatus TanhEval(TfLiteContext* context, TfLiteNode* node) {
       input_data_ptr  = tflite::micro::GetTensorData<int8_t>(input);
       output_data_ptr = tflite::micro::GetTensorData<int8_t>(output);
 
-      err = xa_nn_vec_tanh_asym8s_asym8s(output_data_ptr,
-                                        input_data_ptr,
-                                        data.input_zero_point,
-                                        data.input_range_radius,
-                                        data.input_multiplier,
-                                        data.input_left_shift,
-                                        flat_size);
-      TF_LITE_ENSURE(context, err == 0);
+      TF_LITE_ENSURE_EQ(
+          context,
+          xa_nn_vec_apply_lut_asym8s_asym8s(
+              output_data_ptr, input_data_ptr,
+              static_cast<int8_t*>(data->tanh_lut),
+              256, flat_size),
+          0);
 #else
       reference_integer_ops::Tanh(
-          data.input_zero_point, data.input_range_radius, data.input_multiplier,
-          data.input_left_shift, tflite::micro::GetTensorShape(input),
+          data->input_zero_point, data->input_range_radius, data->input_multiplier,
+          data->input_left_shift, tflite::micro::GetTensorShape(input),
           tflite::micro::GetTensorData<int8_t>(input),
           tflite::micro::GetTensorShape(output),
           tflite::micro::GetTensorData<int8_t>(output));
-#endif // defined(HIFI5) || defined(HIFI4)
+#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
       return kTfLiteOk;
     } break;
     default:
