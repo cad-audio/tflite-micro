@@ -42,7 +42,7 @@ void* ConvInitXtensa(TfLiteContext* context, const char* buffer,
 TfLiteStatus ConvPrepareXtensa(TfLiteContext* context, TfLiteNode* node) {
   TF_LITE_ENSURE_OK(context, ConvPrepare(context, node));
 
-#if defined(HIFI4) || defined(HIFI5)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
 #if defined(HIFI5) && defined(NNLIB_HIFI5)
   const TfLiteEvalTensor* filter =
       tflite::micro::GetEvalInput(context, node, kConvWeightsTensor);
