@@ -44,7 +44,7 @@ TfLiteStatus EvalInt8(TfLiteContext* context, TfLiteNode* node) {
 
   switch (filter->type) {
     case kTfLiteInt4: {
-    #if defined(HIFI5) && defined(NNLIB_HIFI5)// || defined(HIFI_IQ)
+    #if defined(HIFI5) && defined(NNLIB_HIFI5) || defined(HIFI_IQ)
         return ConvEvalHifiInt4(context, node, params, op_data, input, filter,
                     bias, output);
     #elif defined(HIFI4)
@@ -87,7 +87,7 @@ TfLiteStatus EvalInt16(TfLiteContext* context, TfLiteNode* node) {
   const TfLiteEvalTensor* bias =
       tflite::micro::GetEvalInput(context, node, kConvBiasTensor);
 
-  if(bias->type == kTfLiteInt64){
+  if(bias == nullptr || bias->type == kTfLiteInt64){
     return ConvEvalHifiInt16(context, node, params, op_data, input, filter, bias,
                            output);
   }

@@ -173,23 +173,27 @@ TfLiteStatus ConvPrepareHifiInt4(TfLiteContext* context, TfLiteNode* node) {
   const RuntimeShape& filter_shape = GetTensorShape(filter);
   const RuntimeShape& output_shape = GetTensorShape(output);
   const int input_height = input_shape.Dims(1);
+  const int input_width = input_shape.Dims(2);
   const int input_depth = input_shape.Dims(3);
   const int filter_height = filter_shape.Dims(1);
   const int filter_width = filter_shape.Dims(2);
   const int filter_depth = filter_shape.Dims(3);
   const int output_height = output_shape.Dims(1);
+  const int output_width = output_shape.Dims(2);
   const int output_channels = output_shape.Dims(3);
   const int stride_height = params->stride_height;
+  const int stride_width = params->stride_width;
   const int pad_height = data->reference_op_data.padding.height;
+  const int pad_width = data->reference_op_data.padding.width;
 
   int required_scratch = 0;
 
   if ((params->dilation_width_factor == 1) &&
       (params->dilation_height_factor == 1) && 
       (filter_depth == input_depth)) {
-        required_scratch = xa_nn_conv2d_std_getsize_sym4s(
-            input_height, filter_depth, filter_height, filter_width, stride_height,
-            pad_height, output_height, output_channels, PREC_ASYM8S);
+        required_scratch = xa_nn_conv2d_std_getsize(
+            input_height, input_width, input_depth, filter_height, filter_width, filter_depth, stride_height,
+            pad_height, stride_width, pad_width, output_height, output_width, output_channels, PREC_ASYM8S, PREC_SYM4S, params->dilation_height_factor, params->dilation_width_factor, 0/*Out data format*/);
         TF_LITE_ENSURE(context, required_scratch > 0);
   }
   else
@@ -546,7 +550,7 @@ TfLiteStatus ConvEvalHifiInt8(TfLiteContext* context, TfLiteNode* node,
   return kTfLiteOk;
 }
 
-#if (defined(HIFI5) && defined(NNLIB_HIFI5))// || defined(HIFI_IQ)
+#if (defined(HIFI5) && defined(NNLIB_HIFI5)) || defined(HIFI_IQ)
 TfLiteStatus ConvEvalHifiInt4(TfLiteContext* context, TfLiteNode* node,
                               const TfLiteConvParams& params,
                               const XtensaConvOpData& data,
@@ -619,17 +623,17 @@ TfLiteStatus ConvEvalHifiInt4(TfLiteContext* context, TfLiteNode* node,
       int8_t* p_out_temp;
       p_out_temp = &output_data[batch * out_length];
 
-
+#ifndef HIFI_IQ
       TF_LITE_ENSURE_EQ(
           context,
           xa_nn_conv2d_std_per_chan_sym4sxasym8s(
             p_out_temp,
               &input_data[batch * input_height * input_width * input_depth],
-              const_cast<int8_t*>(filter_data),  // filter_data,
-              bias_data, input_height, input_width, input_depth,
-              filter_height, filter_width, output_depth, stride_width,
-              stride_height, pad_width, pad_height, output_height,
-              output_width, input_offset,
+              filter_data, bias_data, 
+              input_height, input_width, input_depth,
+              filter_height, filter_width, output_depth,
+              stride_width, stride_height, pad_width, pad_height,
+              output_height, output_width, input_offset,
               data.reference_op_data.per_channel_output_multiplier,
               data.reference_op_data.per_channel_output_shift,
               output_offset, output_data_format,
@@ -641,6 +645,24 @@ TfLiteStatus ConvEvalHifiInt4(TfLiteContext* context, TfLiteNode* node,
                             p_out_temp, p_out_temp, output_activation_min,
                             output_activation_max, out_length),
                       0);
+#else
+      TF_LITE_ENSURE_EQ(
+          context,
+          xa_nn_conv2d_std_v2_per_chan_sym4sxasym8s(
+            p_out_temp,
+              &input_data[batch * input_height * input_width * input_depth],
+              filter_data,bias_data, 
+              input_height, input_width, input_depth,
+              filter_height, filter_width, output_depth,
+              stride_width, stride_height, pad_width, pad_height,
+              output_height, output_width, input_offset,
+              data.reference_op_data.per_channel_output_multiplier,
+              data.reference_op_data.per_channel_output_shift,
+              output_offset, output_data_format,
+              static_cast<void*>(p_scratch),
+              output_activation_min, output_activation_max, NULL),
+          0);
+#endif
       }
     }
     else

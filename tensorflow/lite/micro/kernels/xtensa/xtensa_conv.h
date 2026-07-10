@@ -42,7 +42,7 @@ struct XtensaConvOpData {
 
 #if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
 TfLiteStatus ConvPrepareHifi(TfLiteContext* context, TfLiteNode* node);
-#if (defined(HIFI5) && defined(NNLIB_HIFI5))// || defined(HIFI_IQ)
+#if (defined(HIFI5) && defined(NNLIB_HIFI5)) || defined(HIFI_IQ)
 TfLiteStatus ConvPrepareHifiInt4(TfLiteContext* context, TfLiteNode* node);
 
 TfLiteStatus ConvEvalHifiInt4(TfLiteContext* context, TfLiteNode* node,
