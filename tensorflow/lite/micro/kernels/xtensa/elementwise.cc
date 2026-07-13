@@ -238,7 +238,7 @@ inline TfLiteStatus EvalImpl(TfLiteContext* context, TfLiteNode* node,
   return kTfLiteOk;
 }
 
-#if (!defined(INCLUDE_FLOAT_OPT))
+#if (!defined(INCLUDE_FLOAT_OPT) || defined(HIFI_IQ))
 inline TfLiteStatus EvalNumeric(TfLiteContext* context, TfLiteNode* node,
                                 float float_func(float)) {
   return EvalImpl<float>(context, node, float_func,

@@ -77,8 +77,7 @@ void StridedSlice_int16_hifi(const tflite::StridedSliceParams& op_params,
                             input_shape.Dims(1), input_shape.Dims(2),
                             input_shape.Dims(3), input_shape.Dims(4));
 }
-#endif
-#if (defined(HIFI3) || defined(HIFI4) || defined(HIFI5))
+
 void StridedSlice_int32_hifi(const tflite::StridedSliceParams& op_params,
                                  const RuntimeShape& unextended_input_shape,
                                  const int32_t* input_data,
@@ -125,9 +124,7 @@ void StridedSlice_int32_hifi(const tflite::StridedSliceParams& op_params,
                             input_shape.Dims(1), input_shape.Dims(2),
                             input_shape.Dims(3), input_shape.Dims(4));
 }
-#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
 
-#if (defined(HIFI3) || defined(HIFI4) || defined(HIFI5))
 void StridedSlice_int8_hifi(const tflite::StridedSliceParams& op_params,
                              const RuntimeShape& unextended_input_shape,
                              const int8_t* input_data,
