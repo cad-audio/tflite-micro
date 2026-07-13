@@ -30,7 +30,7 @@ limitations under the License.
 namespace tflite {
 
 const int kMaxNumberOfAxisHifi = 5;
-const int kMaxNumberOfReducedAxisHifi = 2;
+const int kMaxNumberOfReducedAxisHifi = 4;
 
 extern TfLiteStatus PrepareSimple(TfLiteContext* context, TfLiteNode* node,
                            int32_t* multiplier, int* shift);
@@ -302,12 +302,17 @@ TfLiteStatus EvalMeanHifi(TfLiteContext* context, TfLiteNode* node,
         p_scratch = static_cast<void*>(
         context->GetScratchBuffer(context, xt_data->scratch_tensor_index));
 
+        int output_size = output->dims->size;
+        if(output_size == 0){
+          output_size = 1;
+          output->dims->data[0] = 1;
+        }
         err = xa_nn_reduce_mean_4D_asym8s_asym8s(output_data_ptr,
                                                  output->dims->data,
                                                  input_data_ptr,
                                                  input->dims->data,
                                                  resolved_axis,
-                                                 output->dims->size,
+                                                 output_size,
                                                  input->dims->size,
                                                  num_resolved_axis,
                                                  op_data->input_zp,
