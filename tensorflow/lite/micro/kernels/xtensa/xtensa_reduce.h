@@ -27,7 +27,7 @@ namespace tflite {
 struct XtensaReduceOpData {
   OpDataReduce reference_op_data;
 
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
   int scratch_tensor_index;
   int32_t updated_multiplier;
   int32_t updated_shift;
@@ -46,7 +46,7 @@ TfLiteStatus ReduceEvalVision(const XtensaReduceOpData& data,
                               const TfLiteEvalTensor* input,
                               TfLiteEvalTensor* output);
 
-#elif defined(HIFI5) || defined(HIFI4)
+#elif defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
 
 TfLiteStatus PrepareMeanOrSumHifi(TfLiteContext* context, TfLiteNode* node, OpDataReduce* op_data);
 

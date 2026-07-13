@@ -31,9 +31,9 @@ struct XtensaOpDataPooling {
   uint32_t context_size;
 #endif  // defined(VISION_P6)
 
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
   int scratch_tensor_index;
-#endif  // defined(HIFI5)
+#endif  // defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
 };
 
 #if defined(VISION_P6)
@@ -49,7 +49,7 @@ TfLiteStatus PoolEvalVision(TfLiteContext* context, TfLiteNode* node,
                             TfLiteEvalTensor* output);
 #endif
 
-#if defined(HIFI5) || defined(HIFI4)
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
 
 TfLiteStatus AveragePrepareHifi(TfLiteContext* context, TfLiteNode* node);
 TfLiteStatus AverageEvalQuantizedInt8Hifi(TfLiteContext* context,
@@ -80,7 +80,7 @@ TfLiteStatus MaxEvalQuantizedInt16Hifi(TfLiteContext* context,
                                       const TfLiteEvalTensor* input,
                                       TfLiteEvalTensor* output);                                  
 
-#endif  // defined(HIFI5)
+#endif  // defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
 
 void* XtensaPoolingInit(TfLiteContext* context, const char* buffer,
                         size_t length);
