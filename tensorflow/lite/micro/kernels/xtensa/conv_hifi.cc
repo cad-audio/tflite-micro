@@ -99,7 +99,9 @@ TfLiteStatus ConvPrepareHifi(TfLiteContext* context, TfLiteNode* node) {
         pad_height, output_height, output_channels, PREC_SYM16S, params->dilation_height_factor);
   }
 #endif // defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
+#ifndef HIFI_IQ // Scratchpad may not be required in some cases on HiFi-iQ.
     TF_LITE_ENSURE(context, required_scratch > 0);
+#endif
   }
   else if ((params->dilation_width_factor == 1) &&
       (params->dilation_height_factor == 1)) {
@@ -114,6 +116,9 @@ TfLiteStatus ConvPrepareHifi(TfLiteContext* context, TfLiteNode* node) {
             input_height, input_width, input_depth, filter_height, filter_width, filter_depth, params->dilation_height_factor, params->dilation_width_factor, stride_height,
             pad_height, stride_width, pad_width, output_height, output_width, output_channels, PREC_ASYM8S, PREC_SYM8S, 0/*Out data format*/);        
       }
+#ifndef HIFI_IQ // Scratchpad may not be required in some cases on HiFi-iQ.
+      TF_LITE_ENSURE(context, required_scratch > 0);
+#endif
     }
     if (input->type == kTfLiteInt16) {
       if(input_depth == filter_depth){
@@ -126,18 +131,21 @@ TfLiteStatus ConvPrepareHifi(TfLiteContext* context, TfLiteNode* node) {
             input_height, input_width, input_depth, filter_height, filter_width, filter_depth, params->dilation_height_factor, params->dilation_width_factor, stride_height,
             pad_height, stride_width, pad_width, output_height, output_width, output_channels, PREC_SYM16S, PREC_SYM8S, 0/*Out data format*/);               
       }
+#ifndef HIFI_IQ // Scratchpad may not be required in some cases on HiFi-iQ.
+      TF_LITE_ENSURE(context, required_scratch > 0);
+#endif
     }
 #if defined(INCLUDE_FLOAT_OPT)    
      if ((input->type == kTfLiteFloat32) && (input_depth == filter_depth)) {
         required_scratch = xa_nn_conv2d_std_getsize(
             input_height, input_width, input_depth, filter_height, filter_width, filter_depth, stride_height,
             pad_height, stride_width, pad_width, output_height, output_width, output_channels, PREC_F32, PREC_F32, params->dilation_height_factor, params->dilation_width_factor, 0/*Out data format*/);
+#ifndef HIFI_IQ // Scratchpad may not be required in some cases on HiFi-iQ.
+        TF_LITE_ENSURE(context, required_scratch > 0);
+#endif
      }
 #endif     
   }
-#ifndef HIFI_IQ // Scratchpad may not be required in some cases on HiFi-iQ.
-      TF_LITE_ENSURE(context, required_scratch > 0);
-#endif
   TF_LITE_ENSURE_OK(
       context, context->RequestScratchBufferInArena(
                    context, required_scratch, &data->scratch_tensor_index));
