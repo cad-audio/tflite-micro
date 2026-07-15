@@ -303,12 +303,14 @@ TfLiteStatus EvalMeanHifi(TfLiteContext* context, TfLiteNode* node,
         context->GetScratchBuffer(context, xt_data->scratch_tensor_index));
 
         int output_size = output->dims->size;
+        int output_dims_data[1] = {1};
+        int* out_dims_ptr = output->dims->data;
         if(output_size == 0){
           output_size = 1;
-          output->dims->data[0] = 1;
+          out_dims_ptr = output_dims_data;
         }
         err = xa_nn_reduce_mean_4D_asym8s_asym8s(output_data_ptr,
-                                                 output->dims->data,
+                                                 out_dims_ptr,
                                                  input_data_ptr,
                                                  input->dims->data,
                                                  resolved_axis,
