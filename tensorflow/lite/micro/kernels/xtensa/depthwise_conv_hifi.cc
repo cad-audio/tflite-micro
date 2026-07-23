@@ -152,8 +152,6 @@ TfLiteStatus DepthwiseConvEvalInt8Hifi(TfLiteContext* context, TfLiteNode* node,
 
 #endif  // USE_TFLM_COMPRESSION
 
-  // If dilation is not required use the optimized NN Library kernel.
-  // Otherwise call the reference implementation.
   if ((params.dilation_width_factor == 1) &&
       (params.dilation_height_factor == 1)) {
     const int stride_width = params.stride_width;
@@ -324,8 +322,6 @@ TfLiteStatus DepthwiseConvEvalInt16Hifi(TfLiteContext* context, TfLiteNode* node
 
 #endif  // USE_TFLM_COMPRESSION
 
-  // If dilation is not required use the optimized NN Library kernel.
-  // Otherwise call the reference implementation.
   if ((params.dilation_width_factor == 1) &&
       (params.dilation_height_factor == 1)) {
     const int stride_width = params.stride_width;
