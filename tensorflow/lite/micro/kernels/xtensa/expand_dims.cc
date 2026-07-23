@@ -113,13 +113,13 @@ TfLiteStatus ExpandDimsPrepare(TfLiteContext* context, TfLiteNode* node) {
 
 template <typename T>
 void memCopyN(T* out, const T* in, const int num_elements) {
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
   memcpy(out, in, num_elements * sizeof(T));
-#else // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#else // defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
   for (int i = 0; i < num_elements; ++i) {
     out[i] = in[i];
   }
-#endif // defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+#endif // defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
 }
 
 TfLiteStatus ExpandDimsEval(TfLiteContext* context, TfLiteNode* node) {

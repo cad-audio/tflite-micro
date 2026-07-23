@@ -60,7 +60,7 @@ TfLiteStatus EvalIntegerSvdfHifi(TfLiteContext* context, TfLiteNode* node,
 
   // Left shift the activation_state.
   int num_bytes = sizeof(*state_ptr) * (n_batch * n_filter * n_memory - 1);
-#if defined(HIFI5)
+#if defined(HIFI5) || defined(HIFI_IQ)
   memcpy(state_ptr, state_ptr + 1, num_bytes);
 #else
   xa_nn_memmove_16(state_ptr, state_ptr + 1, (num_bytes >> 1));
