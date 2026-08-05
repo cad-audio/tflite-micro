@@ -24,6 +24,13 @@ limitations under the License.
 
 namespace tflite {
 
+// The optimized xa_nn_avgpool_16 kernel requires its pointer arguments to be
+// 16-byte aligned. Production TFLM tensors are always 16-byte aligned, but
+// unaligned buffers (e.g. from unit tests) must fall back to the reference
+// implementation.
+#define ARG_CHK_ALIGN(_ptr, _align) \
+  (((unsigned int)(_ptr) & ((_align) - 1)) == 0)
+
 TfLiteStatus AverageEvalQuantizedInt16Hifi(TfLiteContext* context,
                                       const TfLiteNode* node,
                                       const TfLitePoolParams* params,
@@ -46,6 +53,14 @@ TfLiteStatus AverageEvalQuantizedInt16Hifi(TfLiteContext* context,
 
   const int16_t* inp_data_ptr = tflite::micro::GetTensorData<int16_t>(input);
   int16_t* out_data_ptr = tflite::micro::GetTensorData<int16_t>(output);
+
+  if (!ARG_CHK_ALIGN(out_data_ptr, 16) || !ARG_CHK_ALIGN(inp_data_ptr, 16) ||
+      !ARG_CHK_ALIGN(p_scratch, 16)) {
+    AveragePoolingEvalQuantized<int16_t>(context, node, params,
+                                         &data->reference_op_data, input,
+                                         output);
+    return kTfLiteOk;
+  }
 
   for (int batch = 0; batch < batches; ++batch) {
     TF_LITE_ENSURE_EQ(
