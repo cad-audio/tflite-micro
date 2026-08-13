@@ -52,10 +52,10 @@ TfLiteStatus PrepareMaxHifi(TfLiteContext* context, TfLiteNode* node,
   op_data->num_output_elements = NumElements(output);
 
   context->RequestScratchBufferInArena(context, sizeof(int) * input->dims->size,
-                                       &op_data->temp_buffer_idx);
+                                       &op_data->scratch_accumulator_idx);
   context->RequestScratchBufferInArena(
       context, sizeof(int) * static_cast<int>(ElementCount(*axis->dims)),
-      &op_data->resolved_axis_idx);
+      &op_data->scratch_resolved_axis_idx);
 #if (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
   XtensaReduceOpData* xt_data =
           reinterpret_cast<XtensaReduceOpData*>(node->user_data);
@@ -107,12 +107,16 @@ TfLiteStatus PrepareMeanOrSumHifi(TfLiteContext* context, TfLiteNode* node,
 
   if (input->type == kTfLiteInt8 || input->type == kTfLiteInt16) {
     context->RequestScratchBufferInArena(context, output_size * sizeof(int32_t),
-                                         &op_data->temp_buffer_idx);
+                                         &op_data->scratch_accumulator_idx);
     op_data->input_zp = input->params.zero_point;
     op_data->input_scale = input->params.scale;
     op_data->output_zp = output->params.zero_point;
     op_data->output_scale = output->params.scale;
   }
+  context->RequestScratchBufferInArena(context, sizeof(int) * input->dims->size,
+                                       &op_data->scratch_input_iter_idx);
+  context->RequestScratchBufferInArena(context, sizeof(int) * op_data->num_axis,
+                                       &op_data->scratch_resolved_axis_idx);
 #if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
   XtensaReduceOpData* xt_data =
           reinterpret_cast<XtensaReduceOpData*>(node->user_data);
@@ -227,7 +231,7 @@ TfLiteStatus EvalIntegerMean(TfLiteContext* context, TfLiteNode* node,
                              int num_axis, OpDataReduce* op_data,
                              int* temp_index, int* resolved_axis) {
   int32_t* temp_sum = static_cast<int32_t*>(
-      context->GetScratchBuffer(context, op_data->temp_buffer_idx));
+      context->GetScratchBuffer(context, op_data->scratch_accumulator_idx));
 
   if (op_data->input_zp == op_data->output_zp &&
       op_data->input_scale == op_data->output_scale) {
@@ -303,12 +307,14 @@ TfLiteStatus EvalMeanHifi(TfLiteContext* context, TfLiteNode* node,
         context->GetScratchBuffer(context, xt_data->scratch_tensor_index));
 
         int output_size = output->dims->size;
+        int output_dims_data[1] = {1};
+        int* out_dims_ptr = output->dims->data;
         if(output_size == 0){
           output_size = 1;
-          output->dims->data[0] = 1;
+          out_dims_ptr = output_dims_data;
         }
         err = xa_nn_reduce_mean_4D_asym8s_asym8s(output_data_ptr,
-                                                 output->dims->data,
+                                                 out_dims_ptr,
                                                  input_data_ptr,
                                                  input->dims->data,
                                                  resolved_axis,
@@ -400,9 +406,9 @@ TfLiteStatus EvalMaxHifi(TfLiteContext* context, TfLiteNode* node,
   // Interpret an axis tensor with null dimensions as a scalar
   int num_axis = static_cast<int>(ElementCount(*axis->dims));
   int* temp_buffer = static_cast<int*>(
-      context->GetScratchBuffer(context, op_data->temp_buffer_idx));
+      context->GetScratchBuffer(context, op_data->scratch_accumulator_idx));
   int* resolved_axis = static_cast<int*>(
-      context->GetScratchBuffer(context, op_data->resolved_axis_idx));
+      context->GetScratchBuffer(context, op_data->scratch_resolved_axis_idx));
   switch (input->type) {
     case kTfLiteFloat32:
       TF_LITE_ENSURE(
