@@ -567,31 +567,6 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
   }
 #endif // defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
 
-  // Compress BatchMatMul when third from last RHS dimension is one.
-  int32_t rhs_dims_count = orig_rhs_shape.DimensionsCount();
-  int32_t lhs_dims_count = orig_lhs_shape.DimensionsCount();
-  // Compress ops where rhs shape is [..., 1, X, Y] and lhs shape is
-  // [..., Q, R, S] which is equivalent to rhs: [..., X, Y] and
-  // lhs: [..., Q * R, S].
-  if (rhs_dims_count > 2 && lhs_dims_count > 2) {
-    int rhs_one = orig_rhs_shape.DimsData()[rhs_dims_count - 3];
-    if (rhs_one == 1) {
-      int32_t* lhs_dims = orig_lhs_shape.DimsData();
-      int32_t* rhs_dims = orig_rhs_shape.DimsData();
-      RuntimeShape tmp_l(lhs_dims_count - 1, lhs_dims);
-      tmp_l.SetDim(lhs_dims_count - 3,
-                   lhs_dims[lhs_dims_count - 3] * lhs_dims[lhs_dims_count - 2]);
-      tmp_l.SetDim(lhs_dims_count - 2, lhs_dims[lhs_dims_count - 1]);
-      orig_lhs_shape.ReplaceWith(tmp_l.DimensionsCount(), tmp_l.DimsData());
-      RuntimeShape tmp_r(rhs_dims_count - 1, orig_rhs_shape.DimsData());
-      tmp_r.SetDim(rhs_dims_count - 3, rhs_dims[rhs_dims_count - 2]);
-      tmp_r.SetDim(rhs_dims_count - 2, rhs_dims[rhs_dims_count - 1]);
-      orig_rhs_shape.ReplaceWith(tmp_r.DimensionsCount(), tmp_r.DimsData());
-      rhs_dims_count = orig_rhs_shape.DimensionsCount();
-      lhs_dims_count = orig_lhs_shape.DimensionsCount();
-    }
-  }
-
   TfLiteEvalTensor* rhs_tensor = adj_y ? const_cast<TfLiteEvalTensor*>(rhs)
                                        : op_data->rhs_transposed_tensor;
   TfLiteEvalTensor* lhs_tensor = adj_x ? op_data->lhs_transposed_tensor
@@ -613,6 +588,28 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       adj_y ? orig_rhs_shape : SwapRowColumnDims(orig_rhs_shape);
   RuntimeShape lhs_shape =
       adj_x ? orig_lhs_shape : SwapRowColumnDims(orig_lhs_shape);
+
+  {
+    int32_t rhs_dims_count = rhs_shape.DimensionsCount();
+    int32_t lhs_dims_count = lhs_shape.DimensionsCount();
+    if (rhs_dims_count > 2 && lhs_dims_count > 2) {
+      int rhs_one = rhs_shape.DimsData()[rhs_dims_count - 3];
+      if (rhs_one == 1) {
+        int32_t* lhs_dims = lhs_shape.DimsData();
+        int32_t* rhs_dims = rhs_shape.DimsData();
+        RuntimeShape tmp_l(lhs_dims_count - 1, lhs_dims);
+        tmp_l.SetDim(lhs_dims_count - 3, lhs_dims[lhs_dims_count - 2]);
+        tmp_l.SetDim(
+            lhs_dims_count - 2,
+            lhs_dims[lhs_dims_count - 3] * lhs_dims[lhs_dims_count - 1]);
+        lhs_shape.ReplaceWith(tmp_l.DimensionsCount(), tmp_l.DimsData());
+        RuntimeShape tmp_r(rhs_dims_count - 1, rhs_shape.DimsData());
+        tmp_r.SetDim(rhs_dims_count - 3, rhs_dims[rhs_dims_count - 2]);
+        tmp_r.SetDim(rhs_dims_count - 2, rhs_dims[rhs_dims_count - 1]);
+        rhs_shape.ReplaceWith(tmp_r.DimensionsCount(), tmp_r.DimsData());
+      }
+    }
+  }
 
   switch (lhs->type) {
     case kTfLiteFloat32:
