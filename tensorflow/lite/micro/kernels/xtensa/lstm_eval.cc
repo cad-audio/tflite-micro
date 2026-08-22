@@ -527,4 +527,96 @@ RuntimeShape LstmStepManager::StateShape() const {
 }
 
 }  // namespace lstm_internal
+
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
+template <>
+TfLiteStatus EvalLstm<int8_t, int8_t, int16_t, int32_t>(
+    const OpDataLSTM& op_data, LSTMKernelContents& kernel_content,
+    const LSTMBuffers<int16_t>& buffers) {
+  const LstmSizeInfo& size_info = op_data.size_info;
+  void* p_scratch = buffers.buffer0;
+
+  // Gate weights: input (W) and recurrent (U) for i/f/c/o gates.
+  lstm_weights_ptrs weights;
+  weights.p_ig_W = (void*)tflite::micro::GetTensorData<int8_t>(
+      kernel_content.GetInternalTensor(kLstmInputToInputWeightsTensor));
+  weights.p_fg_W = (void*)tflite::micro::GetTensorData<int8_t>(
+      kernel_content.GetInternalTensor(kLstmInputToForgetWeightsTensor));
+  weights.p_cg_W = (void*)tflite::micro::GetTensorData<int8_t>(
+      kernel_content.GetInternalTensor(kLstmInputToCellWeightsTensor));
+  weights.p_og_W = (void*)tflite::micro::GetTensorData<int8_t>(
+      kernel_content.GetInternalTensor(kLstmInputToOutputWeightsTensor));
+  weights.p_ig_U = (void*)tflite::micro::GetTensorData<int8_t>(
+      kernel_content.GetInternalTensor(kLstmRecurrentToInputWeightsTensor));
+  weights.p_fg_U = (void*)tflite::micro::GetTensorData<int8_t>(
+      kernel_content.GetInternalTensor(kLstmRecurrentToForgetWeightsTensor));
+  weights.p_cg_U = (void*)tflite::micro::GetTensorData<int8_t>(
+      kernel_content.GetInternalTensor(kLstmRecurrentToCellWeightsTensor));
+  weights.p_og_U = (void*)tflite::micro::GetTensorData<int8_t>(
+      kernel_content.GetInternalTensor(kLstmRecurrentToOutputWeightsTensor));
+
+  lstm_bias_ptrs biases = {};
+  biases.p_ig_W_bias = (void*)tflite::micro::GetOptionalTensorData<int32_t>(
+      kernel_content.GetInternalTensor(kLstmInputGateBiasTensor));
+  biases.p_fg_W_bias = (void*)tflite::micro::GetOptionalTensorData<int32_t>(
+      kernel_content.GetInternalTensor(kLstmForgetGateBiasTensor));
+  biases.p_cg_W_bias = (void*)tflite::micro::GetOptionalTensorData<int32_t>(
+      kernel_content.GetInternalTensor(kLstmCellGateBiasTensor));
+  biases.p_og_W_bias = (void*)tflite::micro::GetOptionalTensorData<int32_t>(
+      kernel_content.GetInternalTensor(kLstmOutputGateBiasTensor));
+
+  const GateParameters& ig = op_data.input_gate_parameters;
+  const GateParameters& fg = op_data.forget_gate_parameters;
+  const GateParameters& cg = op_data.cell_gate_parameters;
+  const GateParameters& og = op_data.output_gate_parameters;
+
+  lstm_quant_params qp;
+  qp.ig_W_out_multiplier = ig.input_fc_params.output_multiplier;
+  qp.fg_W_out_multiplier = fg.input_fc_params.output_multiplier;
+  qp.cg_W_out_multiplier = cg.input_fc_params.output_multiplier;
+  qp.og_W_out_multiplier = og.input_fc_params.output_multiplier;
+  qp.ig_U_out_multiplier = ig.recurrent_fc_params.output_multiplier;
+  qp.fg_U_out_multiplier = fg.recurrent_fc_params.output_multiplier;
+  qp.cg_U_out_multiplier = cg.recurrent_fc_params.output_multiplier;
+  qp.og_U_out_multiplier = og.recurrent_fc_params.output_multiplier;
+  qp.ig_W_out_shift = ig.input_fc_params.output_shift;
+  qp.fg_W_out_shift = fg.input_fc_params.output_shift;
+  qp.cg_W_out_shift = cg.input_fc_params.output_shift;
+  qp.og_W_out_shift = og.input_fc_params.output_shift;
+  qp.ig_U_out_shift = ig.recurrent_fc_params.output_shift;
+  qp.fg_U_out_shift = fg.recurrent_fc_params.output_shift;
+  qp.cg_U_out_shift = cg.recurrent_fc_params.output_shift;
+  qp.og_U_out_shift = og.recurrent_fc_params.output_shift;
+  qp.quantized_cell_clip = op_data.cell_state_info.quantized_cell_clip;
+  qp.cell_state_scale = op_data.cell_state_info.cell_state_scale_power;
+  qp.hidden_multiplier =
+      op_data.inter_gate_parameters.output_mul_params.output_multiplier;
+  qp.hidden_shift = op_data.inter_gate_parameters.output_mul_params.output_shift;
+  // input_zero_bias = -input_zero_point (matches input FC input_offset).
+  qp.input_zero_bias = fg.input_fc_params.input_offset;
+  // hidden_zero_bias = hidden_zero_point (output mul offset).
+  qp.hidden_zero_bias =
+      op_data.inter_gate_parameters.output_mul_params.output_offset;
+
+  // Zero-initialize so any newer nnlib flag fields (e.g. `back`) default to 0
+  // without referencing them explicitly (keeps this header-version agnostic).
+  lstm_flags flags = {};
+  flags.time_major = size_info.time_major;
+  flags.use_cifg = 0;
+
+  WORD32 err = xa_nn_lstm_sym8sxasym8s_16(
+      tflite::micro::GetTensorData<int8_t>(kernel_content.output_tensor),
+      tflite::micro::GetTensorData<int8_t>(kernel_content.HiddenStateTensor()),
+      tflite::micro::GetTensorData<int16_t>(kernel_content.CellStateTensor()),
+      &weights, &biases,
+      (WORD8*)tflite::micro::GetTensorData<int8_t>(
+          kernel_content.GetInternalTensor(kLstmInputTensor)),
+      size_info.input_dimension, size_info.state_dimension,
+      size_info.state_dimension, size_info.batch_size, size_info.time_steps,
+      size_info.state_dimension, &qp, &flags, p_scratch);
+
+  return (err == 0) ? kTfLiteOk : kTfLiteError;
+}
+#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
+
 }  // namespace tflite

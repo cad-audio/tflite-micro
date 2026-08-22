@@ -819,6 +819,14 @@ TfLiteStatus EvalLstm(const OpDataLSTM& op_data,
   }
   return kTfLiteOk;
 }
+
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
+template <>
+TfLiteStatus EvalLstm<int8_t, int8_t, int16_t, int32_t>(
+    const OpDataLSTM& op_data, LSTMKernelContents& kernel_content,
+    const LSTMBuffers<int16_t>& buffers);
+#endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
+
 }  // namespace tflite
 
 #endif  // TENSORFLOW_LITE_MICRO_KERNELS_LSTM_EVAL_16ACT_H_
