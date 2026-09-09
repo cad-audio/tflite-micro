@@ -33,7 +33,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
   TF_LITE_ENSURE_TYPES_EQ(context, input->type, kTfLiteFloat32);
   TfLiteEvalTensor* output =
       tflite::micro::GetEvalOutput(context, node, kOutputTensor);
-#if defined(INCLUDE_FLOAT_OPT) && !(defined(HIFI_IQ))
+#if defined(INCLUDE_FLOAT_OPT)
   int err;
   const float* inp_data_ptr;
   float* out_data_ptr;
