@@ -140,6 +140,14 @@ TfLiteStatus DepthwiseConvEvalInt8Hifi(TfLiteContext* context, TfLiteNode* node,
                                    const TfLiteEvalTensor* filter,
                                    const TfLiteEvalTensor* bias,
                                    TfLiteEvalTensor* output) {
+  // The HiFi nnlib depthwise kernel does not support the case where the input
+  // has more than one channel and the depth multiplier is greater than one
+  // (input_channels > 1 && channels_multiplier > 1). Fall back to the
+  // reference implementation for that configuration.
+  if (tflite::micro::GetTensorShape(input).Dims(3) > 1 &&
+      params.depth_multiplier > 1) {
+    return DepthwiseConvReferenceEvalInt8(context, node);
+  }
 #ifdef USE_TFLM_COMPRESSION
 
   MicroContext* micro_context = GetMicroContext(context);
@@ -310,6 +318,14 @@ TfLiteStatus DepthwiseConvEvalInt16Hifi(TfLiteContext* context, TfLiteNode* node
                                    const TfLiteEvalTensor* filter,
                                    const TfLiteEvalTensor* bias,
                                    TfLiteEvalTensor* output) {
+  // The HiFi nnlib depthwise kernel does not support the case where the input
+  // has more than one channel and the depth multiplier is greater than one
+  // (input_channels > 1 && channels_multiplier > 1). Fall back to the
+  // reference implementation for that configuration.
+  if (tflite::micro::GetTensorShape(input).Dims(3) > 1 &&
+      params.depth_multiplier > 1) {
+    return DepthwiseConvReferenceEvalInt16(context, node);
+  }
 #ifdef USE_TFLM_COMPRESSION
 
   MicroContext* micro_context = GetMicroContext(context);

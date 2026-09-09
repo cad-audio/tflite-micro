@@ -224,7 +224,7 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
   // Quantized 16x8 kernels use an int64 scratch buffer.
   if (input->type == kTfLiteInt16) {
     TFLITE_DCHECK(context->RequestScratchBufferInArena != nullptr);
-#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
+#if (defined(HIFI3) || defined(HIFI4) || defined(HIFI5)) && !defined(HIFI_IQ)
     const int stride_width = params->stride_width;
     const int stride_height = params->stride_height;
 

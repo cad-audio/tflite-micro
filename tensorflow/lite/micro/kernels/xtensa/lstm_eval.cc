@@ -341,7 +341,16 @@ void FullyConnected(const FullyConnectedParams& params,
                     const int num_batches, const int output_depth,
                     const int accum_depth) {
   WORD32 err;
-  if(num_batches == 1) {
+  // The optimized single-batch fully_connected_v2 kernel requires all of its
+  // pointer arguments to be 16-byte aligned (see xa_nn_matXvec_v2_sym8sxsym16s
+  // alignment checks). Fall back to the matmul kernel, which tolerates lower
+  // alignment, whenever any pointer does not meet this requirement.
+  const bool inputs_16byte_aligned =
+      ((reinterpret_cast<uintptr_t>(output_data) & 15) == 0) &&
+      ((reinterpret_cast<uintptr_t>(filter_data) & 15) == 0) &&
+      ((reinterpret_cast<uintptr_t>(input_data) & 15) == 0) &&
+      ((reinterpret_cast<uintptr_t>(bias_data) & 15) == 0);
+  if(num_batches == 1 && inputs_16byte_aligned) {
       err = xa_nn_fully_connected_v2_sym8sxsym16s_sym16s(
               output_data, filter_data, input_data, bias_data,
               accum_depth, output_depth, params.output_multiplier, params.output_shift,
