@@ -47,6 +47,10 @@ ifeq ($(TARGET_ARCH), hifimini)
     $(shell find $(FFT_PATH)/hifi2_fft -name "*.h")
 
 else ifeq ($(TARGET_ARCH), hifi_iq)
+  DOWNLOAD_RESULT := $(shell $(MAKEFILE_DIR)/ext_libs/xtensa_download.sh ${DOWNLOADS_DIR} hifi_iq $(TENSORFLOW_ROOT))
+  ifneq ($(DOWNLOAD_RESULT), SUCCESS)
+    $(error Something went wrong with the xtensa download: $(DOWNLOAD_RESULT))
+  endif
 
   PLATFORM_FLAGS = \
     -Wno-shadow\
