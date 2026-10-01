@@ -224,31 +224,43 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
   // Quantized 16x8 kernels use an int64 scratch buffer.
   if (input->type == kTfLiteInt16) {
     TFLITE_DCHECK(context->RequestScratchBufferInArena != nullptr);
-#if (defined(HIFI3) || defined(HIFI4) || defined(HIFI5)) && !defined(HIFI_IQ)
-    const int stride_width = params->stride_width;
-    const int stride_height = params->stride_height;
+#if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
+    // The optimized int16 kernel is only used when the bias is int64.
+    TfLiteTensor* bias =
+        micro_context->AllocateTempInputTensor(node, kBiasTensor);
+    const bool use_optimized_kernel = (bias == nullptr) ||
+                                      (bias->type != kTfLiteInt16);
+    if (bias != nullptr) {
+      micro_context->DeallocateTempTfLiteTensor(bias);
+    }
 
-    const int input_height = SizeOfDimension(input, 1);
-    const int input_width = SizeOfDimension(input, 2);
-    const int input_depth = SizeOfDimension(input, 3);
-    const int output_height = height;
-    const int output_width = width;
-    int32_t scratch_buffer_size = 0;
-    scratch_buffer_size = xa_nn_transpose_conv_getsize(input_height,
-                              input_width, input_depth, filter_height,
-                              filter_width, stride_width, stride_height,
-                              output_height, output_width, num_channels,
-                              num_groups, PREC_SYM8S, PREC_SYM16S);
-    TFLITE_DCHECK(context->RequestScratchBufferInArena(
-                      context,
-                      scratch_buffer_size,
-                      &(data->scratch_buffer_index)) == kTfLiteOk);
-#else   // #if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+    if (use_optimized_kernel) {
+      const int stride_width = params->stride_width;
+      const int stride_height = params->stride_height;
+
+      const int input_height = SizeOfDimension(input, 1);
+      const int input_width = SizeOfDimension(input, 2);
+      const int input_depth = SizeOfDimension(input, 3);
+      const int output_height = height;
+      const int output_width = width;
+      int32_t scratch_buffer_size = 0;
+      scratch_buffer_size = xa_nn_transpose_conv_getsize(input_height,
+                                input_width, input_depth, filter_height,
+                                filter_width, stride_width, stride_height,
+                                output_height, output_width, num_channels,
+                                num_groups, PREC_SYM8S, PREC_SYM16S);
+      TFLITE_DCHECK(context->RequestScratchBufferInArena(
+                        context,
+                        scratch_buffer_size,
+                        &(data->scratch_buffer_index)) == kTfLiteOk);
+    } else
+#endif   // #if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
+    {
     TFLITE_DCHECK(context->RequestScratchBufferInArena(
                       context,
                       GetTensorShape(output).FlatSize() * sizeof(std::int64_t),
                       &(data->scratch_buffer_index)) == kTfLiteOk);
-#endif  // #if defined(HIFI3) || defined(HIFI4) || defined(HIFI5)
+    }
   }
 
 #if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI4) || defined(HIFI5)) && !defined(HIFI_IQ)
