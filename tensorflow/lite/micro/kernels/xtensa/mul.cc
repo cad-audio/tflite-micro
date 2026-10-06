@@ -149,15 +149,11 @@ TfLiteStatus MulEval(TfLiteContext* context, TfLiteNode* node) {
           context, EvalMulQuantizedHiFi(context, node, data, input1, input2,
                                         output));
 #else
-      TF_LITE_ENSURE_OK(
-          context, EvalMulQuantizedReference(context, node, data, input1,
-                                             input2, output));
+      EvalMulQuantizedReference(context, node, data, input1, input2, output);
 #endif
       break;
     case kTfLiteInt32:
-      TF_LITE_ENSURE_OK(
-          context, EvalMulQuantizedReference(context, node, data, input1,
-                                             input2, output));
+      EvalMulQuantizedReference(context, node, data, input1, input2, output);
       break;
     case kTfLiteFloat32:
 #if defined(INCLUDE_FLOAT_OPT) && !(defined(HIFI_IQ))
@@ -166,9 +162,7 @@ TfLiteStatus MulEval(TfLiteContext* context, TfLiteNode* node) {
           EvalMulFloatHiFi(context, node, params, data, input1, input2,
                            output));
 #else
-      TF_LITE_ENSURE_OK(
-          context, EvalMulFloatReference(context, node, params, data, input1,
-                                         input2, output));
+      EvalMulFloatReference(context, node, params, data, input1, input2, output);
 #endif
       break;
     default:
