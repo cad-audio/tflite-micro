@@ -93,11 +93,27 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
   TfLiteEvalTensor* output =
       tflite::micro::GetEvalOutput(context, node, kOutputTensor);
   switch (input->type) {
-    case kTfLiteFloat32:
+    case kTfLiteFloat32: {
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
+      err = xa_nn_transpose_32_32(
+        reinterpret_cast<int32_t*>(
+            tflite::micro::GetTensorData<float>(output)),
+        tflite::micro::GetTensorShape(output).DimsData(),
+        reinterpret_cast<const int32_t*>(
+            tflite::micro::GetTensorData<float>(input)),
+        tflite::micro::GetTensorShape(input).DimsData(),
+        params.perm,
+        tflite::micro::GetTensorShape(output).DimensionsCount(),
+        tflite::micro::GetTensorShape(input).DimensionsCount()
+      );
+      TF_LITE_ENSURE(context, err == 0);
+#else
       reference_ops::Transpose(params, tflite::micro::GetTensorShape(input),
                                tflite::micro::GetTensorData<float>(input),
                                tflite::micro::GetTensorShape(output),
                                tflite::micro::GetTensorData<float>(output));
+#endif
+      }
       break;
     case kTfLiteInt8 : {
 #if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)

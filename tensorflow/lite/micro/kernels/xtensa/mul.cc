@@ -94,20 +94,28 @@ TfLiteStatus EvalMulFloatHiFi(TfLiteContext* context, TfLiteNode* node,
     TfLiteMulParams* params, const OpDataMul* data,
     const TfLiteEvalTensor* input1, const TfLiteEvalTensor* input2,
     TfLiteEvalTensor* output) {
+  (void)node;
+  (void)params;
   tflite::ArithmeticParams op_params = {};
   op_params.float_activation_min = data->output_activation_min_f32;
   op_params.float_activation_max = data->output_activation_max_f32;
 
   int err;
-  const RuntimeShape& input1_shape = tflite::micro::GetTensorShape(input1);
-  const RuntimeShape& input2_shape = tflite::micro::GetTensorShape(input2);
-  const RuntimeShape& output_shape = tflite::micro::GetTensorShape(output);
-  const int flat_size =
-    MatchingElementsSize(input1_shape, input2_shape, output_shape);
+  const RuntimeShape extended_input1_shape =
+      RuntimeShape::ExtendedShape(4, tflite::micro::GetTensorShape(input1));
+  const RuntimeShape extended_input2_shape =
+      RuntimeShape::ExtendedShape(4, tflite::micro::GetTensorShape(input2));
+  const RuntimeShape extended_output_shape =
+      RuntimeShape::ExtendedShape(4, tflite::micro::GetTensorShape(output));
+  const int flat_size = extended_output_shape.FlatSize();
 
-  err = xa_nn_elm_mul_f32xf32_f32(tflite::micro::GetTensorData<float>(output),
+  err = xa_nn_elm_mul_broadcast_4D_f32xf32_f32(
+      tflite::micro::GetTensorData<float>(output),
+      extended_output_shape.DimsData(),
       tflite::micro::GetTensorData<float>(input1),
-      tflite::micro::GetTensorData<float>(input2), flat_size);
+      extended_input1_shape.DimsData(),
+      tflite::micro::GetTensorData<float>(input2),
+      extended_input2_shape.DimsData());
 
   TF_LITE_ENSURE(context, err == 0);
 
@@ -133,44 +141,26 @@ TfLiteStatus MulEval(TfLiteContext* context, TfLiteNode* node) {
   TfLiteEvalTensor* output =
       tflite::micro::GetEvalOutput(context, node, kMulOutputTensor);
 
-#if defined(INCLUDE_FLOAT_OPT) && !(defined(HIFI_IQ))
-  bool need_broadcast;
-  if(input1->type == kTfLiteFloat32)
-  {
-    tflite::ArithmeticParams op_params = {};
-    op_params.quantized_activation_min = data->output_activation_min;
-    op_params.quantized_activation_max = data->output_activation_max;
-    op_params.float_activation_max = data->output_activation_max_f32;
-    op_params.input1_offset = -data->input1_zero_point;
-    op_params.input2_offset = -data->input2_zero_point;
-    op_params.output_offset = data->output_zero_point;
-    op_params.output_multiplier = data->output_multiplier;
-    op_params.output_shift = data->output_shift;
-
-    need_broadcast = reference_ops::ProcessBroadcastShapes(
-        tflite::micro::GetTensorShape(input1),
-        tflite::micro::GetTensorShape(input2), &op_params);
-  }
-#endif
-
   switch (input1->type) {
     case kTfLiteInt8:
     case kTfLiteInt16:
 #if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
-      EvalMulQuantizedHiFi(context, node, data, input1, input2, output);
+      TF_LITE_ENSURE_OK(
+          context, EvalMulQuantizedHiFi(context, node, data, input1, input2,
+                                        output));
 #else
       EvalMulQuantizedReference(context, node, data, input1, input2, output);
 #endif
       break;
     case kTfLiteInt32:
-        EvalMulQuantizedReference(context, node, data, input1, input2, output);
+      EvalMulQuantizedReference(context, node, data, input1, input2, output);
       break;
     case kTfLiteFloat32:
 #if defined(INCLUDE_FLOAT_OPT) && !(defined(HIFI_IQ))
-      if (!need_broadcast) 
-        EvalMulFloatHiFi(context, node, params, data, input1, input2, output);
-      else
-        EvalMulFloatReference(context, node, params, data, input1, input2, output);
+      TF_LITE_ENSURE_OK(
+          context,
+          EvalMulFloatHiFi(context, node, params, data, input1, input2,
+                           output));
 #else
       EvalMulFloatReference(context, node, params, data, input1, input2, output);
 #endif
