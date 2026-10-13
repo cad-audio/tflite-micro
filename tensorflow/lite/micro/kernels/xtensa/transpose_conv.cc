@@ -126,18 +126,6 @@ TfLiteStatus CalculateOpData(TfLiteContext* context, TfLiteNode* node,
         data->per_channel_output_multiplier, data->per_channel_output_shift,
         output_channels));
 
-    // TODO(b/192090531): Remove this once all 8x16 transpose conv models use
-    // 64-bit biases.
-    if (input->type == kTfLiteInt16) {
-      TFLITE_DCHECK(filter->type == kTfLiteInt8);
-      TFLITE_DCHECK(output->type == kTfLiteInt16);
-      if (bias->type == kTfLiteInt16) {
-        TFLITE_DCHECK(
-            context->RequestScratchBufferInArena(
-                context, GetTensorShape(bias).FlatSize() * sizeof(std::int64_t),
-                &(data->bias_converted_buffer_index)) == kTfLiteOk);
-      }
-    }
     micro_context->DeallocateTempTfLiteTensor(input);
     micro_context->DeallocateTempTfLiteTensor(output);
     micro_context->DeallocateTempTfLiteTensor(filter);
