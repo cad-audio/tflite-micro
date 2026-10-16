@@ -83,7 +83,8 @@ bool IsAbsSupportedType(const TfLiteType type) {
 }
 
 bool IsRsqrtSupportedType(const TfLiteType type) {
-  return type == kTfLiteFloat32 || type == kTfLiteInt8;
+  return type == kTfLiteFloat32 || type == kTfLiteInt8 ||
+         type == kTfLiteInt16;
 }
 
 inline void SetAbsOutputMultiplier(const float input_scale,
@@ -492,9 +493,29 @@ TfLiteStatus RsqrtEval(TfLiteContext* context, TfLiteNode* node) {
     case kTfLiteInt8:
       return EvalImplQuantized<int8_t>(context, node, RsqrtEvalQuantized,
                                        validate_input_func, type);
-    case kTfLiteInt16:
+    case kTfLiteInt16: {
+#if defined(HIFI5)
+      const TfLiteEvalTensor* input = tflite::micro::GetEvalInput(context, node, 0);
+      TfLiteEvalTensor* output = tflite::micro::GetEvalOutput(context, node, 0);
+      const size_t num_elements = ElementCount(*input->dims);
+      const int16_t* in_data = tflite::micro::GetTensorData<int16_t>(input);
+      int16_t* out_data = tflite::micro::GetTensorData<int16_t>(output);
+
+      for (size_t i = 0; i < num_elements; ++i) {
+        TF_LITE_ENSURE_OK(
+            context, validate_input_func<int16_t>(context, node, in_data[i]));
+      }
+
+      const int err = xa_nn_elm_rsqrt_sym16s_sym16s(
+          out_data, in_data, op_data->multiplier, op_data->shift,
+          num_elements);
+      TF_LITE_ENSURE(context, err == 0);
+      return kTfLiteOk;
+#else
       return EvalImplQuantized<int16_t>(context, node, RsqrtEvalQuantized,
                                         validate_input_func, type);
+#endif
+    }
 
     default:
       MicroPrintf("Current data type %s is not supported.",

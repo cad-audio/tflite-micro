@@ -109,7 +109,11 @@ TfLiteStatus XtensaEvalMax(TfLiteContext* context, TfLiteNode* node) {
 TfLiteStatus XtensaEvalSum(TfLiteContext* context, TfLiteNode* node) {
   OpDataReduce* op_data =
       &(static_cast<XtensaReduceOpData*>(node->user_data)->reference_op_data);
+#if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
+  return EvalSumHifi(context, node, op_data);
+#else
   return EvalSumHelper(context, node, op_data);
+#endif
 }
 
 TFLMRegistration Register_MEAN() {

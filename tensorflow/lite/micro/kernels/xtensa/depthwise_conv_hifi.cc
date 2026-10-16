@@ -73,23 +73,29 @@ TfLiteStatus DepthwiseConvPrepareHifi(TfLiteContext* context,
   if ((params.dilation_width_factor == 1) &&
       (params.dilation_height_factor == 1)) {
         if(input->type == kTfLiteInt8){           
+        int kernel_precision = PREC_SYM8S;
+#if defined(HIFI5) && defined(NNLIB_HIFI5)
+        if (filter->type == kTfLiteInt4) {
+          kernel_precision = PREC_SYM4S;
+        }
+#endif
         required_scratch = xa_nn_conv2d_depthwise_getsize(
             input_height, input_width, input_depth, filter_height, filter_width,
             depth_multiplier, stride_width, stride_height, pad_width, pad_height,
-            output_height, output_width, PREC_ASYM8S, 0 /* NHWC */);
+            output_height, output_width, kernel_precision, PREC_ASYM8S, 0 /* NHWC */);
         }
         else if(input->type == kTfLiteInt16){
         required_scratch = xa_nn_conv2d_depthwise_getsize(
             input_height, input_width, input_depth, filter_height, filter_width,
             depth_multiplier, stride_width, stride_height, pad_width, pad_height,
-            output_height, output_width, PREC_SYM16S, 0 /* NHWC */);
+            output_height, output_width, PREC_SYM8S, PREC_SYM16S, 0 /* NHWC */);
         }
 #if defined(INCLUDE_FLOAT_OPT) && !(defined(HIFI_IQ))
         else if(input->type == kTfLiteFloat32){
         required_scratch = xa_nn_conv2d_depthwise_getsize(
             input_height, input_width, input_depth, filter_height, filter_width,
             depth_multiplier, stride_width, stride_height, pad_width, pad_height,
-            output_height, output_width, PREC_F32, 0 /* NHWC */);
+            output_height, output_width, PREC_F32, PREC_F32, 0 /* NHWC */);
         }
 #endif       
 #ifndef HIFI_IQ
@@ -215,22 +221,44 @@ TfLiteStatus DepthwiseConvEvalInt8Hifi(TfLiteContext* context, TfLiteNode* node,
         context->GetScratchBuffer(context, data.scratch_tensor_index));
 
     for (int i = 0; i < batches; i++) {
-      TF_LITE_ENSURE_EQ(
-          context,
-          xa_nn_conv2d_depthwise_v2_per_chan_sym8sxasym8s(
-              &output_data[i * output_height * output_width * output_depth],
-              filter_data,
-              &input_data[i * input_height * input_width * input_depth],
-              bias_data, input_height, input_width, input_depth, filter_height,
-              filter_width, depth_multiplier, stride_width, stride_height,
-              pad_width, pad_height, output_height, output_width,
-              -data.reference_op_data.input_zero_point,
-              data.reference_op_data.per_channel_output_multiplier,
-              data.reference_op_data.per_channel_output_shift,
-              data.reference_op_data.output_zero_point, input_data_format,
-              output_data_format, p_scratch,
-              output_activation_min, output_activation_max, NULL),
-          0);
+#if defined(HIFI5) && defined(NNLIB_HIFI5)
+      if (filter->type == kTfLiteInt4) {
+        TF_LITE_ENSURE_EQ(
+            context,
+            xa_nn_conv2d_depthwise_v2_per_chan_sym4sxasym8s(
+                &output_data[i * output_height * output_width * output_depth],
+                filter_data,
+                &input_data[i * input_height * input_width * input_depth],
+                bias_data, input_height, input_width, input_depth, filter_height,
+                filter_width, depth_multiplier, stride_width, stride_height,
+                pad_width, pad_height, output_height, output_width,
+                -data.reference_op_data.input_zero_point,
+                data.reference_op_data.per_channel_output_multiplier,
+                data.reference_op_data.per_channel_output_shift,
+                data.reference_op_data.output_zero_point, input_data_format,
+                output_data_format, p_scratch,
+                output_activation_min, output_activation_max, NULL),
+            0);
+      } else
+#endif
+      {
+        TF_LITE_ENSURE_EQ(
+            context,
+            xa_nn_conv2d_depthwise_v2_per_chan_sym8sxasym8s(
+                &output_data[i * output_height * output_width * output_depth],
+                filter_data,
+                &input_data[i * input_height * input_width * input_depth],
+                bias_data, input_height, input_width, input_depth, filter_height,
+                filter_width, depth_multiplier, stride_width, stride_height,
+                pad_width, pad_height, output_height, output_width,
+                -data.reference_op_data.input_zero_point,
+                data.reference_op_data.per_channel_output_multiplier,
+                data.reference_op_data.per_channel_output_shift,
+                data.reference_op_data.output_zero_point, input_data_format,
+                output_data_format, p_scratch,
+                output_activation_min, output_activation_max, NULL),
+            0);
+      }
     }
 
     return kTfLiteOk;

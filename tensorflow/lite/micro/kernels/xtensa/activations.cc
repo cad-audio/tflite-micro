@@ -100,11 +100,31 @@ TfLiteStatus ReluEval(TfLiteContext* context, TfLiteNode* node) {
       return kTfLiteOk;
     }
     case kTfLiteInt16: {
+#if defined(HIFI5)
+      int err;
+      const int16_t* inp_data_ptr;
+      int16_t* out_data_ptr;
+      const RuntimeShape& input_shape = tflite::micro::GetTensorShape(input);
+      const RuntimeShape& output_shape = tflite::micro::GetTensorShape(output);
+      const int flat_size = MatchingFlatSize(input_shape, output_shape);
+
+      inp_data_ptr = tflite::micro::GetTensorData<int16_t>(input);
+      out_data_ptr = tflite::micro::GetTensorData<int16_t>(output);
+
+      err = xa_nn_vec_relu_asym16s_asym16s(
+          out_data_ptr, inp_data_ptr, data.params.input_offset,
+          data.params.output_multiplier, data.params.output_shift,
+          data.params.output_offset, data.params.quantized_activation_min,
+          data.params.quantized_activation_max, flat_size);
+
+      TF_LITE_ENSURE(context, err == 0);
+#else
       tflite::ReluQuantized<int16_t>(
           data, tflite::micro::GetTensorShape(input),
           tflite::micro::GetTensorShape(output),
           tflite::micro::GetTensorData<int16_t>(input),
           tflite::micro::GetTensorData<int16_t>(output));
+#endif  // defined(HIFI5)
       return kTfLiteOk;
     }
     default: {
