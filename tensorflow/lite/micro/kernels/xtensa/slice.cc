@@ -184,48 +184,37 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       const RuntimeShape extended_input_shape =
           RuntimeShape::ExtendedShape(5, input_shape);
 
-      // The optimized kernel only slices dimensions 1..4 and requires the
-      // outermost dimension to be a singleton batch. Fall back to the
-      // reference implementation when that is not the case.
-      if (extended_input_shape.Dims(0) == 1) {
-        int err;
+      int err;
 
-        const int16_t* input_data =
-            tflite::micro::GetTensorData<int16_t>(input);
-        int16_t* output_data = tflite::micro::GetTensorData<int16_t>(output);
+      const int16_t* input_data =
+          tflite::micro::GetTensorData<int16_t>(input);
+      int16_t* output_data = tflite::micro::GetTensorData<int16_t>(output);
 
-        /* Slice operator is Strided Slice operation with stride = 1 in all
-         * dimensions */
-        int unit_stride = 1;
-        /* Evaluate start and stop indices */
-        int start[5];
-        int stop[5];
-        for (int i = 0; i < 5; ++i) {
-          int padded_i = 5 - i;
-          start[i] = op_params.begin_count < padded_i
-                         ? 0
-                         : op_params.begin[op_params.begin_count - padded_i];
-          stop[i] = (op_params.size[op_params.size_count - padded_i] == -1)
-                        ? extended_input_shape.Dims(i)
-                        : start[i] +
-                              op_params.size[op_params.size_count - padded_i];
-        }
-
-        err = xa_nn_strided_slice_int16(
-            output_data, input_data, start[0], stop[0], start[1], stop[1],
-            start[2], stop[2], start[3], stop[3], start[4], stop[4],
-            unit_stride, unit_stride, unit_stride, unit_stride, unit_stride,
-            extended_input_shape.Dims(0), extended_input_shape.Dims(1),
-            extended_input_shape.Dims(2), extended_input_shape.Dims(3),
-            extended_input_shape.Dims(4));
-        TF_LITE_ENSURE(context, err == 0);
-      } else {
-        reference_ops::Slice<int16_t>(
-            op_params, tflite::micro::GetTensorShape(input),
-            tflite::micro::GetTensorData<int16_t>(input),
-            tflite::micro::GetTensorShape(output),
-            tflite::micro::GetTensorData<int16_t>(output));
+      /* Slice operator is Strided Slice operation with stride = 1 in all
+        * dimensions */
+      int unit_stride = 1;
+      /* Evaluate start and stop indices */
+      int start[5];
+      int stop[5];
+      for (int i = 0; i < 5; ++i) {
+        int padded_i = 5 - i;
+        start[i] = op_params.begin_count < padded_i
+                        ? 0
+                        : op_params.begin[op_params.begin_count - padded_i];
+        stop[i] = (op_params.size[op_params.size_count - padded_i] == -1)
+                      ? extended_input_shape.Dims(i)
+                      : start[i] +
+                            op_params.size[op_params.size_count - padded_i];
       }
+
+      err = xa_nn_strided_slice_int16(
+          output_data, input_data, start[0], stop[0], start[1], stop[1],
+          start[2], stop[2], start[3], stop[3], start[4], stop[4],
+          unit_stride, unit_stride, unit_stride, unit_stride, unit_stride,
+          extended_input_shape.Dims(0), extended_input_shape.Dims(1),
+          extended_input_shape.Dims(2), extended_input_shape.Dims(3),
+          extended_input_shape.Dims(4));
+      TF_LITE_ENSURE(context, err == 0);
 #else // defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
       reference_ops::Slice<int16_t>(
           op_params, tflite::micro::GetTensorShape(input),
