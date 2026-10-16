@@ -74,8 +74,9 @@ void StridedSlice_int16_hifi(const tflite::StridedSliceParams& op_params,
                             static_cast<int>(stop_4), params_copy.strides[0],
                             params_copy.strides[1], params_copy.strides[2],
                             params_copy.strides[3], params_copy.strides[4],
-                            input_shape.Dims(1), input_shape.Dims(2),
-                            input_shape.Dims(3), input_shape.Dims(4));
+                            input_shape.Dims(0), input_shape.Dims(1),
+                            input_shape.Dims(2), input_shape.Dims(3),
+                            input_shape.Dims(4));
 }
 
 void StridedSlice_int32_hifi(const tflite::StridedSliceParams& op_params,
