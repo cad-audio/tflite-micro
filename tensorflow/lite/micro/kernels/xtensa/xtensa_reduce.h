@@ -56,6 +56,8 @@ TfLiteStatus EvalMeanHifi(TfLiteContext* context, TfLiteNode* node, OpDataReduce
 
 TfLiteStatus EvalMaxHifi(TfLiteContext* context, TfLiteNode* node, OpDataReduce* op_data);
 
+TfLiteStatus EvalSumHifi(TfLiteContext* context, TfLiteNode* node, OpDataReduce* op_data);
+
 #endif  // VISION_P6
 
 }  // namespace tflite

@@ -390,6 +390,95 @@ TfLiteStatus EvalMeanHifi(TfLiteContext* context, TfLiteNode* node,
   return kTfLiteOk;
 }
 
+TfLiteStatus EvalSumHifi(TfLiteContext* context, TfLiteNode* node,
+                         OpDataReduce* op_data) {
+  const TfLiteEvalTensor* input = tflite::micro::GetEvalInput(context, node, 0);
+  const TfLiteEvalTensor* axis = tflite::micro::GetEvalInput(context, node, 1);
+  TfLiteEvalTensor* output = tflite::micro::GetEvalOutput(context, node, 0);
+  TF_LITE_ENSURE_TYPES_EQ(context, input->type, output->type);
+  TfLiteReducerParams* params =
+      static_cast<TfLiteReducerParams*>(node->builtin_data);
+
+  int num_axis = static_cast<int>(ElementCount(*axis->dims));
+  int temp_index[kMaxNumberOfAxisHifi];
+  int resolved_axis[kMaxNumberOfReducedAxisHifi];
+
+  switch (input->type) {
+    case kTfLiteFloat32: {
+      TF_LITE_ENSURE(
+          context,
+          reference_ops::ReduceGeneric<float>(
+              tflite::micro::GetTensorData<float>(input), input->dims->data,
+              input->dims->size, tflite::micro::GetTensorData<float>(output),
+              output->dims->data, output->dims->size,
+              tflite::micro::GetTensorData<int>(axis), num_axis,
+              params->keep_dims, temp_index, resolved_axis, /*init_value=*/0.f,
+              [](const float current, const float in) -> float {
+                return in + current;
+              }));
+    } break;
+    case kTfLiteInt8: {
+      int32_t* temp_sum = static_cast<int32_t*>(
+          context->GetScratchBuffer(context, op_data->temp_buffer_idx));
+      QuantizedMeanOrSum<int8_t>(context, node, temp_index, resolved_axis,
+                                 temp_sum, op_data, /*compute_sum=*/true);
+    } break;
+    case kTfLiteInt16: {
+#if defined(HIFI5)
+      XtensaReduceOpData* xt_data =
+              reinterpret_cast<XtensaReduceOpData*>(node->user_data);
+      const int16_t *input_data_ptr  = tflite::micro::GetTensorData<int16_t>(input);
+      int16_t *output_data_ptr  = tflite::micro::GetTensorData<int16_t>(output);
+      void *p_scratch;
+      int err = 0;
+
+      if(input->dims->size > 0 && input->dims->size <= 4)
+      {
+        int num_resolved_axis = 0;
+        if (!reference_ops::ResolveAxis(input->dims->size, tflite::micro::GetTensorData<int>(axis), num_axis, resolved_axis, &num_resolved_axis)) {
+          TF_LITE_ENSURE(context, false);
+        }
+        p_scratch = static_cast<void*>(
+        context->GetScratchBuffer(context, xt_data->scratch_tensor_index));
+
+        int output_size = output->dims->size;
+        int output_dims_data[1] = {1};
+        int* out_dims_ptr = output->dims->data;
+        if(output_size == 0){
+          output_size = 1;
+          out_dims_ptr = output_dims_data;
+        }
+        err = xa_nn_reduce_sum_4D_asym16s_asym16s(output_data_ptr,
+                                                  out_dims_ptr,
+                                                  input_data_ptr,
+                                                  input->dims->data,
+                                                  resolved_axis,
+                                                  output_size,
+                                                  input->dims->size,
+                                                  num_resolved_axis,
+                                                  op_data->input_zp,
+                                                  op_data->multiplier,
+                                                  op_data->shift,
+                                                  op_data->output_zp,
+                                                  p_scratch);
+        TF_LITE_ENSURE(context, err == 0);
+      }
+      else
+#endif
+      {
+        int32_t* temp_sum = static_cast<int32_t*>(
+            context->GetScratchBuffer(context, op_data->temp_buffer_idx));
+        QuantizedMeanOrSum<int16_t>(context, node, temp_index, resolved_axis,
+                                    temp_sum, op_data, /*compute_sum=*/true);
+      }
+    } break;
+    default:
+      MicroPrintf("Only float32, int8, and int16 types are supported.");
+      return kTfLiteError;
+  }
+  return kTfLiteOk;
+}
+
 TfLiteStatus EvalMaxHifi(TfLiteContext* context, TfLiteNode* node,
                            OpDataReduce* op_data) {
   const TfLiteEvalTensor* input = tflite::micro::GetEvalInput(context, node, 0);
