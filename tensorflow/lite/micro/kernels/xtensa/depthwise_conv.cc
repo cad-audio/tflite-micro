@@ -97,13 +97,21 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
   TfLiteEvalTensor filter_int8 = tflite::micro::MakeUnpackedInt4Tensor(
       context, op_data.reference_op_data.filter_buffer_index, filter);
 
+  // Keep the original packed tensor in Int4 filter case; otherwise use the unpacked int8 copy.
+  const TfLiteEvalTensor* hifi_int8_filter = &filter_int8;
+#if defined(HIFI5) && defined(NNLIB_HIFI5)
+  if (filter->type == kTfLiteInt4) {
+    hifi_int8_filter = filter;
+  }
+#endif
+
   switch (input->type) {  // Already know in/out types are same.
     case kTfLiteInt8: {
       switch (filter_int8.type) {
         case kTfLiteInt8: {
 #if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
           return DepthwiseConvEvalInt8Hifi(context, node, params, op_data, input,
-                                &filter_int8, bias, output);
+                                hifi_int8_filter, bias, output);
 #elif defined(VISION_P6)
           return DepthwiseConvEvalVision(context, node, params, op_data, input,
                                   &filter_int8, bias, output);
