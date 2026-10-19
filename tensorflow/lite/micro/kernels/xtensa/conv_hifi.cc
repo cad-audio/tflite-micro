@@ -279,8 +279,12 @@ TfLiteStatus ConvEvalHifiInt16(TfLiteContext* context, TfLiteNode* node,
 
   int output_data_format = 0;
   int out_length = output_height * output_width * output_depth;
+
   if(params.dilation_height_factor == 1 && params.dilation_width_factor == 1) {
-    if (filter_height == 1 && filter_width == 1) {
+    if (filter_height == 1 && filter_width == 1 && stride_width == 1 &&
+        stride_height == 1 && pad_width == 0 && pad_height == 0 &&
+        (input_height == output_height) && (input_width == output_width) &&
+        (filter_depth == input_depth)) {
       for (int batch = 0; batch < batches; ++batch) {
         int16_t* p_out_temp;
         p_out_temp = &output_data[batch * out_length];
