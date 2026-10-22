@@ -40,16 +40,20 @@ TfLiteStatus EvalInt8(TfLiteContext* context, TfLiteNode* node) {
   const TfLiteEvalTensor* bias =
       tflite::micro::GetEvalInput(context, node, kConvBiasTensor);
 
-  TfLiteEvalTensor filter_int8 = tflite::micro::MakeUnpackedInt4Tensor(
-      context, op_data.reference_op_data.filter_buffer_index, filter);
-
   // Keep the original packed tensor in Int4 filter case; otherwise use the unpacked int8 copy.
-  const TfLiteEvalTensor* hifi_int8_filter = &filter_int8;
+  TfLiteEvalTensor filter_int8;
+  const TfLiteEvalTensor* hifi_int8_filter;
 #if defined(HIFI5) && defined(NNLIB_HIFI5)
   if (filter->type == kTfLiteInt4) {
     hifi_int8_filter = filter;
   }
+  else
 #endif
+  {
+    filter_int8 = tflite::micro::MakeUnpackedInt4Tensor(
+        context, op_data.reference_op_data.filter_buffer_index, filter);
+    hifi_int8_filter = &filter_int8;
+  }
 
   return DepthwiseConvEvalInt8Hifi(context, node, params, op_data, input, hifi_int8_filter, bias,
                           output);
