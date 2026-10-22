@@ -115,20 +115,22 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
   }
 
   switch (input->type) {
-    case kTfLiteFloat32:
+    case kTfLiteFloat32: {
       reference_ops::Slice<float>(op_params,
                                   tflite::micro::GetTensorShape(input),
                                   tflite::micro::GetTensorData<float>(input),
                                   tflite::micro::GetTensorShape(output),
                                   tflite::micro::GetTensorData<float>(output));
+      }
       break;
-    case kTfLiteInt32:
+    case kTfLiteInt32: {
       reference_ops::Slice<int32_t>(
           op_params, tflite::micro::GetTensorShape(input),
           tflite::micro::GetTensorData<int32_t>(input),
           tflite::micro::GetTensorShape(output),
           tflite::micro::GetTensorData<int32_t>(output));
       break;
+    }
     case kTfLiteInt8: {
 #if (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
       const RuntimeShape input_shape = tflite::micro::GetTensorShape(input);
@@ -179,40 +181,39 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
     case kTfLiteInt16: {
 #if (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
       const RuntimeShape input_shape = tflite::micro::GetTensorShape(input);
-      const RuntimeShape output_shape = tflite::micro::GetTensorShape(output);
-      const RuntimeShape extended_input_shape = RuntimeShape::ExtendedShape(5, input_shape);
+      const RuntimeShape extended_input_shape =
+          RuntimeShape::ExtendedShape(5, input_shape);
+
       int err;
 
-      size_t output_bytes;
-      TF_LITE_ENSURE_STATUS(TfLiteTypeSizeOf(output->type, &output_bytes));
-      output_bytes *= ElementCount(*output->dims);
+      const int16_t* input_data =
+          tflite::micro::GetTensorData<int16_t>(input);
+      int16_t* output_data = tflite::micro::GetTensorData<int16_t>(output);
 
-      const int16_t *input_data = tflite::micro::GetTensorData<int16_t>(input);
-      int16_t *output_data = tflite::micro::GetTensorData<int16_t>(output);
-
-      /* Slice operator is Strided Slice operation with stride = 1 in all dimensions */
+      /* Slice operator is Strided Slice operation with stride = 1 in all
+        * dimensions */
       int unit_stride = 1;
       /* Evaluate start and stop indices */
       int start[5];
       int stop[5];
-      for (int i = 0; i < 5; ++i)
-      {
+      for (int i = 0; i < 5; ++i) {
         int padded_i = 5 - i;
-        start[i] =
-            op_params.begin_count < padded_i ? 0 : op_params.begin[op_params.begin_count - padded_i];
-        stop[i] =
-            (op_params.size[op_params.size_count - padded_i] == -1)
-                ? extended_input_shape.Dims(i)
-                : start[i] + op_params.size[op_params.size_count - padded_i];
+        start[i] = op_params.begin_count < padded_i
+                        ? 0
+                        : op_params.begin[op_params.begin_count - padded_i];
+        stop[i] = (op_params.size[op_params.size_count - padded_i] == -1)
+                      ? extended_input_shape.Dims(i)
+                      : start[i] +
+                            op_params.size[op_params.size_count - padded_i];
       }
 
       err = xa_nn_strided_slice_int16(
-        output_data, input_data, start[0], stop[0], start[1],
-        stop[1], start[2], stop[2], start[3], stop[3],
-        start[4], stop[4], unit_stride, unit_stride, unit_stride, unit_stride, unit_stride,
-        extended_input_shape.Dims(1), extended_input_shape.Dims(2), extended_input_shape.Dims(3),
-        extended_input_shape.Dims(4)
-      );
+          output_data, input_data, start[0], stop[0], start[1], stop[1],
+          start[2], stop[2], start[3], stop[3], start[4], stop[4],
+          unit_stride, unit_stride, unit_stride, unit_stride, unit_stride,
+          extended_input_shape.Dims(0), extended_input_shape.Dims(1),
+          extended_input_shape.Dims(2), extended_input_shape.Dims(3),
+          extended_input_shape.Dims(4));
       TF_LITE_ENSURE(context, err == 0);
 #else // defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
       reference_ops::Slice<int16_t>(
