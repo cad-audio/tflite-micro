@@ -94,19 +94,34 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
   TFLITE_DCHECK(node->user_data != nullptr);
   const auto& op_data =
       *(reinterpret_cast<XtensaDepthwiseConvOpData*>(node->user_data));
-  TfLiteEvalTensor filter_int8 = tflite::micro::MakeUnpackedInt4Tensor(
-      context, op_data.reference_op_data.filter_buffer_index, filter);
 
+  // Keep the original packed tensor in Int4 filter case; otherwise use the unpacked int8 copy.
+  TfLiteEvalTensor filter_int8;
+  const TfLiteEvalTensor* hifi_int8_filter;
+#if defined(HIFI5) && defined(NNLIB_HIFI5)
+  // Only the non-dilated nnlib kernel supports the packed int4 filter.
+  if (filter->type == kTfLiteInt4 && params.dilation_width_factor == 1 &&
+      params.dilation_height_factor == 1) {
+    hifi_int8_filter = filter;
+  }
+  else
+#endif
+  {
+    filter_int8 = tflite::micro::MakeUnpackedInt4Tensor(
+        context, op_data.reference_op_data.filter_buffer_index, filter);
+    hifi_int8_filter = &filter_int8;
+  }
   switch (input->type) {  // Already know in/out types are same.
     case kTfLiteInt8: {
-      switch (filter_int8.type) {
+      switch (filter->type) {
+        case kTfLiteInt4:
         case kTfLiteInt8: {
 #if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
           return DepthwiseConvEvalInt8Hifi(context, node, params, op_data, input,
-                                &filter_int8, bias, output);
+                                hifi_int8_filter, bias, output);
 #elif defined(VISION_P6)
           return DepthwiseConvEvalVision(context, node, params, op_data, input,
-                                  &filter_int8, bias, output);
+                                  hifi_int8_filter, bias, output);
 #else
           return DepthwiseConvReferenceEvalInt8(context, node);
 #endif  // defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
@@ -124,7 +139,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
         case kTfLiteInt8: {
 #if defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
           return DepthwiseConvEvalInt16Hifi(context, node, params, op_data, input,
-                                &filter_int8, bias, output);
+                                filter, bias, output);
 #else          
           return DepthwiseConvReferenceEvalInt16(context, node);
 #endif              
@@ -141,7 +156,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
     case kTfLiteFloat32: {
 #if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI3) || defined(HIFI4) || defined(HIFI5))
       return DepthwiseConvEvalFloat32Hifi(context, node, params, op_data, input,
-                                &filter_int8, bias, output);
+                                filter, bias, output);
 #else       
       return DepthwiseConvReferenceEvalFloat32(context, node);
 #endif          
