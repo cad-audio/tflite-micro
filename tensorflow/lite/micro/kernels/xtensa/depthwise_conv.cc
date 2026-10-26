@@ -99,7 +99,9 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
   TfLiteEvalTensor filter_int8;
   const TfLiteEvalTensor* hifi_int8_filter;
 #if defined(HIFI5) && defined(NNLIB_HIFI5)
-  if (filter->type == kTfLiteInt4) {
+  // Only the non-dilated nnlib kernel supports the packed int4 filter.
+  if (filter->type == kTfLiteInt4 && params.dilation_width_factor == 1 &&
+      params.dilation_height_factor == 1) {
     hifi_int8_filter = filter;
   }
   else
