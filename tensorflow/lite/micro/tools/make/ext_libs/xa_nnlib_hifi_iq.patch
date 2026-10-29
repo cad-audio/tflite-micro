@@ -1,0 +1,87 @@
+diff --git a/algo/kernels/cnn/hifi_iq/xa_nn_conv2d_depthwise.c b/algo/kernels/cnn/hifi_iq/xa_nn_conv2d_depthwise.c
+index 86397d0..3ce8dbd 100644
+--- a/algo/kernels/cnn/hifi_iq/xa_nn_conv2d_depthwise.c
++++ b/algo/kernels/cnn/hifi_iq/xa_nn_conv2d_depthwise.c
+@@ -35,11 +35,13 @@ WORD32 xa_nn_conv2d_depthwise_getsize
+  ,WORD32 y_padding
+  ,WORD32 output_height
+  ,WORD32 output_width
++ ,WORD32 kernel_precision
+  ,WORD32 input_precision
+  ,WORD32 inp_data_format
+  )
+ {
+   int scratch_size = 0;
++  (void)kernel_precision;
+ 
+   if(input_precision == PREC_SYM16S) {
+     if(    ( (kernel_height == 3) && (kernel_width == 3) && (x_stride == 1) && (y_stride == 1) )
+diff --git a/algo/kernels/reorg/hifi_iq/xa_nn_stride_slice_int16.c b/algo/kernels/reorg/hifi_iq/xa_nn_stride_slice_int16.c
+index 1a4d6be..17ab2f1 100644
+--- a/algo/kernels/reorg/hifi_iq/xa_nn_stride_slice_int16.c
++++ b/algo/kernels/reorg/hifi_iq/xa_nn_stride_slice_int16.c
+@@ -54,7 +54,7 @@ WORD32 xa_nn_strided_slice_int16(WORD16 * __restrict__ p_out,
+     WORD32 start_4, WORD32 stop_4,
+     WORD32 stride_0, WORD32 stride_1,
+     WORD32 stride_2, WORD32 stride_3, WORD32 stride_4,
+-    WORD32 dims_1, WORD32 dims_2,
++    WORD32 dims_0, WORD32 dims_1, WORD32 dims_2,
+     WORD32 dims_3, WORD32 dims_4)
+ {
+   /* NULL pointer checks */
+@@ -66,9 +66,16 @@ WORD32 xa_nn_strided_slice_int16(WORD16 * __restrict__ p_out,
+   XA_NNLIB_ARG_CHK_ALIGN(p_inp, sizeof(WORD16), -1);
+ 
+   /* Invalid input checks */
+-  XA_NNLIB_ARG_CHK_COND(((dims_1 <= 0) || (dims_2 <= 0) || (dims_3 <= 0) || (dims_4 <= 0)), -1);
++  XA_NNLIB_ARG_CHK_COND(((dims_0 <= 0) || (dims_1 <= 0) || (dims_2 <= 0) || (dims_3 <= 0) || (dims_4 <= 0)), -1);
+   XA_NNLIB_ARG_CHK_COND(((stride_0 == 0) || (stride_1 == 0) || (stride_2 == 0) || (stride_3 == 0) || (stride_4 == 0)), -1);
+-  XA_NNLIB_ARG_CHK_COND(((stride_0 != 1) || (start_0 != 0) || (stop_0 != 1)), -1);
++  if(stride_0 > 0)
++  {
++    XA_NNLIB_ARG_CHK_COND(((start_0 < 0) || (start_0 > dims_0) || (stop_0 < 0) || (stop_0 > dims_0)), -1);
++  }
++  else
++  {
++    XA_NNLIB_ARG_CHK_COND(((start_0 < -1) || (start_0 > (dims_0-1)) || (stop_0 < -1) || (stop_0 > (dims_0-1))), -1);
++  }
+   if(stride_1 > 0)
+   {
+     XA_NNLIB_ARG_CHK_COND(((start_1 < 0) || (start_1 > dims_1) || (stop_1 < 0) || (stop_1 > dims_1)), -1);
+@@ -110,6 +117,7 @@ WORD32 xa_nn_strided_slice_int16(WORD16 * __restrict__ p_out,
+ 
+   if((stride_0==1)&&(stride_1==1)&&(stride_2==1)&&(stride_3==1)&&(stride_4==1))
+   {
++    if((stop_0<=start_0) || (stop_1<=start_1) || (stop_2<=start_2) || (stop_3<=start_3) || (stop_4<=start_4)) return 0;
+     int start_0_a1   = start_0*a1;
+     int start_1_a2   = start_1*a2;
+     int start_2_a3   = start_2*a3;
+@@ -181,6 +189,7 @@ WORD32 xa_nn_strided_slice_int16(WORD16 * __restrict__ p_out,
+     i3_cnt = i3_cnt < 0 ? 0 : i3_cnt;
+     i4_cnt = i4_cnt < 0 ? 0 : i4_cnt;
+ 
++    if((i0_cnt == 0) || (i1_cnt == 0) || (i2_cnt == 0) || (i3_cnt == 0) || (i4_cnt == 0)) return 0;
+     int start_0_a1   = start_0*a1;
+     int start_1_a2   = start_1*a2;
+     int start_2_a3   = start_2*a3;
+diff --git a/include/nnlib/xa_nnlib_kernels_api.h b/include/nnlib/xa_nnlib_kernels_api.h
+index f2aeb41..d08aa04 100644
+--- a/include/nnlib/xa_nnlib_kernels_api.h
++++ b/include/nnlib/xa_nnlib_kernels_api.h
+@@ -1510,6 +1510,7 @@ typedef struct _xa_dma_cfg_t
+      ,WORD32 y_padding
+      ,WORD32 output_height
+      ,WORD32 output_width
++     ,WORD32 kernel_precision
+      ,WORD32 circ_buf_precision
+      ,WORD32 inp_data_format
+     );
+@@ -4288,7 +4289,7 @@ WORD32 xa_nn_gru_hidden_state_update_16(WORD16* p_hidden_state,
+       WORD32 start_4, WORD32 stop_4,
+       WORD32 stride_0, WORD32 stride_1,
+       WORD32 stride_2, WORD32 stride_3, WORD32 stride_4,
+-      WORD32 dims_1, WORD32 dims_2,
++      WORD32 dims_0, WORD32 dims_1, WORD32 dims_2,
+       WORD32 dims_3, WORD32 dims_4);
+ 
+   WORD32 xa_nn_strided_slice_int8(WORD8 * __restrict__ p_out,
