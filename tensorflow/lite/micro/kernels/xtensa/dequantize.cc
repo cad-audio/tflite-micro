@@ -48,19 +48,31 @@ TfLiteStatus DequantizeEval(TfLiteContext* context, TfLiteNode* node) {
   switch (input->type) {
     case kTfLiteInt8: {
 #if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
-      int err;
-      const int8_t* input_data_ptr;
-      float* output_data_ptr;
-      const int flat_size =
-          MatchingFlatSize(tflite::micro::GetTensorShape(input),
-                           tflite::micro::GetTensorShape(output));
-      input_data_ptr = tflite::micro::GetTensorData<int8_t>(input);
-      output_data_ptr = tflite::micro::GetTensorData<float>(output);
+      // Fall back to the reference implementation when the input zero point is
+      // outside the NNLib-supported range.
+      if (data->quantization_params.zero_point >= -128 &&
+          data->quantization_params.zero_point <= 127) {
+        int err;
+        const int8_t* input_data_ptr;
+        float* output_data_ptr;
+        const int flat_size =
+            MatchingFlatSize(tflite::micro::GetTensorShape(input),
+                             tflite::micro::GetTensorShape(output));
+        input_data_ptr = tflite::micro::GetTensorData<int8_t>(input);
+        output_data_ptr = tflite::micro::GetTensorData<float>(output);
 
-      err = xa_nn_elm_dequantize_asym8s_f32(
-          output_data_ptr, input_data_ptr, data->quantization_params.zero_point,
-          data->quantization_params.scale, flat_size);
-      TF_LITE_ENSURE(context, (err == 0));
+        err = xa_nn_elm_dequantize_asym8s_f32(
+            output_data_ptr, input_data_ptr,
+            data->quantization_params.zero_point,
+            data->quantization_params.scale, flat_size);
+        TF_LITE_ENSURE(context, (err == 0));
+      } else {
+        reference_ops::Dequantize(data->quantization_params,
+                                  tflite::micro::GetTensorShape(input),
+                                  tflite::micro::GetTensorData<int8_t>(input),
+                                  tflite::micro::GetTensorShape(output),
+                                  tflite::micro::GetTensorData<float>(output));
+      }
 #else   //  defined(INCLUDE_FLOAT_OPT) && (defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
       reference_ops::Dequantize(data->quantization_params,
                                 tflite::micro::GetTensorShape(input),
@@ -72,18 +84,30 @@ TfLiteStatus DequantizeEval(TfLiteContext* context, TfLiteNode* node) {
     }
     case kTfLiteInt16: {
 #if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)) 
-      int err;
-      const int16_t* input_data_ptr;
-      float* output_data_ptr;
-      const RuntimeShape& input_shape = tflite::micro::GetTensorShape(input);
-      const RuntimeShape& output_shape = tflite::micro::GetTensorShape(output);
-      const int flat_size = MatchingFlatSize(input_shape, output_shape);
-      input_data_ptr = tflite::micro::GetTensorData<int16_t>(input);
-      output_data_ptr = tflite::micro::GetTensorData<float>(output);
-      err = xa_nn_elm_dequantize_asym16s_f32(
-          output_data_ptr, input_data_ptr, data->quantization_params.zero_point,
-          data->quantization_params.scale, flat_size);
-      TF_LITE_ENSURE(context, (err == 0));
+      // Fall back to the reference implementation when the input zero point is
+      // outside the NNLib-supported range.
+      if (data->quantization_params.zero_point >= -32768 &&
+          data->quantization_params.zero_point <= 32767) {
+        int err;
+        const int16_t* input_data_ptr;
+        float* output_data_ptr;
+        const RuntimeShape& input_shape = tflite::micro::GetTensorShape(input);
+        const RuntimeShape& output_shape = tflite::micro::GetTensorShape(output);
+        const int flat_size = MatchingFlatSize(input_shape, output_shape);
+        input_data_ptr = tflite::micro::GetTensorData<int16_t>(input);
+        output_data_ptr = tflite::micro::GetTensorData<float>(output);
+        err = xa_nn_elm_dequantize_asym16s_f32(
+            output_data_ptr, input_data_ptr,
+            data->quantization_params.zero_point,
+            data->quantization_params.scale, flat_size);
+        TF_LITE_ENSURE(context, (err == 0));
+      } else {
+        reference_ops::Dequantize(data->quantization_params,
+                                  tflite::micro::GetTensorShape(input),
+                                  tflite::micro::GetTensorData<int16_t>(input),
+                                  tflite::micro::GetTensorShape(output),
+                                  tflite::micro::GetTensorData<float>(output));
+      }
 #else   // defined(INCLUDE_FLOAT_OPT) && (defined(HIFI3) || defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
       reference_ops::Dequantize(data->quantization_params,
                                 tflite::micro::GetTensorShape(input),

@@ -63,18 +63,31 @@ TfLiteStatus EvalXtensa(TfLiteContext* context, TfLiteNode* node) {
           int size = ElementCount(*input->dims);
 #if (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
           int32_t zero_point = op_data->quantization_params.zero_point;
-          const int8_t* input_data_ptr;
-          uint8_t* output_data_ptr;
-          input_data_ptr = tflite::micro::GetTensorData<int8_t>(input);
-          output_data_ptr = tflite::micro::GetTensorData<uint8_t>(output);
+          // Fall back to the reference implementation when the i/o zero point
+          // is outside the NNLib-supported range.
+          if ((op_data->input_zero_point >= -128 &&
+               op_data->input_zero_point <= 127) &&
+              (zero_point >= 0 && zero_point <= 255)) {
+            const int8_t* input_data_ptr;
+            uint8_t* output_data_ptr;
+            input_data_ptr = tflite::micro::GetTensorData<int8_t>(input);
+            output_data_ptr = tflite::micro::GetTensorData<uint8_t>(output);
 
-          TF_LITE_ENSURE_EQ(
-              context,
-              xa_nn_elm_requantize_asym8s_asym8u(
-                  output_data_ptr, input_data_ptr, op_data->input_zero_point,
-                  zero_point, op_data->requantize_output_shift,
-                  op_data->requantize_output_multiplier, size),
-              0);
+            TF_LITE_ENSURE_EQ(
+                context,
+                xa_nn_elm_requantize_asym8s_asym8u(
+                    output_data_ptr, input_data_ptr, op_data->input_zero_point,
+                    zero_point, op_data->requantize_output_shift,
+                    op_data->requantize_output_multiplier, size),
+                0);
+          } else {
+            reference_ops::Requantize(
+                tflite::micro::GetTensorData<int8_t>(input), size,
+                op_data->requantize_output_multiplier,
+                op_data->requantize_output_shift, op_data->input_zero_point,
+                op_data->quantization_params.zero_point,
+                tflite::micro::GetTensorData<uint8_t>(output));
+          }
 #else // #if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
           reference_ops::Requantize(
               tflite::micro::GetTensorData<int8_t>(input), size,
@@ -90,18 +103,31 @@ TfLiteStatus EvalXtensa(TfLiteContext* context, TfLiteNode* node) {
           int size = ElementCount(*input->dims);
 #if (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
           int32_t zero_point = op_data->quantization_params.zero_point;
-          const int8_t* input_data_ptr;
-          int8_t* output_data_ptr;
-          input_data_ptr = tflite::micro::GetTensorData<int8_t>(input);
-          output_data_ptr = tflite::micro::GetTensorData<int8_t>(output);
+          // Fall back to the reference implementation when the i/o zero point
+          // is outside the NNLib-supported range.
+          if ((op_data->input_zero_point >= -128 &&
+               op_data->input_zero_point <= 127) &&
+              (zero_point >= -128 && zero_point <= 127)) {
+            const int8_t* input_data_ptr;
+            int8_t* output_data_ptr;
+            input_data_ptr = tflite::micro::GetTensorData<int8_t>(input);
+            output_data_ptr = tflite::micro::GetTensorData<int8_t>(output);
 
-          TF_LITE_ENSURE_EQ(
-              context,
-              xa_nn_elm_requantize_asym8s_asym8s(
-                  output_data_ptr, input_data_ptr, op_data->input_zero_point,
-                  zero_point, op_data->requantize_output_shift,
-                  op_data->requantize_output_multiplier, size),
-              0);
+            TF_LITE_ENSURE_EQ(
+                context,
+                xa_nn_elm_requantize_asym8s_asym8s(
+                    output_data_ptr, input_data_ptr, op_data->input_zero_point,
+                    zero_point, op_data->requantize_output_shift,
+                    op_data->requantize_output_multiplier, size),
+                0);
+          } else {
+            reference_ops::Requantize(
+                tflite::micro::GetTensorData<int8_t>(input), size,
+                op_data->requantize_output_multiplier,
+                op_data->requantize_output_shift, op_data->input_zero_point,
+                op_data->quantization_params.zero_point,
+                tflite::micro::GetTensorData<int8_t>(output));
+          }
 #else // #if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
           reference_ops::Requantize(
               tflite::micro::GetTensorData<int8_t>(input), size,
@@ -117,18 +143,31 @@ TfLiteStatus EvalXtensa(TfLiteContext* context, TfLiteNode* node) {
           int size = ElementCount(*input->dims);
 #if (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
           int32_t zero_point = op_data->quantization_params.zero_point;
-          const int8_t* input_data_ptr;
-          int16_t* output_data_ptr;
-          input_data_ptr = tflite::micro::GetTensorData<int8_t>(input);
-          output_data_ptr = tflite::micro::GetTensorData<int16_t>(output);
+          // Fall back to the reference implementation when the i/o zero point
+          // is outside the NNLib-supported range.
+          if ((op_data->input_zero_point >= -128 &&
+               op_data->input_zero_point <= 127) &&
+              (zero_point >= -32768 && zero_point <= 32767)) {
+            const int8_t* input_data_ptr;
+            int16_t* output_data_ptr;
+            input_data_ptr = tflite::micro::GetTensorData<int8_t>(input);
+            output_data_ptr = tflite::micro::GetTensorData<int16_t>(output);
 
-          TF_LITE_ENSURE_EQ(
-              context,
-              xa_nn_elm_requantize_asym8s_asym16s(
-                  output_data_ptr, input_data_ptr, op_data->input_zero_point,
-                  zero_point, op_data->requantize_output_shift,
-                  op_data->requantize_output_multiplier, size),
-              0);
+            TF_LITE_ENSURE_EQ(
+                context,
+                xa_nn_elm_requantize_asym8s_asym16s(
+                    output_data_ptr, input_data_ptr, op_data->input_zero_point,
+                    zero_point, op_data->requantize_output_shift,
+                    op_data->requantize_output_multiplier, size),
+                0);
+          } else {
+            reference_ops::Requantize(
+                tflite::micro::GetTensorData<int8_t>(input), size,
+                op_data->requantize_output_multiplier,
+                op_data->requantize_output_shift, op_data->input_zero_point,
+                op_data->quantization_params.zero_point,
+                tflite::micro::GetTensorData<int16_t>(output));
+          }
 #else // #if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
           reference_ops::Requantize(
               tflite::micro::GetTensorData<int8_t>(input), size,
@@ -143,18 +182,29 @@ TfLiteStatus EvalXtensa(TfLiteContext* context, TfLiteNode* node) {
           int size = ElementCount(*input->dims);
           int32_t zero_point = op_data->quantization_params.zero_point;
 #if (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
-          const int8_t* input_data_ptr;
-          int32_t* output_data_ptr;
-          input_data_ptr = tflite::micro::GetTensorData<int8_t>(input);
-          output_data_ptr = tflite::micro::GetTensorData<int32_t>(output);
+          // Fall back to the reference implementation when the input zero
+          // point is outside the NNLib-supported range.
+          if (op_data->input_zero_point >= -128 &&
+              op_data->input_zero_point <= 127) {
+            const int8_t* input_data_ptr;
+            int32_t* output_data_ptr;
+            input_data_ptr = tflite::micro::GetTensorData<int8_t>(input);
+            output_data_ptr = tflite::micro::GetTensorData<int32_t>(output);
 
-          TF_LITE_ENSURE_EQ(
-              context,
-              xa_nn_elm_requantize_asym8s_asym32s(
-                  output_data_ptr, input_data_ptr, op_data->input_zero_point,
-                  zero_point, op_data->requantize_output_shift,
-                  op_data->requantize_output_multiplier, size),
-              0);
+            TF_LITE_ENSURE_EQ(
+                context,
+                xa_nn_elm_requantize_asym8s_asym32s(
+                    output_data_ptr, input_data_ptr, op_data->input_zero_point,
+                    zero_point, op_data->requantize_output_shift,
+                    op_data->requantize_output_multiplier, size),
+                0);
+          } else {
+            reference_ops::Requantize(
+                tflite::micro::GetTensorData<int8_t>(input), size,
+                op_data->requantize_output_multiplier,
+                op_data->requantize_output_shift, op_data->input_zero_point,
+                zero_point, tflite::micro::GetTensorData<int32_t>(output));
+          }
 #else // #if defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ)
           reference_ops::Requantize(
               tflite::micro::GetTensorData<int8_t>(input), size,
@@ -180,15 +230,30 @@ TfLiteStatus EvalXtensa(TfLiteContext* context, TfLiteNode* node) {
         case kTfLiteInt8: {
           int size = ElementCount(*input->dims);
 #if (defined(HIFI4) || defined(HIFI4_INTERNAL) || defined(HIFI5) || defined(HIFI_IQ))
-          TF_LITE_ENSURE_EQ(
-              context,
-              xa_nn_elm_requantize_asym16s_asym8s(
-                  tflite::micro::GetTensorData<int8_t>(output),
-                  tflite::micro::GetTensorData<int16_t>(input),
-                  op_data->input_zero_point, op_data->quantization_params.zero_point,
-                  op_data->requantize_output_shift,
-                  op_data->requantize_output_multiplier, size),
-              0);
+          int32_t zero_point = op_data->quantization_params.zero_point;
+          // Fall back to the reference implementation when the i/o zero point
+          // is outside the NNLib-supported range.
+          if ((op_data->input_zero_point >= -32768 &&
+               op_data->input_zero_point <= 32767) &&
+              (zero_point >= -128 && zero_point <= 127)) {
+            TF_LITE_ENSURE_EQ(
+                context,
+                xa_nn_elm_requantize_asym16s_asym8s(
+                    tflite::micro::GetTensorData<int8_t>(output),
+                    tflite::micro::GetTensorData<int16_t>(input),
+                    op_data->input_zero_point,
+                    op_data->quantization_params.zero_point,
+                    op_data->requantize_output_shift,
+                    op_data->requantize_output_multiplier, size),
+                0);
+          } else {
+            reference_ops::Requantize(
+                tflite::micro::GetTensorData<int16_t>(input), size,
+                op_data->requantize_output_multiplier,
+                op_data->requantize_output_shift, op_data->input_zero_point,
+                op_data->quantization_params.zero_point,
+                tflite::micro::GetTensorData<int8_t>(output));
+          }
 #else
           reference_ops::Requantize(
               tflite::micro::GetTensorData<int16_t>(input), size,
@@ -203,15 +268,29 @@ TfLiteStatus EvalXtensa(TfLiteContext* context, TfLiteNode* node) {
         case kTfLiteInt16: {
           int size = ElementCount(*input->dims);
 #if (defined(HIFI4) || defined(HIFI4_INTERNAL) || defined(HIFI5) || defined(HIFI_IQ))
-          TF_LITE_ENSURE_EQ(context,
-                            xa_nn_elm_requantize_asym16s_asym16s(
-                                tflite::micro::GetTensorData<int16_t>(output),
-                                tflite::micro::GetTensorData<int16_t>(input),
-                                op_data->input_zero_point,
-                                op_data->quantization_params.zero_point,
-                                op_data->requantize_output_shift,
-                                op_data->requantize_output_multiplier, size),
-                            0);
+          int32_t zero_point = op_data->quantization_params.zero_point;
+          // Fall back to the reference implementation when the i/o zero point
+          // is outside the NNLib-supported range.
+          if ((op_data->input_zero_point >= -32768 &&
+               op_data->input_zero_point <= 32767) &&
+              (zero_point >= -32768 && zero_point <= 32767)) {
+            TF_LITE_ENSURE_EQ(context,
+                              xa_nn_elm_requantize_asym16s_asym16s(
+                                  tflite::micro::GetTensorData<int16_t>(output),
+                                  tflite::micro::GetTensorData<int16_t>(input),
+                                  op_data->input_zero_point,
+                                  op_data->quantization_params.zero_point,
+                                  op_data->requantize_output_shift,
+                                  op_data->requantize_output_multiplier, size),
+                              0);
+          } else {
+            reference_ops::Requantize(
+                tflite::micro::GetTensorData<int16_t>(input), size,
+                op_data->requantize_output_multiplier,
+                op_data->requantize_output_shift, op_data->input_zero_point,
+                op_data->quantization_params.zero_point,
+                tflite::micro::GetTensorData<int16_t>(output));
+          }
 #else
           reference_ops::Requantize(
               tflite::micro::GetTensorData<int16_t>(input), size,
@@ -226,15 +305,27 @@ TfLiteStatus EvalXtensa(TfLiteContext* context, TfLiteNode* node) {
         case kTfLiteInt32: {
           int size = ElementCount(*input->dims);
 #if (defined(HIFI4) || defined(HIFI4_INTERNAL) || defined(HIFI5) || defined(HIFI_IQ))
-          TF_LITE_ENSURE_EQ(context,
-                            xa_nn_elm_requantize_asym16s_asym32s(
-                                tflite::micro::GetTensorData<int32_t>(output),
-                                tflite::micro::GetTensorData<int16_t>(input),
-                                op_data->input_zero_point,
-                                op_data->quantization_params.zero_point,
-                                op_data->requantize_output_shift,
-                                op_data->requantize_output_multiplier, size),
-                            0);
+          int32_t zero_point = op_data->quantization_params.zero_point;
+          // Fall back to the reference implementation when the input zero
+          // point is outside the NNLib-supported range.
+          if (op_data->input_zero_point >= -32768 &&
+              op_data->input_zero_point <= 32767) {
+            TF_LITE_ENSURE_EQ(context,
+                              xa_nn_elm_requantize_asym16s_asym32s(
+                                  tflite::micro::GetTensorData<int32_t>(output),
+                                  tflite::micro::GetTensorData<int16_t>(input),
+                                  op_data->input_zero_point,
+                                  op_data->quantization_params.zero_point,
+                                  op_data->requantize_output_shift,
+                                  op_data->requantize_output_multiplier, size),
+                              0);
+          } else {
+            reference_ops::Requantize(
+                tflite::micro::GetTensorData<int16_t>(input), size,
+                op_data->requantize_output_multiplier,
+                op_data->requantize_output_shift, op_data->input_zero_point,
+                zero_point, tflite::micro::GetTensorData<int32_t>(output));
+          }
 #else
           int32_t zero_point = op_data->quantization_params.zero_point;
           reference_ops::Requantize(
@@ -296,18 +387,29 @@ TfLiteStatus EvalXtensa(TfLiteContext* context, TfLiteNode* node) {
 #if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
           int size = ElementCount(*input->dims);
           int32_t zero_point = op_data->quantization_params.zero_point;
-          const float* input_data_ptr;
-          int8_t* output_data_ptr;
-          input_data_ptr = tflite::micro::GetTensorData<float>(input);
-          output_data_ptr = tflite::micro::GetTensorData<int8_t>(output);
+          // Fall back to the reference implementation when the output zero
+          // point is outside the NNLib-supported range.
+          if (zero_point >= -128 && zero_point <= 127) {
+            const float* input_data_ptr;
+            int8_t* output_data_ptr;
+            input_data_ptr = tflite::micro::GetTensorData<float>(input);
+            output_data_ptr = tflite::micro::GetTensorData<int8_t>(output);
 
-          TF_LITE_ENSURE_EQ(
-              context,
-              xa_nn_elm_quantize_f32_asym8s(
-                  output_data_ptr, input_data_ptr,
-                  static_cast<float>(op_data->quantization_params.scale),
-                  zero_point, size),
-              0);
+            TF_LITE_ENSURE_EQ(
+                context,
+                xa_nn_elm_quantize_f32_asym8s(
+                    output_data_ptr, input_data_ptr,
+                    static_cast<float>(op_data->quantization_params.scale),
+                    zero_point, size),
+                0);
+          } else {
+            reference_ops::AffineQuantize(
+                op_data->quantization_params,
+                tflite::micro::GetTensorShape(input),
+                tflite::micro::GetTensorData<float>(input),
+                tflite::micro::GetTensorShape(output),
+                tflite::micro::GetTensorData<int8_t>(output));
+          }
 #else // #if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI4) || defined(HIFI5))
           reference_ops::AffineQuantize(
               op_data->quantization_params,
@@ -322,18 +424,29 @@ TfLiteStatus EvalXtensa(TfLiteContext* context, TfLiteNode* node) {
 #if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
           int size = ElementCount(*input->dims);
           int32_t zero_point = op_data->quantization_params.zero_point;
-          const float* input_data_ptr;
-          int16_t* output_data_ptr;
-          input_data_ptr = tflite::micro::GetTensorData<float>(input);
-          output_data_ptr = tflite::micro::GetTensorData<int16_t>(output);
+          // Fall back to the reference implementation when the output zero
+          // point is outside the NNLib-supported range.
+          if (zero_point >= -32768 && zero_point <= 32767) {
+            const float* input_data_ptr;
+            int16_t* output_data_ptr;
+            input_data_ptr = tflite::micro::GetTensorData<float>(input);
+            output_data_ptr = tflite::micro::GetTensorData<int16_t>(output);
 
-          TF_LITE_ENSURE_EQ(
-              context,
-              xa_nn_elm_quantize_f32_asym16s(
-                  output_data_ptr, input_data_ptr,
-                  static_cast<float>(op_data->quantization_params.scale),
-                  zero_point, size),
-              0);
+            TF_LITE_ENSURE_EQ(
+                context,
+                xa_nn_elm_quantize_f32_asym16s(
+                    output_data_ptr, input_data_ptr,
+                    static_cast<float>(op_data->quantization_params.scale),
+                    zero_point, size),
+                0);
+          } else {
+            reference_ops::AffineQuantize(
+                op_data->quantization_params,
+                tflite::micro::GetTensorShape(input),
+                tflite::micro::GetTensorData<float>(input),
+                tflite::micro::GetTensorShape(output),
+                tflite::micro::GetTensorData<int16_t>(output));
+          }
 #else // #if defined(INCLUDE_FLOAT_OPT) && (defined(HIFI4) || defined(HIFI5)) && !defined(HIFI_IQ)
           reference_ops::AffineQuantize(
               op_data->quantization_params,
