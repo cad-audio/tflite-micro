@@ -220,6 +220,31 @@ void EvalQuantizedSquaredDifferenceInt16Hifi(TfLiteContext* context,
 }
 #endif // #if !(defined(HIFI4) || defined(HIFI5) || defined(HIFI_IQ))
 
+#if defined(INCLUDE_FLOAT_OPT) && defined(HIFI5)
+TfLiteStatus EvalSquaredDifferenceFloatHifi(TfLiteContext* context,
+                                            const TfLiteEvalTensor* input1,
+                                            const TfLiteEvalTensor* input2,
+                                            TfLiteEvalTensor* output) {
+  const RuntimeShape extended_input1_shape =
+      RuntimeShape::ExtendedShape(4, tflite::micro::GetTensorShape(input1));
+  const RuntimeShape extended_input2_shape =
+      RuntimeShape::ExtendedShape(4, tflite::micro::GetTensorShape(input2));
+  const RuntimeShape extended_output_shape =
+      RuntimeShape::ExtendedShape(4, tflite::micro::GetTensorShape(output));
+
+  const int err = xa_nn_elm_squared_diff_broadcast_4D_f32xf32_f32(
+      tflite::micro::GetTensorData<float>(output),
+      extended_output_shape.DimsData(),
+      tflite::micro::GetTensorData<float>(input1),
+      extended_input1_shape.DimsData(),
+      tflite::micro::GetTensorData<float>(input2),
+      extended_input2_shape.DimsData());
+  TF_LITE_ENSURE(context, err == 0);
+
+  return kTfLiteOk;
+}
+#endif  // defined(INCLUDE_FLOAT_OPT) && defined(HIFI5)
+
 template <typename T>
 T SquaredDifference(T x, T y, const ArithmeticParams& params) {
   const int32_t input1_val = params.input1_offset + x;
@@ -308,7 +333,13 @@ TfLiteStatus SquaredDifferenceEval(TfLiteContext* context, TfLiteNode* node) {
       tflite::micro::GetEvalOutput(context, node, kOutputTensor);
 
   if (output->type == kTfLiteFloat32) {
+#if defined(INCLUDE_FLOAT_OPT) && defined(HIFI5)
+    TF_LITE_ENSURE_OK(
+        context,
+        EvalSquaredDifferenceFloatHifi(context, input1, input2, output));
+#else
     EvalSquaredDifference<float>(context, node, data, input1, input2, output);
+#endif
   } else if (output->type == kTfLiteInt32) {
     EvalSquaredDifference<int32_t>(context, node, data, input1, input2, output);
   } else if (output->type == kTfLiteInt8) {
