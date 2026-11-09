@@ -139,6 +139,7 @@ else ifeq ($(TARGET_ARCH), hifi5)
     -I$(NNLIB_PATH)/include/ \
     -I$(NNLIB_PATH)/algo/common/include/ \
     -I$(NNLIB_PATH)/algo/ndsp/hifi5/include/ \
+    -I$(NNLIB_PATH)/algo/ndsp/hifi5/f16/include/ \
     -I$(NDSPLIB_PATH)/library/include/ \
     -I$(NDSPLIB_PATH)/library/include_private/
 
