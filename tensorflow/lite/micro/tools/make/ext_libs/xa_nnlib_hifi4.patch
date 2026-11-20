@@ -1,0 +1,122 @@
+diff --git a/algo/kernels/cnn/hifi4/xa_nn_conv2d_depthwise.c b/algo/kernels/cnn/hifi4/xa_nn_conv2d_depthwise.c
+index 4efbc95..3fd5318 100644
+--- a/algo/kernels/cnn/hifi4/xa_nn_conv2d_depthwise.c
++++ b/algo/kernels/cnn/hifi4/xa_nn_conv2d_depthwise.c
+@@ -455,6 +455,7 @@ WORD32 xa_nn_conv2d_depthwise_getsize
+  ,WORD32 y_padding
+  ,WORD32 output_height
+  ,WORD32 output_width
++ ,WORD32 kernel_precision
+  ,WORD32 circ_buf_precision
+  ,WORD32 inp_data_format
+  )
+@@ -473,6 +474,7 @@ WORD32 xa_nn_conv2d_depthwise_getsize
+   XA_NNLIB_CHK_COND((output_width <= 0), -1);
+   XA_NNLIB_CHK_COND((inp_data_format != 0 && inp_data_format != 1), -1);
+ 
++  (void)kernel_precision;
+   size_t total_size = 0;
+ 
+   total_size = xa_nn_dilated_conv2d_depthwise_getsize_generic
+diff --git a/algo/kernels/cnn/hifi4/xa_nn_conv2d_std_circ_buf.c b/algo/kernels/cnn/hifi4/xa_nn_conv2d_std_circ_buf.c
+index 9369dcf..d87b882 100644
+--- a/algo/kernels/cnn/hifi4/xa_nn_conv2d_std_circ_buf.c
++++ b/algo/kernels/cnn/hifi4/xa_nn_conv2d_std_circ_buf.c
+@@ -313,6 +313,7 @@ WORD32 xa_nn_conv2d_getsize(
+                                               ,y_pad
+                                               ,out_h
+                                               ,out_w
++                                              ,kernel_precision
+                                               ,input_precision
+                                               ,0
+                                               );
+diff --git a/algo/kernels/reorg/hifi4/xa_nn_stride_slice_int16.c b/algo/kernels/reorg/hifi4/xa_nn_stride_slice_int16.c
+index 5a80219..bf758ed 100644
+--- a/algo/kernels/reorg/hifi4/xa_nn_stride_slice_int16.c
++++ b/algo/kernels/reorg/hifi4/xa_nn_stride_slice_int16.c
+@@ -61,7 +61,7 @@ WORD32 xa_nn_strided_slice_int16(WORD16 * __restrict__ p_out,
+ 		WORD32 start_4, WORD32 stop_4,
+ 		WORD32 stride_0, WORD32 stride_1,
+ 		WORD32 stride_2, WORD32 stride_3, WORD32 stride_4,
+-		WORD32 dims_1, WORD32 dims_2,
++		WORD32 dims_0, WORD32 dims_1, WORD32 dims_2,
+ 		WORD32 dims_3, WORD32 dims_4)
+ {
+   /* NULL pointer checks */
+@@ -73,9 +73,16 @@ WORD32 xa_nn_strided_slice_int16(WORD16 * __restrict__ p_out,
+   XA_NNLIB_ARG_CHK_ALIGN(p_inp, sizeof(WORD16), -1);
+ 
+   /* Invalid input checks */
+-  XA_NNLIB_ARG_CHK_COND(((dims_1 <= 0) || (dims_2 <= 0) || (dims_3 <= 0) || (dims_4 <= 0)), -1);
++  XA_NNLIB_ARG_CHK_COND(((dims_0 <= 0) || (dims_1 <= 0) || (dims_2 <= 0) || (dims_3 <= 0) || (dims_4 <= 0)), -1);
+   XA_NNLIB_ARG_CHK_COND(((stride_0 == 0) || (stride_1 == 0) || (stride_2 == 0) || (stride_3 == 0) || (stride_4 == 0)), -1);
+-  XA_NNLIB_ARG_CHK_COND(((stride_0 != 1) || (start_0 != 0) || (stop_0 != 1)), -1); /* TFLM reference Op only supports upto 4D cases*/
++  if(stride_0 > 0)
++  {
++    XA_NNLIB_ARG_CHK_COND(((start_0 < 0) || (start_0 > dims_0) || (stop_0 < 0) || (stop_0 > dims_0)), -1);
++  }
++  else
++  {
++    XA_NNLIB_ARG_CHK_COND(((start_0 < -1) || (start_0 > (dims_0-1)) || (stop_0 < -1) || (stop_0 > (dims_0-1))), -1);
++  }
+   /* Below conditions are derived from TFLM ref implementation */
+   if(stride_1 > 0)
+   {
+@@ -118,6 +125,7 @@ WORD32 xa_nn_strided_slice_int16(WORD16 * __restrict__ p_out,
+   ae_int16x4 dummy;
+   if((stride_0==1)&&(stride_1==1)&&(stride_2==1)&&(stride_3==1)&&(stride_4==1))
+   {
++    if((stop_0<=start_0) || (stop_1<=start_1) || (stop_2<=start_2) || (stop_3<=start_3) || (stop_4<=start_4)) return 0;
+     int start_0_a1 = start_0*a1;
+     int start_1_a2 = start_1*a2;
+     int start_2_a3 = start_2*a3;
+@@ -187,6 +195,8 @@ WORD32 xa_nn_strided_slice_int16(WORD16 * __restrict__ p_out,
+     i2_cnt = i2_cnt < 0 ? 0 : i2_cnt;
+     i3_cnt = i3_cnt < 0 ? 0 : i3_cnt;
+     i4_cnt = i4_cnt < 0 ? 0 : i4_cnt;
++
++    if((i0_cnt == 0) || (i1_cnt == 0) || (i2_cnt == 0) || (i3_cnt == 0) || (i4_cnt == 0)) return 0;
+     
+     int start_0_a1 = start_0*a1;
+     int start_1_a2 = start_1*a2;
+diff --git a/algo/layers/cnn/src/xa_nn_cnn_api.c b/algo/layers/cnn/src/xa_nn_cnn_api.c
+index c0e2c68..ac7cfeb 100644
+--- a/algo/layers/cnn/src/xa_nn_cnn_api.c
++++ b/algo/layers/cnn/src/xa_nn_cnn_api.c
+@@ -362,6 +362,7 @@ Int32 xa_nnlib_cnn_get_scratch_fast(
+                                                   config->y_padding,
+                                                   config->output_height,
+                                                   config->output_width,
++                                                  KER_PRECISION_BITS(config->precision),
+                                                   inp_precision,
+                                                   1);   // WHD supported for all precisions
+     scratch_size  = ALIGN_SIZE(scratch_size);
+@@ -819,6 +820,7 @@ int xa_nnlib_cnn_process(xa_nnlib_handle_t handle,
+                                                   config->y_padding,
+                                                   cnn->output_shape.dim.cube.height,
+                                                   cnn->output_shape.dim.cube.width,
++                                                  KER_PRECISION_BITS(config->precision),
+                                                   inp_precision,
+                                                   1);       //must be WHD
+     scratch_size  = ALIGN_SIZE(scratch_size);
+diff --git a/include/nnlib/xa_nnlib_kernels_api.h b/include/nnlib/xa_nnlib_kernels_api.h
+index f2aeb41..d08aa04 100644
+--- a/include/nnlib/xa_nnlib_kernels_api.h
++++ b/include/nnlib/xa_nnlib_kernels_api.h
+@@ -1510,6 +1510,7 @@ typedef struct _xa_dma_cfg_t
+      ,WORD32 y_padding
+      ,WORD32 output_height
+      ,WORD32 output_width
++     ,WORD32 kernel_precision
+      ,WORD32 circ_buf_precision
+      ,WORD32 inp_data_format
+     );
+@@ -4288,7 +4289,7 @@ WORD32 xa_nn_gru_hidden_state_update_16(WORD16* p_hidden_state,
+       WORD32 start_4, WORD32 stop_4,
+       WORD32 stride_0, WORD32 stride_1,
+       WORD32 stride_2, WORD32 stride_3, WORD32 stride_4,
+-      WORD32 dims_1, WORD32 dims_2,
++      WORD32 dims_0, WORD32 dims_1, WORD32 dims_2,
+       WORD32 dims_3, WORD32 dims_4);
+ 
+   WORD32 xa_nn_strided_slice_int8(WORD8 * __restrict__ p_out,
