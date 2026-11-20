@@ -122,8 +122,9 @@ void StridedSlice_int32_hifi(const tflite::StridedSliceParams& op_params,
                             static_cast<int>(stop_4), params_copy.strides[0],
                             params_copy.strides[1], params_copy.strides[2],
                             params_copy.strides[3], params_copy.strides[4],
-                            input_shape.Dims(1), input_shape.Dims(2),
-                            input_shape.Dims(3), input_shape.Dims(4));
+                            input_shape.Dims(0), input_shape.Dims(1),
+                            input_shape.Dims(2), input_shape.Dims(3),
+                            input_shape.Dims(4));
 }
 
 void StridedSlice_int8_hifi(const tflite::StridedSliceParams& op_params,
@@ -166,7 +167,7 @@ void StridedSlice_int8_hifi(const tflite::StridedSliceParams& op_params,
       (int)stop_1, (int)start_2, (int)stop_2, (int)start_3, (int)stop_3,
       (int)start_4, (int)stop_4, params_copy.strides[0], params_copy.strides[1],
       params_copy.strides[2], params_copy.strides[3], params_copy.strides[4],
-      input_shape.Dims(1), input_shape.Dims(2), input_shape.Dims(3),
+      input_shape.Dims(0), input_shape.Dims(1), input_shape.Dims(2), input_shape.Dims(3),
       input_shape.Dims(4));
 }
 #endif
