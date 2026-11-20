@@ -165,7 +165,8 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
         output_data, input_data, start[0], stop[0], start[1],
         stop[1], start[2], stop[2], start[3], stop[3],
         start[4], stop[4], unit_stride, unit_stride, unit_stride, unit_stride, unit_stride,
-        extended_input_shape.Dims(1), extended_input_shape.Dims(2), extended_input_shape.Dims(3),
+        extended_input_shape.Dims(0), extended_input_shape.Dims(1),
+        extended_input_shape.Dims(2), extended_input_shape.Dims(3),
         extended_input_shape.Dims(4)
       );
       TF_LITE_ENSURE(context, err == 0);
