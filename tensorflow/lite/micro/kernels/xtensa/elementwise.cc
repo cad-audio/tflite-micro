@@ -352,20 +352,57 @@ TfLiteStatus AbsEval(TfLiteContext* context, TfLiteNode* node) {
       eval_result = EvalNumeric(context, node, std::abs);
       break;
 #endif // defined(INCLUDE_FLOAT_OPT)
-    case kTfLiteInt8:
-      eval_result =
-          EvalImplQuantized<int8_t>(context, node, AbsEvalQuantized,
-                                    /*validate_input_func=*/nullptr, type);
+    case kTfLiteInt8: {
+      const TfLiteEvalTensor* input = tflite::micro::GetEvalInput(context, node, 0);
+      TfLiteEvalTensor* output = tflite::micro::GetEvalOutput(context, node, 0);
+      const size_t num_elements = ElementCount(*input->dims);
+
+      const int8_t* in_data = tflite::micro::GetTensorData<int8_t>(input);
+      int8_t* out_data = tflite::micro::GetTensorData<int8_t>(output);
+
+      int err;
+      err = xa_nn_elm_abs_asym8s_asym8s(out_data,
+                                        in_data,
+                                        op_data->input_offset,
+                                        op_data->output_offset,
+                                        op_data->needs_rescale,
+                                        op_data->shift,
+                                        op_data->multiplier,
+                                        num_elements
+                                        );
+      TF_LITE_ENSURE(context, (err==0) );
+      return kTfLiteOk;
       break;
-    case kTfLiteInt16:
-      eval_result =
-          input_quantization_type == kTfLiteNoQuantization
-              ? EvalImpl<int16_t>(context, node, AbsHelper,
-                                  /*validate_input_func=*/nullptr, type)
-              : EvalImplQuantized<int16_t>(context, node, AbsEvalQuantized,
-                                           /*validate_input_func=*/nullptr,
-                                           type);
+    }
+    case kTfLiteInt16: {
+      const TfLiteEvalTensor* input = tflite::micro::GetEvalInput(context, node, 0);
+      TfLiteEvalTensor* output = tflite::micro::GetEvalOutput(context, node, 0);
+      const size_t num_elements = ElementCount(*input->dims);
+
+      const int16_t* in_data = tflite::micro::GetTensorData<int16_t>(input);
+      int16_t* out_data = tflite::micro::GetTensorData<int16_t>(output);
+
+      int32_t input_offset =
+          input_quantization_type == kTfLiteNoQuantization ? 0 : op_data->input_offset;
+      int32_t output_offset =
+          input_quantization_type == kTfLiteNoQuantization ? 0 : op_data->output_offset;
+      int32_t needs_rescale =
+          input_quantization_type == kTfLiteNoQuantization ? 0 : op_data->needs_rescale;
+
+      int err;
+      err = xa_nn_elm_abs_asym16s_asym16s(out_data,
+                                          in_data,
+                                          input_offset,
+                                          output_offset,
+                                          needs_rescale,
+                                          op_data->shift,
+                                          op_data->multiplier,
+                                          num_elements
+                                          );
+      TF_LITE_ENSURE(context, (err==0) );
+      return kTfLiteOk;
       break;
+    }
     default:
       MicroPrintf("Current data type %s is not supported.",
                   TfLiteTypeGetName(type));
