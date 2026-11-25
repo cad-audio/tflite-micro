@@ -49,11 +49,19 @@ TfLiteStatus XtensaPrepareMax(TfLiteContext* context, TfLiteNode* node) {
 #if defined(HIFI_IQ) || defined(HIFI5) || defined(HIFI4)
   return PrepareMaxHifi(context, node, op_data);
 #else
-  TF_LITE_ENSURE_OK(context, PrepareMaxHelper(context, node, op_data));
+  TF_LITE_ENSURE_OK(context, PrepareMinMaxHelper(context, node, op_data));
 #if defined(VISION_P6)
   TF_LITE_ENSURE_OK(context, ReducePrepareVision(context, node));
 #endif  // VISION_P6
 #endif  // defined(HIFI5) || defined(HIFI4)
+  return kTfLiteOk;
+}
+
+TfLiteStatus XtensaPrepareMin(TfLiteContext* context, TfLiteNode* node) {
+  OpDataReduce* op_data =
+      &(static_cast<XtensaReduceOpData*>(node->user_data)->reference_op_data);
+  TF_LITE_ENSURE_OK(context, PrepareMinMaxHelper(context, node, op_data));
+  // P6 FLK library does not support REDUCE_MIN
   return kTfLiteOk;
 }
 
@@ -65,6 +73,13 @@ TfLiteStatus XtensaPrepareMeanOrSum(TfLiteContext* context, TfLiteNode* node) {
 #else
   return PrepareMeanOrSumHelper(context, node, op_data);
 #endif
+}
+
+TfLiteStatus XtensaPrepareAll(TfLiteContext* context, TfLiteNode* node) {
+  OpDataReduce* op_data =
+      &(static_cast<XtensaReduceOpData*>(node->user_data)->reference_op_data);
+  TF_LITE_ENSURE_OK(context, PrepareAllHelper(context, node, op_data));
+  return kTfLiteOk;
 }
 
 TfLiteStatus XtensaEvalMean(TfLiteContext* context, TfLiteNode* node) {
@@ -106,6 +121,14 @@ TfLiteStatus XtensaEvalMax(TfLiteContext* context, TfLiteNode* node) {
 #endif  // defined(HIFI5) || defined(HIFI4)
 }
 
+TfLiteStatus XtensaEvalMin(TfLiteContext* context, TfLiteNode* node) {
+  XtensaReduceOpData* op_data_xtensa =
+      static_cast<XtensaReduceOpData*>(node->user_data);
+  OpDataReduce* op_data = &(op_data_xtensa->reference_op_data);
+  // P6 FLK library does not support REDUCE_MIN
+  return EvalMinHelper(context, node, op_data);
+}
+
 TfLiteStatus XtensaEvalSum(TfLiteContext* context, TfLiteNode* node) {
   OpDataReduce* op_data =
       &(static_cast<XtensaReduceOpData*>(node->user_data)->reference_op_data);
@@ -114,6 +137,14 @@ TfLiteStatus XtensaEvalSum(TfLiteContext* context, TfLiteNode* node) {
 #else
   return EvalSumHelper(context, node, op_data);
 #endif
+}
+
+TfLiteStatus XtensaEvalAll(TfLiteContext* context, TfLiteNode* node) {
+  XtensaReduceOpData* op_data_xtensa =
+      static_cast<XtensaReduceOpData*>(node->user_data);
+  OpDataReduce* op_data = &(op_data_xtensa->reference_op_data);
+  // P6 FLK library does not support REDUCE_MIN
+  return EvalAllHelper(context, node, op_data);
 }
 
 TFLMRegistration Register_MEAN() {
@@ -126,9 +157,19 @@ TFLMRegistration Register_REDUCE_MAX() {
                                    XtensaEvalMax);
 }
 
+TFLMRegistration Register_REDUCE_MIN() {
+  return tflite::micro::RegisterOp(XtensaInitReduce, XtensaPrepareMin,
+                                   XtensaEvalMin);
+}
+
 TFLMRegistration Register_SUM() {
   return tflite::micro::RegisterOp(XtensaInitReduce, XtensaPrepareMeanOrSum,
                                    XtensaEvalSum);
+}
+
+TFLMRegistration Register_REDUCE_ALL() {
+  return tflite::micro::RegisterOp(XtensaInitReduce, XtensaPrepareAll,
+                                   XtensaEvalAll);
 }
 
 }  // namespace tflite
